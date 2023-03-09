@@ -27,7 +27,7 @@ import { createStorageOperations as createHeadlessCmsStorageOperations } from "@
 import { createACO } from "@webiny/api-aco";
 import securityPlugins from "./security";
 import tenantManager from "@webiny/api-tenant-manager";
-import { createApiGatewayRoute, createS3Handler } from "@webiny/handler-aws";
+import { createApiGatewayRoute, createDynamoDBHandler, createS3Handler } from "@webiny/handler-aws";
 /**
  * APW
  */
@@ -38,6 +38,7 @@ import { createStorageOperations as createApwSaStorageOperations } from "@webiny
 import scaffoldsPlugins from "./plugins/scaffolds";
 // https://github.com/jeremydaly/dynamodb-toolbox
 import { Table } from "dynamodb-toolbox";
+import { DataUploadEntity } from "./plugins/scaffolds/dataUploads/types";
 
 /**
  * Everything starts with a table. Note that the `name` property is passed via an environment
@@ -46,7 +47,6 @@ import { Table } from "dynamodb-toolbox";
  * during a previous deployment).
  * https://www.webiny.com/docs/how-to-guides/scaffolding/extend-graphql-api#essential-files
  */
-
 
 const debug = process.env.DEBUG === "true";
 
@@ -111,50 +111,27 @@ export const handler = createHandler({
         }),
         createACO(),
         scaffoldsPlugins(),
-        createApiGatewayRoute(({ onPost, onGet, context }) => {
-            onPost("/public-data", async (request, reply) => {
-                // we can log the whole request body
-                console.log(request.body);
-                // and we can send some reply
+        createApiGatewayRoute(({ onGet, context }) => {
+            onGet("/data-api/:id", async (request, reply) => {
+                const { id } = request.params as { id: string };
+                let dataSchemas: { Items: DataUploadEntity[] } = await table.query(
+                    "L#en-US#DataUpload"
+                );
+                const schema = dataSchemas.Items.find(item => item.id === id);
                 return reply
                     .headers({
                         "x-route-example": "yes"
                     })
                     .send({
-                        everything: {
-                            ok: true
-                        }
-                    });
-            });
-            onGet("/public-data", async (request, reply) => {
-                let result;
-                try {
-
-                    result = await table.query("L#en-US#DataUpload", {
-                        // filters: {
-                        //         attr: "SK",
-                        //         eq: "6408f515d61b7a0008f67e05"
-                        // }
-                        // eq: "6408f515d61b7a0008f67e05",
-                        limit: 1
-                    })
-                } catch (e) {
-                    result = e.message;
-                }
-
-                return reply
-                    .headers({
-                        "x-route-example": "yes"
-                    })
-                    .send({
-                        everything: {
-                            ok: true,
-                            youDidIt: true,
-                            test: JSON.stringify(result)
-                        }
+                        schema,
+                        id
                     });
             });
         })
     ],
     http: { debug }
 });
+
+type DataApiSchema = {
+    id: string;
+};
