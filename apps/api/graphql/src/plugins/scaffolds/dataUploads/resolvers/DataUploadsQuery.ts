@@ -4,6 +4,7 @@ import DataUploadsResolver from "./DataUploadsResolver";
 
 // We use this when specifying the return types of the getPermission function call (below).
 import { FullAccessPermission } from "@webiny/api-security/types";
+import { Authorize } from "~/plugins/utils/authorize";
 /**
  * Contains base `getDataUpload` and `listDataUploads` GraphQL resolver functions.
  * Feel free to adjust the code to your needs. Also, note that at some point in time, you will
@@ -52,39 +53,32 @@ interface DataUploadsMetaParams {
 export default class DataUploadsQueryImplementation
     extends DataUploadsResolver
     implements DataUploadsQuery
-{
+{   
+    permission: Authorize<DataUploadsPermission> | null = null;
+
+    initPermission(){ 
+        this.permission = new Authorize<DataUploadsPermission>(
+            this.context.security,
+            "data-uploads",
+        )
+    }
+
     /**
      * Returns a single DataUpload entry from the database.
      * @param id
      */
     async getDataUpload({ id }: GetDataUploadParams) {
-        const permission = await this.context.security.getPermission<
-            DataUploadsPermission | FullAccessPermission
-        >("data-uploads");
-
-        if (!permission) {
-            throw new Error("Not authorized.");
-        }
-
-        // means we are dealing with the super admin, who has unlimited access.
-        let hasAccess = permission.name === "*";
-        if (!hasAccess) {
-            // If not super admin, let's check if we have the "r" in the `rwd` property.
-            hasAccess =
-                permission.name === "data-uploads" &&
-                permission.rwd &&
-                permission.rwd.includes("r");
-        }
-
-        // Finally, if current identity doesn't have access, we immediately exit.
-        if (!hasAccess) {
-            throw new Error("Not authorized.");
-        }
+        if(!this.permission) this.initPermission();
+        await this.permission?.authorizeR();
         // Query the database and return the entry. If entry was not found, an error is thrown.
         const { Item: dataUpload } = await DataUpload.get({ PK: this.getPK(), SK: id });
+        
         if (!dataUpload) {
             throw new Error(`DataUpload "${id}" not found.`);
         }
+
+        this.permission?.authorizeEntry(dataUpload, "canView");
+
         return dataUpload;
     }
 
@@ -97,6 +91,9 @@ export default class DataUploadsQueryImplementation
      * @param before
      */
     async listDataUploads({ limit = 10, sort, after, before }: ListDataUploadsParams) {
+        if(!this.permission) this.initPermission();
+        await this.permission?.authorizeR();
+
         const PK = this.getPK();
         const query: DataUploadsQueryParams = {
             limit,
@@ -139,7 +136,11 @@ export default class DataUploadsQueryImplementation
 
         const { Items } = await DataUpload.query(PK, { ...query, limit: limit + 1 });
 
-        const data = Items.slice(0, limit);
+        const full = Items.slice(0, limit);
+        const data = this.permission?.authorizeList<DataUploadEntity>(
+            full,
+            "canView"
+        );
 
         const hasAfter = Items.length > limit;
         if (hasAfter) {

@@ -1,0 +1,88 @@
+import gql from "graphql-tag";
+
+// The same set of fields is being used on all query and mutation operations below.
+export const API_DATA_QUERY_FIELDS_FRAGMENT = /* GraphQL */ `
+    fragment ApiDataQueryFields on ApiDataQuery {
+        id
+        title
+        template
+        createdOn
+        savedOn
+        canView
+        canEdit
+        canDelete
+        defaultParameters
+        createdBy {
+            id
+            displayName
+            type
+        }
+    }
+`;
+
+export const LIST_API_DATA_QUERIES = gql`
+    ${API_DATA_QUERY_FIELDS_FRAGMENT}
+    query ListApiDataQueries(
+        $sort: ApiDataQueriesListSort
+        $limit: Int
+        $after: String
+        $before: String
+    ) {
+        apiDataQueries {
+            listApiDataQueries(sort: $sort, limit: $limit, after: $after, before: $before) {
+                data {
+                    ...ApiDataQueryFields
+                }
+                meta {
+                    before
+                    after
+                    limit
+                }
+            }
+        }
+    }
+`;
+
+export const CREATE_API_DATA_QUERY = gql`
+    ${API_DATA_QUERY_FIELDS_FRAGMENT}
+    mutation CreateApiDataQuery($data: ApiDataQueryCreateInput!) {
+        apiDataQueries {
+            createApiDataQuery(data: $data) {
+                ...ApiDataQueryFields
+            }
+        }
+    }
+`;
+
+export const GET_API_DATA_QUERY = gql`
+    ${API_DATA_QUERY_FIELDS_FRAGMENT}
+    query GetApiDataQuery($id: ID!) {
+        apiDataQueries {
+            getApiDataQuery(id: $id) {
+                ...ApiDataQueryFields
+            }
+        }
+    }
+`;
+
+export const DELETE_API_DATA_QUERY = gql`
+    ${API_DATA_QUERY_FIELDS_FRAGMENT}
+    mutation DeleteApiDataQuery($id: ID!) {
+        apiDataQueries {
+            deleteApiDataQuery(id: $id) {
+                ...ApiDataQueryFields
+            }
+        }
+    }
+`;
+
+export const UPDATE_API_DATA_QUERY = gql`
+    ${API_DATA_QUERY_FIELDS_FRAGMENT}
+    mutation UpdateApiDataQuery($id: ID!, $data: ApiDataQueryUpdateInput!) {
+        apiDataQueries {
+            updateApiDataQuery(id: $id, data: $data) {
+                ...ApiDataQueryFields
+            }
+        }
+    }
+`;

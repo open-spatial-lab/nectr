@@ -3,7 +3,7 @@ import { ReactComponent as Icon } from "./assets/round-ballot-24px.svg";
 import { MenuPlugin } from "@webiny/app-admin/plugins/MenuPlugin";
 import { useSecurity } from "@webiny/app-security";
 import { FullAccessPermission } from "@webiny/app-security/types";
-import { DataUploadPermission } from "./types";
+import { DataUploadsPermission } from "./types";
 
 // We need a component which will perform security checks, and conditionally render menu items.
 const DataUploadsMenu: React.FC<{Menu: any, Item: any}> = ({ Menu, Item }) => {
@@ -12,7 +12,7 @@ const DataUploadsMenu: React.FC<{Menu: any, Item: any}> = ({ Menu, Item }) => {
         return null;
     }
     // We get the "car-manufacturers" permission from current identity (logged-in user).
-    const permission = identity.getPermission<DataUploadPermission | FullAccessPermission>("data-uploads");
+    const permission = identity.getPermission<DataUploadsPermission | FullAccessPermission>("data-uploads");
 
     if (!permission) {
         return null;
@@ -33,8 +33,9 @@ const DataUploadsMenu: React.FC<{Menu: any, Item: any}> = ({ Menu, Item }) => {
     }
 
     return (
-        <Menu name="menu-data-uploads" label={"Data Uploads"} icon={<Icon />}>
+        <Menu name="menu-data-uploads" label={"Data"} icon={<Icon />}>
             <Item label={"Data Uploads"} path={"/data-uploads"} />
+            <Item label={"Data Views"} path={"/api-data-queries"} />
         </Menu>
     );
 };
