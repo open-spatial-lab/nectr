@@ -1,11 +1,17 @@
 {
-  "name": "api-graphql",
+  "name": "api-data-query",
   "version": "0.1.0",
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
   "scripts": {
     "build": "yarn webiny run build",
-    "watch": "yarn webiny run watch"
+    "watch": "yarn webiny run watch",
+    "package": "npx serverless package"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.292.0",
     "@webiny/api-aco": "5.34.5",
     "@webiny/api-admin-users-cognito": "5.34.5",
     "@webiny/api-admin-users-cognito-so-ddb": "5.34.5",
@@ -41,10 +47,25 @@
     "@webiny/handler-graphql": "5.34.5",
     "@webiny/handler-logs": "5.34.5",
     "@webiny/project-utils": "5.34.5",
+    "aws-embedded-metrics": "^4.1.0",
+    "bunyan": "^1.8.15",
+    "duckdb": "^0.7.1",
+    "dynamodb-toolbox": "^0.7.0",
     "mustache": "^4.2.0"
   },
   "devDependencies": {
+    "@types/bunyan": "^1.8.8",
     "@types/mustache": "^4.2.2",
     "graphql-request": "^3.4.0"
+  },
+  "adio": {
+    "ignoreDirs": [
+      "__tests__"
+    ],
+    "ignore": {
+      "src": [
+        "duckdb"
+      ]
+    }
   }
 }

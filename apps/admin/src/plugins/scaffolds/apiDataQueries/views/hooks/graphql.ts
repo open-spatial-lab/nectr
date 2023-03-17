@@ -11,6 +11,7 @@ export const API_DATA_QUERY_FIELDS_FRAGMENT = /* GraphQL */ `
         canView
         canEdit
         canDelete
+        isPublic
         defaultParameters
         createdBy {
             id

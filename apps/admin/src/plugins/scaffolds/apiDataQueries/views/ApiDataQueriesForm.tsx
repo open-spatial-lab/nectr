@@ -22,6 +22,7 @@ import 'brace/mode/json';
 import 'brace/theme/github';
 import { Typography } from "@webiny/ui/Typography";
 import { ParamsEditor } from "../../../../components/ParamsEditor";
+import { Switch } from "@webiny/ui/Switch";
 
 /**
  * Renders a form which enables creating new or editing existing Api Data Query entries.
@@ -53,7 +54,7 @@ const ApiDataQueriesForm: React.FC = () => {
             />
         );
     }
-
+    console.log(apiDataQuery)
     return (
         <Form data={apiDataQuery} onSubmit={onSubmit}>
             {({ data, submit, Bind }) => (
@@ -100,6 +101,16 @@ const ApiDataQueriesForm: React.FC = () => {
                                     />
                                 </Bind>
                             </Cell> */}
+                                <Cell span={12}>
+                                    <Bind name="isPublic">
+                                        <Switch
+                                            label={"Make this data public"}
+                                            description={
+                                                "Should this data be visible to the public?"
+                                            }
+                                        />
+                                    </Bind>
+                                </Cell>
                         </Grid>
                     </SimpleFormContent>
                     <SimpleFormFooter>

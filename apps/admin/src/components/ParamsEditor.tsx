@@ -39,8 +39,8 @@ export const ParamsEditor: React.FC<{value: string, onChange: BindComponentRende
 
     return (
         <Grid>
-            {Object.entries(parsed).map(([key, value]) => (
-                <>
+            {Object.entries(parsed).map(([key, value], i) => (
+                <React.Fragment key={`${i}-${key}`}>
                     <Cell tablet={3} desktop={3}>
                         <Typography use="body1" style={{textAlign: "right"}}>
                             {key}
@@ -49,7 +49,7 @@ export const ParamsEditor: React.FC<{value: string, onChange: BindComponentRende
                     <Cell tablet={9} desktop={9}>
                         <Input value={value as string} placeholder={`${key} default value`} onChange={(value: string) => handleChange(value, key)} />
                     </Cell>
-                </>
+                </React.Fragment>
             ))}
         </Grid>
     )

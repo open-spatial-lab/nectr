@@ -20,6 +20,7 @@ interface useApiDataQueriesDataListHook {
             canView: Array<String>;
             canEdit: Array<String>;
             canDelete: Array<String>;
+            isPublic: boolean;
             [key: string]: any;
         }>;
         loading: boolean;

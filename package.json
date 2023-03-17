@@ -4,7 +4,7 @@
 	"private": true,
 	"packageManager": "yarn@3.4.1",
 	"dependencies": {
-		"@webiny/aws-layers": "5.34.5",
+		"@webiny/aws-layers": "^5.34.6",
 		"@webiny/cli": "5.34.5",
 		"@webiny/cli-plugin-deploy-pulumi": "5.34.5",
 		"@webiny/cli-plugin-scaffold": "5.34.5",
@@ -14,7 +14,8 @@
 		"@webiny/cli-plugin-workspaces": "5.34.5",
 		"@webiny/cwp-template-aws": "5.34.5",
 		"@webiny/project-utils": "5.34.5",
-		"@webiny/serverless-cms-aws": "5.34.5"
+		"@webiny/serverless-cms-aws": "5.34.5",
+		"aws-embedded-metrics": "^4.1.0"
 	},
 	"keywords": [
 		"aws+dynamodb"
@@ -38,6 +39,7 @@
 		"babel-plugin-lodash": "^3.3.4",
 		"babel-plugin-module-resolver": "^4.1.0",
 		"chalk": "^4.1.0",
+		"copy-webpack-plugin": "^11.0.0",
 		"cross-env": "^5.0.2",
 		"eslint": "^8.4.1",
 		"eslint-config-standard": "^16.0.3",
@@ -52,6 +54,10 @@
 		"jest": "^28.1.0",
 		"merge": "^1.2.1",
 		"prettier": "^2.3.2",
+		"serverless": "^3.28.1",
+		"serverless-iam-roles-per-function": "^3.2.0",
+		"serverless-prune-plugin": "^2.0.2",
+		"serverless-webpack": "^5.11.0",
 		"ts-jest": "^28.0.5",
 		"typescript": "4.7.4"
 	},
@@ -61,7 +67,8 @@
 			"apps/website",
 			"apps/theme",
 			"apps/api/graphql",
-			"apps/api/headlessCMS"
+			"apps/api/headlessCMS",
+			"apps/api/data"
 		]
 	},
 	"scripts": {
