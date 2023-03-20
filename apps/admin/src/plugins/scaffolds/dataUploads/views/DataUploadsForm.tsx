@@ -16,6 +16,7 @@ import {
 import { useDataUploadsForm } from "./hooks/useDataUploadsForm";
 import { Switch } from "@webiny/ui/Switch";
 import { MultiAutoComplete } from "@webiny/ui/AutoComplete";
+import { useFiles } from "../../../../customHooks/useFiles"
 
 /**
  * Renders a form which enables creating new or editing existing Data Upload entries.
@@ -32,6 +33,8 @@ const DataUploadsForm: React.FC = () => {
         onSubmit,
         userList
     } = useDataUploadsForm();
+    const files = useFiles();
+    console.log(files)
 
     // Render "No content" selected view.
     if (emptyViewIsShown) {

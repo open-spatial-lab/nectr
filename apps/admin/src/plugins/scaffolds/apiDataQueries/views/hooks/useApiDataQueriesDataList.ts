@@ -10,6 +10,13 @@ import { LIST_API_DATA_QUERIES, DELETE_API_DATA_QUERY } from "./graphql";
  * Contains essential data listing functionality - data querying and UI control.
  */
 
+type TemplateSchema = {
+    columns?: Array<{
+        name: string;
+        alias?: string;
+    }>
+}
+
 interface useApiDataQueriesDataListHook {
     (): {
         apiDataQueries: Array<{

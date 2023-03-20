@@ -7,14 +7,16 @@ import { CoreOutput } from "@webiny/pulumi-aws/apps/common";
 import { createLambdaRole, getCommonLambdaEnvVariables } from "@webiny/pulumi-aws/apps/lambdaUtils";
 import { getAwsAccountId, getAwsRegion } from "@webiny/pulumi-aws/apps/awsUtils";
 import { ApiGateway }  from "@webiny/pulumi-aws";
+import { DataApiGateway } from "./createDataGateway";
+import { DataApiCloudfront } from "./createDataCloudfront";
 
 interface DataApiParams {
     env: Record<string, any>;
 }
 
-export type DataGateway = PulumiAppModule<typeof DataGateway>;
+export type DataFunction = PulumiAppModule<typeof DataFunction>;
 
-export const DataGateway = createAppModule({
+export const DataFunction = createAppModule({
     name: "PublicDataApi",
     config(app: PulumiApp, params: DataApiParams) {
         const core = app.getModule(CoreOutput);
@@ -29,7 +31,7 @@ export const DataGateway = createAppModule({
 function createDataResources(app: PulumiApp, params: DataApiParams) {
     const core = app.getModule(CoreOutput);
     const apiGateway = app.getModule(ApiGateway);
-
+    apiGateway.stage
     const policy = createReadOnlyLambdaPolicy(app);
     const role = createLambdaRole(app, {
         name: "data-api-lambda-role",
@@ -62,12 +64,14 @@ function createDataResources(app: PulumiApp, params: DataApiParams) {
         }
     });
     const dataQueryArn = dataQuery.output.arn
-    
-    apiGateway.addRoute("api-data-query", {
-        path: "/data-query/{id}",
-        method: "ANY",
-        function: dataQueryArn,
+    const dataGateway = app.addModule(DataApiGateway, {
+        "api-data-query": {
+            path: "/data-query/{id}",
+            method: "ANY",
+            function: dataQueryArn,
+        }
     })
+    const dataCloudfront = app.addModule(DataApiCloudfront)
 
     return {
         role,

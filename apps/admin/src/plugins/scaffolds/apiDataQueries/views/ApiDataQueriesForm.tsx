@@ -16,13 +16,16 @@ import {
 import { useApiDataQueriesForm } from "./hooks/useApiDataQueriesForm";
 import { CodeEditor } from "@webiny/ui/CodeEditor";
 //  eslint-disable-next-line @typescript-eslint/no-unused-vars
-import brace from 'brace';
-import 'brace/mode/handlebars';
-import 'brace/mode/json';
-import 'brace/theme/github';
+import brace from "brace";
+import "brace/mode/handlebars";
+import "brace/mode/json";
+import "brace/theme/github";
 import { Typography } from "@webiny/ui/Typography";
 import { ParamsEditor } from "../../../../components/ParamsEditor";
 import { Switch } from "@webiny/ui/Switch";
+import { useFiles } from "../../../../customHooks/useFiles";
+import { QueryBuilder } from "../../../../components/QueryBuilder/QueryBuilder";
+import { SelectQuery } from "../../../../components/QueryBuilder/types";
 
 /**
  * Renders a form which enables creating new or editing existing Api Data Query entries.
@@ -38,14 +41,13 @@ const ApiDataQueriesForm: React.FC = () => {
         apiDataQuery,
         onSubmit
     } = useApiDataQueriesForm();
+    const {files} = useFiles();
 
     // Render "No content" selected view.
     if (emptyViewIsShown) {
         return (
             <EmptyView
-                title={
-                    "Click on the left side list to display Data View details or create a..."
-                }
+                title={"Click on the left side list to display Data View details or create a..."}
                 action={
                     <ButtonDefault onClick={currentApiDataQuery}>
                         <ButtonIcon icon={<AddIcon />} /> {"New Data View"}
@@ -54,7 +56,6 @@ const ApiDataQueriesForm: React.FC = () => {
             />
         );
     }
-    console.log(apiDataQuery)
     return (
         <Form data={apiDataQuery} onSubmit={onSubmit}>
             {({ data, submit, Bind }) => (
@@ -69,27 +70,64 @@ const ApiDataQueriesForm: React.FC = () => {
                                 </Bind>
                             </Cell>
                             <Cell span={12}>
+                                <Bind name="isPublic">
+                                    <Switch
+                                        label={"Make this data public"}
+                                        description={"Should this data be visible to the public?"}
+                                    />
+                                </Bind>
+                            </Cell>
+                            <Cell span={12}>
+                                <Bind name="defaultParameters">
+                                    {({ onChange: onChangeDefaults, value: _defaults }) => (
+                                        <div>
+                                            <Bind name="template">
+                                                {({
+                                                    onChange: onChangeTemplate,
+                                                    value: _template
+                                                }) => {
+                                                    const template = JSON.parse(_template || "{}") as SelectQuery;
+                                                    const defaults = JSON.parse(_defaults || "{}") as Record<string, any>
+                                                    console.log(template, defaults)
+                                                    return <QueryBuilder
+                                                        files={files || []}
+                                                        template={template}
+                                                        onChangeTemplate={onChangeTemplate}
+                                                        defaults={defaults}
+                                                        onChangeDefaults={onChangeDefaults}
+                                                    />
+
+                                                }}
+                                            </Bind>
+                                        </div>
+                                    )}
+                                </Bind>
+                            </Cell>
+
+                            {/* <Cell span={12}>
                                 <Typography use="headline6">SQL Template</Typography>
-                                <br/>
-                                <Bind
-                                    name="template"
-                                >
+                                <br />
+                                <Bind name="template">
                                     <CodeEditor
                                         mode="handlebars"
                                         theme="github"
                                         description="Data View Template in SQL. Use handlebars syntax for dynamic variables (eg. `SELECT * FROM table WHERE population > {{value}}`)."
                                     />
                                 </Bind>
-                            </Cell>
-                            <Cell span={12}>
+                            </Cell> */}
+                            {/* <Cell span={12}>
                                 <Typography use="headline6">Default Values</Typography>
-                                <br/>
-                                <Bind
-                                    name="defaultParameters"
-                                >
-                                    {({onChange, value}) =>  <ParamsEditor value={value} onChange={onChange} data={data} />}
-                                </Bind>
-                            </Cell>
+                                <br /> */}
+                                {/* <Bind name="defaultParameters">
+                                    {({ onChange, value }) => (
+                                        <ParamsEditor
+                                            value={value}
+                                            onChange={onChange}
+                                            data={data}
+                                        />
+                                    )}
+                                </Bind> */}
+                            {/* </Cell> */}
                             {/* <Cell span={12}>
                                 <Bind
                                     name="defaultParameters"
@@ -101,16 +139,6 @@ const ApiDataQueriesForm: React.FC = () => {
                                     />
                                 </Bind>
                             </Cell> */}
-                                <Cell span={12}>
-                                    <Bind name="isPublic">
-                                        <Switch
-                                            label={"Make this data public"}
-                                            description={
-                                                "Should this data be visible to the public?"
-                                            }
-                                        />
-                                    </Bind>
-                                </Cell>
                         </Grid>
                     </SimpleFormContent>
                     <SimpleFormFooter>
@@ -130,5 +158,3 @@ const ApiDataQueriesForm: React.FC = () => {
 };
 
 export default ApiDataQueriesForm;
-
-

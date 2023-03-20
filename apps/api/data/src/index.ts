@@ -16,9 +16,7 @@ export const handler = metricScope(
             metrics.setProperty("RequestId", context.awsRequestId);
             const id = event.pathParameters?.["id"];
             const params = event?.queryStringParameters || {};
-            console.log('INDEX PARAMS', params, JSON.stringify({event}))
 
-            // parse request
             if (!id) {
                 return {
                     statusCode: 400,
@@ -34,9 +32,8 @@ export const handler = metricScope(
             const queryStartTimestamp = new Date().getTime();
             await connection.initialize();
 
-            const data =
-                "query" in params
-                    ? await connection.handleRawQuery(params["query"] as string)
+            const data = event?.body
+                    ? await connection.handleRawQuery(event.body)
                     : await connection.handleIdQuery(id, params);
 
             requestLogger.debug({ data });
