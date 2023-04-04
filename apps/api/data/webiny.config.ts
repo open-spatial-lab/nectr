@@ -1,7 +1,23 @@
 import { createBuildFunction, createWatchFunction } from "@webiny/project-utils";
 
+const externalOrIgnore = [
+    "better-sqlite3",
+    "duckdb",
+    "mysql",
+    "mysql2",
+    "oracledb",
+    "pg",
+    "pg-native",
+    "pg-query-stream",
+    "sqlite3",
+    "tedious"
+]
 const webpack = (config: any) => {
-    (config.externals as any).push("duckdb");
+    config.externals = [
+        ...(config.externals || []),
+        ...externalOrIgnore
+    ]
+    
     return config;
 };
 

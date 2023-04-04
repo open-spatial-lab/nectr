@@ -3,6 +3,7 @@ import { Context, APIGatewayProxyCallback, APIGatewayEvent } from "aws-lambda";
 import Connection from "./connection";
 import getLogger from "./logger";
 import { QueryResponse } from "./types";
+import Papa from "papaparse";
 
 const connection = new Connection();
 const logger = getLogger();
@@ -33,8 +34,8 @@ export const handler = metricScope(
             await connection.initialize();
 
             const data = event?.body
-                    ? await connection.handleRawQuery(event.body)
-                    : await connection.handleIdQuery(id, params);
+                ? await connection.handleRawQuery(event.body)
+                : await connection.handleIdQuery(id, params);
 
             requestLogger.debug({ data });
 
@@ -45,9 +46,11 @@ export const handler = metricScope(
             );
 
             if (data.ok) {
+
+                const result = params["format"] === "csv" ? Papa.unparse(data.result) : JSON.stringify(data.result);
                 return {
                     statusCode: 200,
-                    body: JSON.stringify(data.result)
+                    body: result
                 };
             } else {
                 return {

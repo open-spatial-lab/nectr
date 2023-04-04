@@ -14,18 +14,26 @@ import {
     SimpleFormHeader
 } from "@webiny/app-admin/components/SimpleForm";
 import { useApiDataQueriesForm } from "./hooks/useApiDataQueriesForm";
-import { CodeEditor } from "@webiny/ui/CodeEditor";
-//  eslint-disable-next-line @typescript-eslint/no-unused-vars
-import brace from "brace";
-import "brace/mode/handlebars";
-import "brace/mode/json";
-import "brace/theme/github";
-import { Typography } from "@webiny/ui/Typography";
-import { ParamsEditor } from "../../../../components/ParamsEditor";
+// import { CodeEditor } from "@webiny/ui/CodeEditor";
+// //  eslint-disable-next-line @typescript-eslint/no-unused-vars
+// import brace from "brace";
+// import "brace/mode/handlebars";
+// import "brace/mode/json";
+// import "brace/theme/github";
+// import { Typography } from "@webiny/ui/Typography";
+// import { ParamsEditor } from "../../../../components/ParamsEditor";
 import { Switch } from "@webiny/ui/Switch";
 import { useFiles } from "../../../../customHooks/useFiles";
 import { QueryBuilder } from "../../../../components/QueryBuilder/QueryBuilder";
 import { SelectQuery } from "../../../../components/QueryBuilder/types";
+
+
+const VALID_DATA_TYPES = [".csv", ".json", ".parquet"];
+
+const getDataFileTypes = (entry: {name:string, id:string, key:string}) => (
+    VALID_DATA_TYPES.some((type: string) => entry.key.endsWith(type))
+)
+
 
 /**
  * Renders a form which enables creating new or editing existing Api Data Query entries.
@@ -41,8 +49,7 @@ const ApiDataQueriesForm: React.FC = () => {
         apiDataQuery,
         onSubmit
     } = useApiDataQueriesForm();
-    const {files} = useFiles();
-
+    const { files } = useFiles(getDataFileTypes);
     // Render "No content" selected view.
     if (emptyViewIsShown) {
         return (
@@ -78,29 +85,19 @@ const ApiDataQueriesForm: React.FC = () => {
                                 </Bind>
                             </Cell>
                             <Cell span={12}>
-                                <Bind name="defaultParameters">
-                                    {({ onChange: onChangeDefaults, value: _defaults }) => (
-                                        <div>
-                                            <Bind name="template">
-                                                {({
-                                                    onChange: onChangeTemplate,
-                                                    value: _template
-                                                }) => {
-                                                    const template = JSON.parse(_template || "{}") as SelectQuery;
-                                                    const defaults = JSON.parse(_defaults || "{}") as Record<string, any>
-                                                    console.log(template, defaults)
-                                                    return <QueryBuilder
-                                                        files={files || []}
-                                                        template={template}
-                                                        onChangeTemplate={onChangeTemplate}
-                                                        defaults={defaults}
-                                                        onChangeDefaults={onChangeDefaults}
-                                                    />
-
-                                                }}
-                                            </Bind>
-                                        </div>
-                                    )}
+                                <Bind name="template">
+                                    {({ onChange: onChangeTemplate, value: _template }) => {
+                                        const template = JSON.parse(
+                                            _template || "{}"
+                                        ) as SelectQuery;
+                                        return (
+                                            <QueryBuilder
+                                                files={files || []}
+                                                template={template}
+                                                onChangeTemplate={onChangeTemplate}
+                                            />
+                                        );
+                                    }}
                                 </Bind>
                             </Cell>
 
@@ -118,7 +115,7 @@ const ApiDataQueriesForm: React.FC = () => {
                             {/* <Cell span={12}>
                                 <Typography use="headline6">Default Values</Typography>
                                 <br /> */}
-                                {/* <Bind name="defaultParameters">
+                            {/* <Bind name="defaultParameters">
                                     {({ onChange, value }) => (
                                         <ParamsEditor
                                             value={value}

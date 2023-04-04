@@ -7,23 +7,17 @@ const GET_FILES = gql`
             listFiles {
                 data {
                     name
+                    key
+                    id
                 }
             }
         }
     }
 `;
 
-const VALID_DATA_TYPES = [".csv", ".json", ".parquet"];
-
-const validateFileName = (name: string) => (
-    VALID_DATA_TYPES.some((type: string) => name.endsWith(type))
-)
-
-export const useFiles = () => {
+export const useFiles = (validation: (entry: any) => boolean) => {
     const { data, loading, error } = useQuery(GET_FILES);
     const fileEntries = data?.fileManager?.listFiles?.data;
-    const files = fileEntries
-        ?.map(({ name }: { name: string }) => name)
-        .filter(validateFileName);
+    const files = fileEntries?.filter(validation);
     return { files, loading, error };
 };

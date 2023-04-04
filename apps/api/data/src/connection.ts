@@ -54,9 +54,10 @@ export default class Connection {
             const query = json.query;
             const data = await this.query(query);
             return data
-        } catch (err) {
+        } catch (error) {
+            const errorText = error.toString();
             return {
-                error: err,
+                error: `Error at handle raw query: ${errorText}`,
                 ok: false
             };
         }
@@ -67,6 +68,7 @@ export default class Connection {
             id,
             params
         });
+        // console.log('SCHEMA', JSON.stringify(schema, null, 2))
 
         if (!schema.ok) {
             return schema
@@ -74,11 +76,17 @@ export default class Connection {
 
         try {
             const data = await this.query(schema.result);
+            // if (data.ok) await schemas.cacheResult(
+            //     id,
+            //     params,
+            //     data.result
+            // )
             return data;
         } catch (err) {
-            console.log('ERR', JSON.stringify(err, null, 2))
+            console.log(err)
+            console.log(JSON.stringify(schema, null, 2))
             return {
-                error: err,
+                error: `Error at handle id query: ${JSON.stringify(err, null, 2)}`,
                 ok: false,
             };
         }

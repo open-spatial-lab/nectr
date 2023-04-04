@@ -1,23 +1,13 @@
-import { Table } from "dynamodb-toolbox";
-import { DataUploadEntity } from "../../graphql/src/plugins/scaffolds/dataUploads/types";
-import { ApiDataQueryEntity } from "../../graphql/src/plugins/scaffolds/apiDataQueries/types";
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import { QueryResponse, SchemaIdAndParams, SqlString } from "./types";
-import Mustache from "mustache";
-import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda"
-
-const documentClient = new DocumentClient({
-    convertEmptyValues: true,
-    region: process.env.AWS_REGION
-});
-
-const table = new Table({
-    name: process.env.DB_TABLE as string,
-    partitionKey: "PK",
-    sortKey: "SK",
-    entityField: "TYPE",
-    DocumentClient: documentClient
-});
+import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda";
+import { formatSql } from "../../../core/utils/formatSql";
+import table from "../../../core/aws/table";
+import { s3, S3_BUCKET } from "../../../core/aws/s3";
+// types
+import type { DataUploadEntity } from "../../graphql/src/plugins/scaffolds/dataUploads/types";
+import type { ApiDataQueryEntity } from "../../graphql/src/plugins/scaffolds/apiDataQueries/types";
+import type { QueryResponse, SchemaIdAndParams, SqlString } from "../../../core/types/queryApi";
+import type { SelectQuery } from "../../../core/types/queryBuilder";
+import { ResultCacheEntity } from "./cacheEntity";
 
 export default class QuerySchemas {
     async fetchSchemaEntry(id: string): Promise<QueryResponse<ApiDataQueryEntity, string>> {
@@ -41,9 +31,9 @@ export default class QuerySchemas {
         schema: ApiDataQueryEntity,
         req: SchemaIdAndParams
     ): Promise<
-        QueryResponse<{ template: string; templateParams: { [key: string]: any } }, string>
+        QueryResponse<{ template: SelectQuery; templateParams: { [key: string]: any } }, string>
     > {
-        const { defaultParameters, template, isPublic } = schema;
+        const { template, isPublic } = schema;
 
         if (!isPublic) {
             return {
@@ -59,38 +49,90 @@ export default class QuerySchemas {
             };
         }
 
-        const parsedDefaultParameters = JSON.parse(defaultParameters || "{}");
-        const templateParams = {
-            ...parsedDefaultParameters,
-            ...req.params
-        };
+        const parsedTemplate = JSON.parse(template);
+
         return {
             ok: true,
             result: {
-                template,
-                templateParams
+                template: parsedTemplate,
+                templateParams: req.params
             }
         };
     }
+    getCacheKey(params: APIGatewayProxyEventQueryStringParameters
+        ){
+        const sortedParams = Object.keys(params)
+            .sort()
+            .reduce((acc, key) => {
+                acc[key] = params[key];
+                return acc;
+            }, {} as APIGatewayProxyEventQueryStringParameters);
+        const cacheKey = JSON.stringify(sortedParams);
+        return cacheKey
+    }
+    async checkCache(
+        id: string,
+        params: APIGatewayProxyEventQueryStringParameters
+    ) // : Promise<QueryResponse<{CACHED_FILE: string}, string>>
+    {
+        const cacheKey = this.getCacheKey(params)
 
-    formatSql(params: {
-        template: string;
-        templateParams: { [key: string]: any };
-    }): QueryResponse<string, string> {
+        const options = {
+            filters: [{ attr: "content", eq: cacheKey }]
+        };
+
+        const cachedEntry = await table.query(`CACHE#${id}`, options);
+        console.log(cachedEntry);
+    }
+
+    async cacheResult(
+        id: string,
+        params: APIGatewayProxyEventQueryStringParameters,
+        result: string | Object
+    ) {
+        const timeStamp = +(new Date());
+        const fileSuffix = params["format"] === "csv" ? ".csv" : ".json";
+        const fileId = `${id}-${timeStamp}${fileSuffix}`;
+        const cacheKey = this.getCacheKey(params)
+
+        const entry = {
+            PK: `CACHE#${id}`,
+            SK: timeStamp,
+            id: fileId,
+            content: cacheKey
+        };
         try {
-            console.log('TEMPLATE PARAMS', params.templateParams)
-            const template = params.template.replace(/(\r\n|\n|\r)/gm, " ");
-            const sqlString = Mustache.render(template, params.templateParams) + ';'
-            return {
-                ok: true,
-                result: sqlString
-            };
-        } catch (e) {
-            return {
-                ok: false,
-                error: e.message
-            };
+
+            const putResult = await s3
+                .putObject({
+                    Bucket: S3_BUCKET,
+                    Key: fileId,
+                    Body: typeof result === "string" ? result : JSON.stringify(result),
+                    ContentType: params["format"] === "csv" ? "text/csv" : "application/json",
+                    ACL: "public-read"
+                })
+                .promise();
+        } catch(err){
+            console.log('s3 put err', JSON.stringify(err));
         }
+        try {
+            const entryResult = await ResultCacheEntity.put(entry);
+        } catch (err) {
+            console.log('ddb put err', JSON.stringify(err));
+        }
+        // const [putResult, entryResult] = await Promise.all([
+        //     s3
+        //         .putObject({
+        //             Bucket: S3_BUCKET,
+        //             Key: fileId,
+        //             Body: typeof result === "string" ? result : JSON.stringify(result),
+        //             ContentType: params["format"] === "csv" ? "text/csv" : "application/json",
+        //             ACL: "public-read"
+        //         })
+        //         .promise(),
+        //     ResultCacheEntity.put(entry)
+        // ]);
+        // console.log(putResult, entryResult);
     }
 
     async handleRequest(req: SchemaIdAndParams): Promise<QueryResponse<SqlString, string>> {
@@ -98,7 +140,7 @@ export default class QuerySchemas {
         if (!schemaEntry.ok) return schemaEntry;
         const validatedEntry = await this.validateEntry(schemaEntry.result, req);
         if (!validatedEntry.ok) return validatedEntry;
-        const sql = this.formatSql(validatedEntry.result);
+        const sql = formatSql(validatedEntry.result);
         return sql;
     }
 }

@@ -55,7 +55,7 @@ const DataUploadsDataList: React.FC = () => {
             actions={
                 <ButtonSecondary onClick={newDataUpload}>
                     <ButtonIcon icon={<AddIcon />} />
-                    New Data Upload
+                    New
                 </ButtonSecondary>
             }
         >

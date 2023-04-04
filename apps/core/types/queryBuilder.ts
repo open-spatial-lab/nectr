@@ -61,11 +61,7 @@ export type SelectQuery = {
 };
 
 export type QueryBuilderProps = {
-    files: {
-        name: string;
-        id: string;
-        key: string;
-    }[];
+    files: string[];
     template: SelectQuery;
     onChangeTemplate: BindComponentRenderPropOnChange<string>;
 };

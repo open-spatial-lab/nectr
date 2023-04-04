@@ -29,10 +29,15 @@ export const DataFunction = createAppModule({
 });
 
 function createDataResources(app: PulumiApp, params: DataApiParams) {
+    if (!params.env['S3_BUCKET']) {
+        throw new Error(
+            "Missing S3_BUCKET environment variable. This is required for the data API to work."
+        );
+    }
+
     const core = app.getModule(CoreOutput);
     const apiGateway = app.getModule(ApiGateway);
-    apiGateway.stage
-    const policy = createReadOnlyLambdaPolicy(app);
+    const policy = createReadOnlyLambdaPolicy(app, params);
     const role = createLambdaRole(app, {
         name: "data-api-lambda-role",
         policy: policy.output
@@ -58,7 +63,7 @@ function createDataResources(app: PulumiApp, params: DataApiParams) {
                 variables: getCommonLambdaEnvVariables().apply(value => ({
                     ...value,
                     ...params.env,
-                    S3_BUCKET: core.fileManagerBucketId
+                    S3_BUCKET: pulumi.interpolate`${params.env['S3_BUCKET'].id}`,
                 }))
             }
         }
@@ -82,7 +87,7 @@ function createDataResources(app: PulumiApp, params: DataApiParams) {
     };
 }
 
-function createReadOnlyLambdaPolicy(app: PulumiApp) {
+function createReadOnlyLambdaPolicy(app: PulumiApp, params: DataApiParams) {
     const core = app.getModule(CoreOutput);
     const awsAccountId = getAwsAccountId(app);
     const awsRegion = getAwsRegion(app);
@@ -101,6 +106,7 @@ function createReadOnlyLambdaPolicy(app: PulumiApp) {
                             "dynamodb:BatchGetItem",
                             "dynamodb:GetItem",
                             "dynamodb:Query",
+                            "dynamodb:PutItem"
                         ],
                         Resource: [
                             pulumi.interpolate`${core.primaryDynamodbTableArn}`,
@@ -114,12 +120,16 @@ function createReadOnlyLambdaPolicy(app: PulumiApp) {
                             "s3:GetObjectAcl",
                             "s3:GetObject",
                             "s3:ListBucket",
+                            "s3:PutObject",
+                            "s3:PutObjectAcl",
+                            "s3:DeleteObject",
                         ],
                         Resource: [
-                            pulumi.interpolate`arn:aws:s3:::${core.fileManagerBucketId}/*`,
+                            pulumi.interpolate`${params.env['S3_BUCKET'].arn}/*`,
                             // We need to explicitly add bucket ARN to "Resource" list for "s3:ListBucket" action.
-                            pulumi.interpolate`arn:aws:s3:::${core.fileManagerBucketId}`
-                        ]
+                            pulumi.interpolate`${params.env['S3_BUCKET'].arn}`,
+                        ],
+                        // Principal: "*"
                     },
                     {
                         Sid: "PermissionForLambda",

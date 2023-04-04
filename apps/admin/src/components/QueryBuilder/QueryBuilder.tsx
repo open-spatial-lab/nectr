@@ -1,13 +1,12 @@
 import React, { useEffect } from "react";
 import { QueryBuilderProps, SelectQuery, WhereQuery } from "./types";
 import { Select } from "@webiny/ui/Select";
-import { ButtonDefault as Button, ButtonPrimary, ButtonSecondary } from "@webiny/ui/Button";
+import { ButtonDefault as Button, ButtonPrimary } from "@webiny/ui/Button";
 import { Grid, Cell } from "@webiny/ui/Grid";
 import { Input } from "@webiny/ui/Input";
 import { Chips, Chip } from "@webiny/ui/Chips";
 import { Checkbox } from "@webiny/ui/Checkbox";
-import { Menu, MenuItem } from "@webiny/ui/Menu";
-import { Dialog, DialogAccept, DialogCancel, DialogContent } from "@webiny/ui/Dialog";
+import { Dialog, DialogContent } from "@webiny/ui/Dialog";
 
 const onlyUnique = (value: any, index: number, self: any) => {
     return self.indexOf(value) === index;
@@ -503,26 +502,28 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
     files,
     template,
     onChangeTemplate,
-    defaults,
-    onChangeDefaults
 }) => {
     const [availableColumns, setAvailableColumns] = React.useState<string[]>([]);
-    const handleTemplateChange = <T extends keyof SelectQuery>(key: T, value: SelectQuery[T]) => {
-        onChangeTemplate(
-            JSON.stringify({
-                ...template,
-                [key]: value
-            })
-        );
-    };
+    const selectedFile = files.find(f => f.key === template.from);
 
-    const handleDefaultsChange = (key: string, value: string) => {
-        onChangeDefaults(
-            JSON.stringify({
-                ...defaults,
-                [key]: value
+    const handleTemplateChange = <T extends keyof SelectQuery>(key: T | T[], value: SelectQuery[T] | SelectQuery[T][]) => {
+        if (Array.isArray(key) && Array.isArray(value)) {
+            const newTemplate: SelectQuery = {
+                ...template
+            }
+            key.forEach((key, i) => {
+                // @ts-ignore
+                newTemplate[key] = value[i] 
             })
-        );
+            onChangeTemplate(JSON.stringify(newTemplate))
+        } else if (typeof key === "string" && typeof value !== "undefined"){
+            onChangeTemplate(
+                JSON.stringify({
+                    ...template,
+                    [key]: value
+                })
+            );
+        }
     };
 
     const handleChangeWhereOperator = (operator: "and" | "or") => {
@@ -548,9 +549,12 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
             <Select
                 label={"Choose your dataset"}
                 description={"Choose your dataset"}
-                value={template.from}
-                options={files}
-                onChange={val => handleTemplateChange("from", val)}
+                value={selectedFile?.name}
+                options={files.map(f => f.name)}
+                onChange={val => {
+                    const newValue = files.find(f => f.name === val)?.key;
+                    handleTemplateChange(["from",'fromS3'], [newValue, true])
+                }}
             />
             {template?.from?.length && (
                 <>
