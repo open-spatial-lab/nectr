@@ -4,9 +4,14 @@ import { createAppModule } from "@webiny/pulumi";
 import { DataFunction } from "./data/src/createDataApp";
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
+import { injectDataPermissions } from "./data/src/injectPermissions";
+
 
 export default createApiApp({
     pulumiResourceNamePrefix: "wby-",
+    plugins: [
+        injectDataPermissions()
+    ],
     pulumi: app => {
         const graphQLModule = app.getModule(ApiGraphql);
         graphQLModule.addRoute({
@@ -14,6 +19,8 @@ export default createApiApp({
             path: "/data-api/{id}",
             method: "ANY"
         });
+        console.log('################## graphQLModule.policy.config.policy: ')
+        console.log(graphQLModule.policy.config.policy)
         
         const core = app.getModule(CoreOutput);
 

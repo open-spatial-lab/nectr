@@ -41,6 +41,7 @@ import { Table } from "dynamodb-toolbox";
 import { DataUploadEntity } from "./plugins/scaffolds/dataUploads/types";
 import { ApiDataQueryEntity } from "./plugins/scaffolds/apiDataQueries/types";
 import Mustache from "mustache";
+import s3StoragePlugin from '../src/plugins/s3-uploader/index';
 
 // Store initialization
 let isInitialized = false;
@@ -86,6 +87,9 @@ export const handler = createHandler({
         fileManagerPlugins(),
         fileManagerDynamoDbStorageOperation(),
         fileManagerS3(),
+        s3StoragePlugin({
+            bucketName: process.env.S3_BUCKET!,
+        }),
         prerenderingServicePlugins({
             eventBus: String(process.env.EVENT_BUS)
         }),
@@ -119,7 +123,3 @@ export const handler = createHandler({
     ],
     http: { debug }
 });
-
-type DataApiSchema = {
-    id: string;
-};

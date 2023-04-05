@@ -42,6 +42,7 @@ function createDataResources(app: PulumiApp, params: DataApiParams) {
         name: "data-api-lambda-role",
         policy: policy.output
     }); 
+
     const awsRegion = getAwsRegion(app);
     const dataQuery = app.addResource(aws.lambda.Function, {
         name: "data-api-runner",
@@ -63,7 +64,8 @@ function createDataResources(app: PulumiApp, params: DataApiParams) {
                 variables: getCommonLambdaEnvVariables().apply(value => ({
                     ...value,
                     ...params.env,
-                    S3_BUCKET: pulumi.interpolate`${params.env['S3_BUCKET'].id}`,
+                    S3_BUCKET: core.fileManagerBucketId,
+                    DATA_BUCKET: pulumi.interpolate`${params.env['S3_BUCKET'].id}`,
                 }))
             }
         }
@@ -128,6 +130,8 @@ function createReadOnlyLambdaPolicy(app: PulumiApp, params: DataApiParams) {
                             pulumi.interpolate`${params.env['S3_BUCKET'].arn}/*`,
                             // We need to explicitly add bucket ARN to "Resource" list for "s3:ListBucket" action.
                             pulumi.interpolate`${params.env['S3_BUCKET'].arn}`,
+                            pulumi.interpolate`arn:aws:s3:::${core.fileManagerBucketId}/*`,
+                            pulumi.interpolate`arn:aws:s3:::${core.fileManagerBucketId}`,
                         ],
                         // Principal: "*"
                     },
