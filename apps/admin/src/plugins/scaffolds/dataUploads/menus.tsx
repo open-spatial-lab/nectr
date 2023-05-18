@@ -3,7 +3,7 @@ import { ReactComponent as Icon } from "./assets/round-ballot-24px.svg";
 import { MenuPlugin } from "@webiny/app-admin/plugins/MenuPlugin";
 import { useSecurity } from "@webiny/app-security";
 import { FullAccessPermission } from "@webiny/app-security/types";
-import { DataUploadsPermission } from "./types";
+import { DataUploadsPermission } from "../datasets/types";
 
 // We need a component which will perform security checks, and conditionally render menu items.
 const DataUploadsMenu: React.FC<{Menu: any, Item: any}> = ({ Menu, Item }) => {

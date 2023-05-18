@@ -1,6 +1,6 @@
 // @ts-ignore
 import DuckDB from "duckdb";
-import { QueryResponse } from "./types";
+import { QueryResponse } from "../types/types";
 import QuerySchemas from "./schemas";
 
 const schemas = new QuerySchemas();
@@ -23,6 +23,8 @@ export default class Connection {
             await this.query(`SET home_directory='/tmp';`);
             await this.query(`INSTALL httpfs;`);
             await this.query(`LOAD httpfs;`);
+            // await this.query(`INSTALL '/opt/nodejs/node_modules/duckdb/extensions/geo.duckdb_extension';`)
+            // await this.query(`LOAD '/opt/nodejs/node_modules/duckdb/extensions/geo.duckdb_extension';`)
             await this.query(`SET enable_http_metadata_cache=true;`);
             await this.query(`SET enable_object_cache=true;`);
             this.isInitialized = true;

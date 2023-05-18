@@ -14,25 +14,9 @@ import {
     SimpleFormHeader
 } from "@webiny/app-admin/components/SimpleForm";
 import { useApiDataQueriesForm } from "./hooks/useApiDataQueriesForm";
-// import { CodeEditor } from "@webiny/ui/CodeEditor";
-// //  eslint-disable-next-line @typescript-eslint/no-unused-vars
-// import brace from "brace";
-// import "brace/mode/handlebars";
-// import "brace/mode/json";
-// import "brace/theme/github";
-// import { Typography } from "@webiny/ui/Typography";
-// import { ParamsEditor } from "../../../../components/ParamsEditor";
 import { Switch } from "@webiny/ui/Switch";
-import { useFiles } from "../../../../customHooks/useFiles";
 import { QueryBuilder } from "../../../../components/QueryBuilder/QueryBuilder";
 import { SelectQuery } from "../../../../components/QueryBuilder/types";
-
-
-const VALID_DATA_TYPES = [".csv", ".json", ".parquet"];
-
-const getDataFileTypes = (entry: {name:string, id:string, key:string}) => (
-    VALID_DATA_TYPES.some((type: string) => entry.key.endsWith(type))
-)
 
 
 /**
@@ -47,10 +31,10 @@ const ApiDataQueriesForm: React.FC = () => {
         currentApiDataQuery,
         cancelEditing,
         apiDataQuery,
-        onSubmit
+        onSubmit,
+        datasets
     } = useApiDataQueriesForm();
-    const { files } = useFiles(getDataFileTypes);
-    // Render "No content" selected view.
+    
     if (emptyViewIsShown) {
         return (
             <EmptyView
@@ -86,13 +70,16 @@ const ApiDataQueriesForm: React.FC = () => {
                             </Cell>
                             <Cell span={12}>
                                 <Bind name="template">
-                                    {({ onChange: onChangeTemplate, value: _template }) => {
+                                    {({ onChange: _onChangeTemplate, value: _template }) => {
                                         const template = JSON.parse(
                                             _template || "{}"
                                         ) as SelectQuery;
+                                        const onChangeTemplate = (template: object) => {
+                                            _onChangeTemplate(JSON.stringify(template));
+                                        }
                                         return (
                                             <QueryBuilder
-                                                files={files || []}
+                                                files={datasets || []}
                                                 template={template}
                                                 onChangeTemplate={onChangeTemplate}
                                             />

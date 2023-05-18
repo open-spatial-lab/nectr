@@ -1,10 +1,10 @@
 import { createApiApp } from "@webiny/serverless-cms-aws";
 import { ApiGraphql, CoreOutput } from "@webiny/pulumi-aws";
 import { createAppModule } from "@webiny/pulumi";
-import { DataFunction } from "./data/src/createDataApp";
+import { DataFunction } from "./data/src/infra/createDataApp";
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
-import { injectDataPermissions } from "./data/src/injectPermissions";
+import { injectDataPermissions } from "./data/src/infra/injectPermissions";
 
 
 export default createApiApp({
@@ -40,7 +40,7 @@ export default createApiApp({
                 ]
             },
             opts: {
-                protect: true
+                protect: false
             }
         });
 

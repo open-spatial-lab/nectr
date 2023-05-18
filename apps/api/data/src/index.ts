@@ -1,11 +1,12 @@
 import { metricScope, Unit } from "aws-embedded-metrics";
 import { Context, APIGatewayProxyCallback, APIGatewayEvent } from "aws-lambda";
-import Connection from "./connection";
-import getLogger from "./logger";
-import { QueryResponse } from "./types";
+import Connection from "./lambda/connection";
+import getLogger from "./lambda/logger";
+import { QueryResponse } from "./types/types";
 import Papa from "papaparse";
 
 const connection = new Connection();
+// const cache = new Cache();
 const logger = getLogger();
 
 export const handler = metricScope(
@@ -46,8 +47,8 @@ export const handler = metricScope(
             );
 
             if (data.ok) {
-
                 const result = params["format"] === "csv" ? Papa.unparse(data.result) : JSON.stringify(data.result);
+                // const cacheResult 
                 return {
                     statusCode: 200,
                     body: result

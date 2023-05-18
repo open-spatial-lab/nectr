@@ -7,7 +7,7 @@ export const injectDataPermissions = () => ({
     name: "hook-after-build-inject-data-permissions",
     async hook({ projectApplication }: Record<string, any>, context: CliContext) {
         const workspacePath = projectApplication.config.pulumi.paths;
-        console.log(workspacePath);
+        // console.log(workspacePath);
         // const handlersPaths = [
         //     path.join(workspacePath, "graphql", "build"),
         //     path.join(workspacePath, "headlessCMS", "build")

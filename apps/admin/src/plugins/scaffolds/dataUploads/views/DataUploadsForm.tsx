@@ -17,29 +17,45 @@ import { useDataUploadsForm } from "./hooks/useDataUploadsForm";
 import { Switch } from "@webiny/ui/Switch";
 import { MultiAutoComplete } from "@webiny/ui/AutoComplete";
 // @ts-ignore
-import * as ta from "type-analyzer";
-import FileManagerView, {
-    type FileManagerViewProps
-} from "@webiny/app-admin/components/FileManager/FileManagerView";
+// import * as ta from "type-analyzer";
+// import
+// ÷ FileManagerView,
+//  {
+//     type FileManagerViewProps
+// } from "@webiny/app-admin/components/FileManager/FileManagerView";
 import { type FileItem } from "@webiny/app-admin/components/FileManager/types";
 import getFileUploader from "@webiny/app-admin/components/FileManager/getFileUploader";
-import { FileManagerProvider } from "@webiny/app-admin/components/FileManager/FileManagerContext";
-import { useQuery, useMutation, useApolloClient } from "@apollo/react-hooks";
+// import { FileManagerProvider } from "@webiny/app-admin/components/FileManager/FileManagerContext";
+import { useMutation, useApolloClient } from "@apollo/react-hooks";
 import get from "lodash/get";
 import {
-    LIST_FILES,
+    // LIST_FILES,
     CREATE_FILE,
-    GET_FILE_SETTINGS,
+    // GET_FILE_SETTINGS,
     CreateFileMutationVariables,
-    CreateFileMutationResponse,
-    ListFilesQueryResponse,
-    ListFilesQueryVariables
+    CreateFileMutationResponse
+    // ListFilesQueryResponse,
+    // ListFilesQueryVariables
 } from "@webiny/app-admin/components/FileManager/graphql";
-
+import { Dialog, DialogAccept } from "@webiny/ui/Dialog";
 // @ts-ignore
-import Files, { FilesRenderChildren } from "react-butterfiles";
+import Files from "react-butterfiles";
+import {
+    DataTable,
+    DataTableBody,
+    DataTableHead,
+    DataTableContent,
+    DataTableHeadCell,
+    DataTableCell,
+    DataTableRow
+} from "@rmwc/data-table";
+import "@rmwc/data-table/data-table.css";
+
 import { DisableGate } from "../../../../components/DisabledGate";
-import { MutationUpdaterFn } from "apollo-client/core/watchQueryOptions";
+import * as Papa from "papaparse";
+import { ColumnSchema } from "../types";
+import ColumnBuilder from "../../../../components/ColumnBuilder";
+// import { MutationUpdaterFn } from "apollo-client/core/watchQueryOptions";
 
 const UploadIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" viewBox="0 0 24 24">
@@ -50,6 +66,45 @@ const UploadIcon = () => (
         />
     </svg>
 );
+
+const TablePreview: React.FC<{ table: { columns: any[]; data: any[][] } }> = ({ table }) => {
+    const [open, setOpen] = useState(false);
+    
+    return (
+        <>
+            <ButtonDefault onClick={() => setOpen(true)}>Preview Data Table</ButtonDefault>
+            <Dialog open={open}>
+                <DialogAccept onClick={() => setOpen(false)}>Close</DialogAccept>
+                <div style={{ maxWidth: "100%", overflow: "auto" }}>
+                    <DataTable>
+                        <DataTableContent>
+                            <DataTableHead>
+                                <DataTableRow>
+                                    {table.columns.map((column, index) => (
+                                        <DataTableHeadCell key={index}>
+                                            {column}
+                                        </DataTableHeadCell>
+                                    ))}
+                                </DataTableRow>
+                            </DataTableHead>
+                            <DataTableBody>
+                                {table.data.map((row, irow) => (
+                                    <DataTableRow key={irow}>
+                                        {row.map((cell, icell) => (
+                                            <DataTableCell key={`${irow}-${icell}`}>{cell}</DataTableCell>
+                                        ))}
+                                    </DataTableRow>
+                                )
+                                )}
+                            </DataTableBody>
+                        </DataTableContent>
+                    </DataTable>
+                </div>
+            </Dialog>
+        </>
+    );
+};
+
 /**
  * Renders a form which enables creating new or editing existing Data Upload entries.
  * Includes two basic fields - title (required) and description.
@@ -59,6 +114,14 @@ const DataUploadsForm: React.FC = () => {
     const [uploading, setUploading] = useState({
         status: "not uploaded",
         filename: ""
+    });
+
+    const [table, setTable] = useState<{
+        columns: any[];
+        data: any[][];
+    }>({
+        columns: [],
+        data: [[]]
     });
 
     const {
@@ -73,29 +136,29 @@ const DataUploadsForm: React.FC = () => {
 
     const apolloClient = useApolloClient();
 
-    const updateCacheAfterCreateFile: MutationUpdaterFn<CreateFileMutationResponse> = (
-        cache,
-        newFile
-    ) => {
-        const newFileData = get(newFile, "data.fileManager.createFile.data");
+    // const updateCacheAfterCreateFile: MutationUpdaterFn<CreateFileMutationResponse> = (
+    //     cache,
+    //     newFile
+    // ) => {
+    //     const newFileData = get(newFile, "data.fileManager.createFile.data");
 
-        const data = cache.readQuery<ListFilesQueryResponse>({
-            query: LIST_FILES
-        });
+    //     const data = cache.readQuery<ListFilesQueryResponse>({
+    //         query: LIST_FILES
+    //     });
 
-        // cache.writeQuery({
-        //     query: LIST_FILES,
-        //     data: {
-        //         fileManager: {
-        //             ...(data?.fileManager || {}),
-        //             listFiles: {
-        //                 ...(data?.fileManager || {}).listFiles,
-        //                 data: [newFileData, ...((data?.fileManager?.listFiles || {}).data || [])]
-        //             }
-        //         }
-        //     }
-        // });
-    };
+    //     // cache.writeQuery({
+    //     //     query: LIST_FILES,
+    //     //     data: {
+    //     //         fileManager: {
+    //     //             ...(data?.fileManager || {}),
+    //     //             listFiles: {
+    //     //                 ...(data?.fileManager || {}).listFiles,
+    //     //                 data: [newFileData, ...((data?.fileManager?.listFiles || {}).data || [])]
+    //     //             }
+    //     //         }
+    //     //     }
+    //     // });
+    // };
 
     const [createFile] = useMutation<CreateFileMutationResponse, CreateFileMutationVariables>(
         CREATE_FILE,
@@ -104,11 +167,11 @@ const DataUploadsForm: React.FC = () => {
         }
     );
 
-    const viewProps: FileManagerViewProps = {
-        // ...forwardProps,
-        onChange: console.log,
-        accept: []
-    };
+    // const viewProps: FileManagerViewProps = {
+    //     // ...forwardProps,
+    //     onChange: console.log,
+    //     accept: []
+    // };
 
     const dataFilesTypes = [
         "application/vnd.ms-excel",
@@ -138,6 +201,7 @@ const DataUploadsForm: React.FC = () => {
     ];
 
     const uploadFile = async (files: FileItem): Promise<number | null> => {
+        console.log('uploading file...', files)
         setUploading({
             status: "uploading",
             filename: files.name
@@ -161,7 +225,7 @@ const DataUploadsForm: React.FC = () => {
                             }
                         }
                     });
-                    
+
                     // Save create file data for later
                     uploadedFiles.push(
                         get(
@@ -178,6 +242,7 @@ const DataUploadsForm: React.FC = () => {
         // if (!hasPreviouslyUploadedFiles) {
         //     setHasPreviouslyUploadedFiles(true);
         // }
+        console.log(uploadedFiles);
 
         setUploading({
             status: "uploaded",
@@ -230,9 +295,28 @@ const DataUploadsForm: React.FC = () => {
         );
     }
 
+    const handlePreview = (setValue: Function) => (results: Papa.ParseResult<unknown>) => {
+        if (results.errors.length > 0) {
+            return;
+        }
+        const columns = results.data[0] as unknown[];
+        const data = results.data.slice(1) as any[][];
+        setTable({
+            columns,
+            data
+        });
+        const columnData: Array<ColumnSchema> = columns.map(column => ({
+            name: column as string,
+            type: "Text",
+            description: `A column named "${column}"`
+        }));
+
+        setValue("columns", JSON.stringify(columnData));
+    };
+
     return (
         <Form data={dataUpload} onSubmit={onSubmit}>
-            {({ data, submit, Bind }) => {
+            {({ form, data, submit, Bind }) => {
                 return (
                     <SimpleForm>
                         {loading && <CircularProgress />}
@@ -240,23 +324,26 @@ const DataUploadsForm: React.FC = () => {
 
                         <Files
                             multiple={false}
-                            // maxSize={settings.uploadMaxFileSize ? settings.uploadMaxFileSize + "b" : "1TB"}
+                            maxSize={"1TB"}
                             multipleMaxSize={"1TB"}
                             accept={dataFilesTypes}
                             onSuccess={(files: any[]) => {
-                                uploadFile(files[0].src.file as FileItem)
+                                console.log('received file', files)
+                                Papa.parse(files[0].src.file, {
+                                    complete: handlePreview(form.setValue),
+                                    // only read 20 rows
+                                    preview: 20,
+                                    dynamicTyping: true
+                                });
+                                const title = files[0].name.split(".").slice(0, -1).join(".");
+                                uploadFile(files[0].src.file as FileItem);
+                                form.setValue("title", title);
+
                                 // uploadFile(files.map(file => file.src.file as FileItem).filter(Boolean));
                             }}
-                            // onError={errors => {
-                            //     console.error("File selection error", errors);
-                            //     /**
-                            //      * TODO @ts-refactor
-                            //      * Figure out if incoming errors var is wrong or the one in the outputFileSelectionError
-                            //      */
-                            //     // @ts-ignore
-                            //     const message = outputFileSelectionError(errors);
-                            //     showSnackbar(message);
-                            // }}
+                            onError={(errors: any) => {
+                                console.error("File selection error", errors);
+                            }}
                         >
                             {({ browseFiles }: { browseFiles: any }) => (
                                 <>
@@ -266,7 +353,7 @@ const DataUploadsForm: React.FC = () => {
                                         style={{ marginLeft: "1rem", marginTop: "1rem" }}
                                     >
                                         <ButtonIcon icon={<UploadIcon />} />
-                                        {`Upload...`}
+                                        <p style={{ marginLeft: "0.25rem" }}>Upload...</p>
                                     </ButtonPrimary>
                                     {uploading.status === "uploading" && (
                                         <span style={{ marginLeft: "1rem", marginTop: "1rem" }}>
@@ -276,16 +363,19 @@ const DataUploadsForm: React.FC = () => {
                                 </>
                             )}
                         </Files>
-                        <DisableGate disabled={uploading.status !== "uploaded"}>
+                        {/* <DisableGate disabled={uploading.status !== "uploaded"}> */}
                             <SimpleFormContent>
                                 <Grid>
-                                    <Cell span={12}>
+                                    <Cell span={8}>
                                         <Bind
                                             name="title"
                                             validators={validation.create("required")}
                                         >
                                             <Input label={"Title"} />
                                         </Bind>
+                                    </Cell>
+                                    <Cell span={4}>
+                                        <TablePreview table={table} />
                                     </Cell>
                                     <Cell span={12}>
                                         <Bind
@@ -297,6 +387,30 @@ const DataUploadsForm: React.FC = () => {
                                                 description={"Provide a short description here."}
                                                 rows={4}
                                             />
+                                        </Bind>
+                                    </Cell>
+
+                                    <Cell span={12}>
+                                        <Bind name="columns">
+                                            {({ value: _columns }) => {
+                                                const columns = JSON.parse(
+                                                    _columns || "[]"
+                                                ) as Array<ColumnSchema>;
+
+                                                const onChangeColumns = (columns: object) => {
+                                                    form.setValue(
+                                                        "columns",
+                                                        JSON.stringify(columns)
+                                                    );
+                                                };
+
+                                                return (
+                                                    <ColumnBuilder
+                                                        columns={columns}
+                                                        onChange={onChangeColumns}
+                                                    />
+                                                );
+                                            }}
                                         </Bind>
                                     </Cell>
                                     <Cell span={12}>
@@ -341,11 +455,12 @@ const DataUploadsForm: React.FC = () => {
                                     </Cell>
                                 </Grid>
                             </SimpleFormContent>
-                        </DisableGate>
+                        {/* </DisableGate> */}
                         <SimpleFormFooter>
                             <ButtonDefault onClick={cancelEditing}>Cancel</ButtonDefault>
                             <ButtonPrimary
                                 onClick={ev => {
+                                    // form.setValue("columns", "[]")
                                     submit(ev);
                                 }}
                             >

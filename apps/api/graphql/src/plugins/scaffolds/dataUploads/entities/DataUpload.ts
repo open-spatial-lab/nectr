@@ -1,13 +1,13 @@
 // https://github.com/jeremydaly/dynamodb-toolbox
 import { Entity } from "dynamodb-toolbox";
 import table from "./table";
-import { DataUploadEntity } from "../types";
+import type { DataUploadEntity } from "../types";
 
 /**
  * Once we have the table, we define the DataUploadEntity entity.
  * If needed, additional entities can be defined using the same approach.
  */
-export default new Entity<DataUploadEntity>({
+export default new Entity({
     table,
     name: "DataUpload",
     timestamps: false,
@@ -24,6 +24,7 @@ export default new Entity<DataUploadEntity>({
         canDelete: { type: "list", default: [] },
         savedOn: { type: "string" },
         createdBy: { type: "map" },
-        webinyVersion: { type: "string" }
+        webinyVersion: { type: "string" },
+        columns: {type: "string" }
     }
-});
+} as const);

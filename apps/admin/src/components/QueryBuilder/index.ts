@@ -6,11 +6,22 @@ import {
     OPERATORS,
     OPERATOR_TYPES,
     OPERATOR_ARGS,
-    COMBINE_OPERATORS
+    COMBINE_OPERATORS,
+    JoinQuery,
+    JOIN_OPERATORS,
+    JOIN_OPERATOR_TYPES
 } from "./types";
 
 export {
     QueryBuilder,
     QueryBuilderProps,
-    SelectQuery
+    SelectQuery,
+    WhereQuery,
+    OPERATORS,
+    OPERATOR_TYPES,
+    OPERATOR_ARGS,
+    COMBINE_OPERATORS,
+    JoinQuery,
+    JOIN_OPERATORS,
+    JOIN_OPERATOR_TYPES
 }

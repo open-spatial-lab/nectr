@@ -18,3 +18,15 @@ $webiny-theme-typography-font-family: "Source Sans Pro";
 
 // Import admin app styles
 @import "~@webiny/app-serverless-cms/styles.scss";
+
+.align-cells tr td, .align-cells thead td {
+  vertical-align: middle;
+}
+.align-cells thead th {
+  text-align: left;
+  font-weight: bold;
+}
+// all cells after the first in each row
+.align-cells tr td:nth-child(n+2) {
+  padding-right:1rem;
+}

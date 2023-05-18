@@ -1,5 +1,11 @@
 import React, { useEffect } from "react";
-import { QueryBuilderProps, SelectQuery, WhereQuery } from "./types";
+import {
+    AGGREGATE_FUNCTIONS,
+    AGGREGATE_FUNCTION_TYPES,
+    QueryBuilderProps,
+    SelectQuery,
+    WhereQuery
+} from "./types";
 import { Select } from "@webiny/ui/Select";
 import { ButtonDefault as Button, ButtonPrimary } from "@webiny/ui/Button";
 import { Grid, Cell } from "@webiny/ui/Grid";
@@ -7,6 +13,10 @@ import { Input } from "@webiny/ui/Input";
 import { Chips, Chip } from "@webiny/ui/Chips";
 import { Checkbox } from "@webiny/ui/Checkbox";
 import { Dialog, DialogContent } from "@webiny/ui/Dialog";
+import { ColumnSchema } from "../../plugins/scaffolds/datasets/types";
+import { Tooltip } from "@webiny/ui/Tooltip";
+import { JoinBuilder } from "../JoinBuilder/JoinBuilder";
+import { CenteredCell } from "../CenteredCell";
 
 const onlyUnique = (value: any, index: number, self: any) => {
     return self.indexOf(value) === index;
@@ -126,11 +136,13 @@ export type HandleWhereChangeArgs = {
 
 const WhereParamInput: React.FC<WhereBuilderInput> = ({ type, value, handleInputChange }) => {
     const [inputText, setInputText] = React.useState<string>("");
+
     useEffect(() => {
         if (type === "chips" && ((value || []) as string[]).includes(inputText)) {
             setInputText("");
         }
     }, [JSON.stringify(value)]);
+
     switch (type) {
         case "text":
             return (
@@ -383,7 +395,7 @@ const WhereBuilder: React.FC<{
     return (
         <div>
             {template.where?.map((clause, index) => (
-                <Grid key={index}>
+                <Grid style={{padding:"1rem 0"}} key={index}>
                     <Cell span={3} desktop={3} tablet={3}>
                         <Select
                             label={"Column"}
@@ -431,131 +443,334 @@ const WhereBuilder: React.FC<{
     );
 };
 
+const getColName = (column: Partial<ColumnSchema>) =>
+    `${column.datasetId ? `${column.datasetId}.` : ""}${column.name}`;
+
 const ColumnSelector: React.FC<{
     template: SelectQuery;
     handleTemplateChange: (key: keyof SelectQuery, value: SelectQuery[keyof SelectQuery]) => void;
-    columns: string[];
+    columns: ColumnSchema[];
 }> = ({ template, handleTemplateChange, columns }) => {
-    const handleToggleColumn = (column: string) => {
-        if (template.columns?.includes(column)) {
+    const handleToggleColumn = (column: ColumnSchema) => {
+        const colName = getColName(column);
+        if (template.columns?.find(c => c.name === colName)) {
             handleTemplateChange(
                 "columns",
-                (template.columns || []).filter(item => item !== column)
+                (template.columns || []).filter(templateCol => templateCol.name !== colName)
             );
         } else {
-            handleTemplateChange("columns", [...(template.columns || []), column]);
+            handleTemplateChange("columns", [
+                ...(template.columns || []),
+                {
+                    name: colName,
+                    type: column.type
+                }
+            ]);
         }
     };
-    const addedColumns = template.columns || [];
-    const availableColumns = columns.filter(col => !addedColumns.includes(col));
+    const handleColumnAggregate = (
+        column: ColumnSchema,
+        aggregate: AGGREGATE_FUNCTION_TYPES | undefined
+    ) => {
+        // console.log('HANDLE AGGREGATE', column, aggregate)
+        const colName = getColName(column);
+        const newColumns = (template.columns || []).map(templateCol => {
+            if (templateCol.name === colName) {
+                return {
+                    ...templateCol,
+                    aggregate
+                };
+            }
+            return templateCol;
+        });
+        handleTemplateChange("columns", newColumns);
+    };
+
+    const templateColumns = template.columns || [];
+    // const availableColumns = columns.filter(col => !templateColumns.find(c => c.name === col.name));
+    // const addedColumns = columns.filter(col => templateColumns.find(c => c.name === col.name));
+    const currentColumnNames = templateColumns.map(column => getColName(column));
     return (
         <div>
-            <Grid>
-                <Cell span={6} desktop={6} tablet={6}>
-                    <p>Columns in your dataset</p>
-                    {availableColumns.map(col => (
-                        <Button onClick={() => handleToggleColumn(col)} small key={col}>
-                            {col}
-                        </Button>
-                    ))}
-                    <br />
-                </Cell>
-
-                <Cell span={6} desktop={6} tablet={6}>
-                    <p>Included columns in data view</p>
-                    {addedColumns.length === 0 && (
-                        <p>
-                            <br />
-                            <br />
-                            <i>
-                                If you don&apos;t select any columns, <u>all</u> columns will
-                                automatically be included.
-                            </i>
-                        </p>
-                    )}
-                    {addedColumns.map(col => (
-                        <Button onClick={() => handleToggleColumn(col)} small key={col}>
-                            {col}
-                        </Button>
-                    ))}
-                    <br />
+            <Grid style={{ padding: "1rem 0" }}>
+                <Cell span={12}>
+                    <table className="align-cells">
+                        <thead>
+                            <th></th>
+                            <th>
+                                <strong>Column</strong>
+                            </th>
+                            <th>
+                                <strong>Type</strong>
+                            </th>
+                            <th>
+                                <strong>Description (hover for more)</strong>
+                            </th>
+                            <th>
+                                <strong>Aggregate</strong>
+                            </th>
+                        </thead>
+                        <tbody>
+                            {columns.map(col => (
+                                <tr key={`${col.datasetId}-${col.name}`} style={{}}>
+                                    <td>
+                                        {/* <div style={{padding: "0.5rem 0"}}> */}
+                                        <Checkbox
+                                            value={currentColumnNames.includes(getColName(col))}
+                                            onChange={() => handleToggleColumn(col)}
+                                        />
+                                        {/* <Switch value={currentColumnNames.includes(col.name)} 
+                                            onChange={() => handleToggleColumn(col)}
+                                        /> */}
+                                        {/* </div> */}
+                                    </td>
+                                    <td>
+                                        {col.dataset ? (
+                                            <span
+                                                style={{
+                                                    pointerEvents: "none",
+                                                    marginRight: "0.5rem"
+                                                }}
+                                            >
+                                                <Chip>{col.dataset}</Chip>
+                                            </span>
+                                        ) : null}
+                                        {col.name}
+                                    </td>
+                                    <td>{col.type}</td>
+                                    <td>
+                                        <Tooltip content={<span>{col.description}</span>}>
+                                            <span>
+                                                {col.description.slice(0, 30)}
+                                                {col.description.length > 30 && "..."}
+                                            </span>
+                                        </Tooltip>
+                                    </td>
+                                    <td>
+                                        {col.aggregate}
+                                        <AggregateSelector
+                                            column={col}
+                                            template={template}
+                                            handleColumnAggregate={handleColumnAggregate}
+                                        />
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </Cell>
             </Grid>
         </div>
     );
 };
 
-const getColumns = async (file: string) => {
-    if (!file) {
-        return [];
-    }
-    const response = await fetch(`https://d2vloi59ojgfpi.cloudfront.net/data-query/id`, {
-        method: "POST",
-        body: JSON.stringify({
-            query: `SELECT * FROM 's3://wby-fm-bucket-dd131b3/${file}' LIMIT 1`
-        })
-    }).then(r => (r.ok ? r.json() : [{}]));
-    return Object.keys(response[0]);
+export const AggregateSelector: React.FC<{
+    column: ColumnSchema;
+    template: SelectQuery;
+    handleColumnAggregate: (
+        column: ColumnSchema,
+        aggregate: AGGREGATE_FUNCTION_TYPES | undefined
+    ) => void;
+}> = ({ column, template, handleColumnAggregate }) => {
+    const colName = getColName(column);
+    const templateCol = template?.columns?.find(col => col.name === colName);
+    return (
+        <Select
+            disabled={!templateCol}
+            onChange={val => handleColumnAggregate(column, val as AGGREGATE_FUNCTION_TYPES)}
+            value={templateCol?.aggregate || undefined}
+        >
+            {[{ label: "None", value: undefined }, ...AGGREGATE_FUNCTIONS].map(
+                ({ label, value }) => (
+                    <option key={value} value={value}>
+                        {label}
+                    </option>
+                )
+            )}
+        </Select>
+    );
 };
 
 export const QueryBuilder: React.FC<QueryBuilderProps> = ({
     files,
     template,
-    onChangeTemplate,
+    onChangeTemplate
 }) => {
-    const [availableColumns, setAvailableColumns] = React.useState<string[]>([]);
-    const selectedFile = files.find(f => f.key === template.from);
+    console.log(template)
+    const [availableColumns, setAvailableColumns] = React.useState<ColumnSchema[]>([]);
+    const [groupDialogOpen, setGroupDialogOpen] = React.useState(false);
+    const selectedFile = files.find(f => f.filename === template.from);
 
-    const handleTemplateChange = <T extends keyof SelectQuery>(key: T | T[], value: SelectQuery[T] | SelectQuery[T][]) => {
+    const handleTemplateChange = <T extends keyof SelectQuery>(
+        key: T | T[],
+        value: SelectQuery[T] | SelectQuery[T][]
+    ) => {
         if (Array.isArray(key) && Array.isArray(value)) {
             const newTemplate: SelectQuery = {
                 ...template
-            }
+            };
             key.forEach((key, i) => {
                 // @ts-ignore
-                newTemplate[key] = value[i] 
-            })
-            onChangeTemplate(JSON.stringify(newTemplate))
-        } else if (typeof key === "string" && typeof value !== "undefined"){
-            onChangeTemplate(
-                JSON.stringify({
-                    ...template,
-                    [key]: value
-                })
-            );
+                newTemplate[key] = value[i];
+            });
+            onChangeTemplate(newTemplate);
+        } else if (typeof key === "string" && typeof value !== "undefined") {
+            onChangeTemplate({
+                ...template,
+                [key]: value
+            });
         }
     };
 
+    const toggleGroupDialog = () => setGroupDialogOpen(p => !p);
+
     const handleChangeWhereOperator = (operator: "and" | "or") => {
-        onChangeTemplate(
-            JSON.stringify({
-                ...template,
-                combinedOperator: operator
-            })
-        );
+        onChangeTemplate({
+            ...template,
+            combinedOperator: operator
+        });
+    };
+
+    const handleGroupChange = (column: ColumnSchema) => {
+        const colName = getColName(column);
+        onChangeTemplate({
+            ...template,
+            groupby: colName
+        });
     };
 
     useEffect(() => {
-        getColumns(template.from).then(columns => setAvailableColumns(columns));
-    }, [template.from]);
+        if (template.from && !template.join?.length) {
+            const columns = files.find(f => f.filename === template.from)?.columns || "[]";
+            setAvailableColumns(JSON.parse(columns));
+        } else if (template.join?.length) {
+            const baseDataset = files.find(f => f.filename === template.from);
+            const baseColumns = files.find(f => f.filename === template.from)?.columns || "[]";
+            let columns = JSON.parse(baseColumns).map((col: ColumnSchema) => ({
+                ...col,
+                dataset: baseDataset?.title,
+                datasetId: "t0"
+            }));
+            template.join.forEach((join, idx) => {
+                const joinDataset = files.find(f => f.filename === join.from);
+                const joinColumns = files.find(f => f.filename === join.from)?.columns || "[]";
+                columns = [
+                    ...columns,
+                    ...JSON.parse(joinColumns).map((col: ColumnSchema) => ({
+                        ...col,
+                        dataset: joinDataset?.title,
+                        datasetId: `t${idx + 1}`
+                    }))
+                ];
+            });
+            setAvailableColumns(columns);
+        }
+        if (!template.from && files.length) {
+            handleTemplateChange(["from", "fromS3"], [files[0].filename, true]);
+        }
+    }, [template.from, files.length, JSON.stringify(template.join)]);
+
+    useEffect(() => {
+        const { join, columns } = template;
+
+        const hasJoin = join?.length && join?.length > 0;
+        const previouslyNoJoin = columns?.find(col => col?.name?.includes("t0.")) === undefined;
+        // append t0 to all columns from the initial dataset if there is a join
+        if (hasJoin && previouslyNoJoin) {
+            const mutatedColumns = (template.columns || []).map(col => ({
+                ...col,
+                name: `t0.${col.name}`
+            }));
+
+            const mutatedWhere = (template.where || []).map(where => ({
+                ...where,
+                column: `t0.${where.column}`
+            }));
+            handleTemplateChange(["columns", "where"], [mutatedColumns, mutatedWhere]);
+        } else if (!hasJoin && !previouslyNoJoin) {
+            // remove t0 from all columns from the initial dataset if there is no join
+            const filteredColumns = (template.columns || [])
+                .filter(col => col?.name?.includes("t0."))
+                .map(col => ({
+                    ...col,
+                    name: col?.name?.replace("t0.", "")
+                }));
+
+            const filteredWhere = (template.where || [])
+                .filter(where => where?.column?.includes("t0."))
+                .map(where => ({
+                    ...where,
+                    column: where?.column?.replace("t0.", "")
+                }));
+
+            handleTemplateChange(["where", "columns"], [filteredWhere, filteredColumns]);
+        } else if (hasJoin) {
+            // todo correct database alias if changed
+        }
+    }, [template.join?.length]);
+    // console.log(template);
 
     const AndButton = template.combinedOperator === "or" ? Button : ButtonPrimary;
     const OrButton = template.combinedOperator !== "or" ? Button : ButtonPrimary;
 
+    const handleAddJoin = () => {
+        handleTemplateChange("join", [
+            ...(template.join || []),
+            {
+                from: files[0].filename,
+                fromS3: true,
+                leftOn: "",
+                rightOn: "",
+                operator: "inner"
+            }
+        ]);
+    };
     return (
         <div>
             <h4>Query Builder</h4>
             <br />
-            <Select
-                label={"Choose your dataset"}
-                description={"Choose your dataset"}
-                value={selectedFile?.name}
-                options={files.map(f => f.name)}
-                onChange={val => {
-                    const newValue = files.find(f => f.name === val)?.key;
-                    handleTemplateChange(["from",'fromS3'], [newValue, true])
-                }}
-            />
+            {/* <code>
+                {JSON.stringify(
+                    template,
+                    null,
+                    2
+                )}
+            </code> */}
+            <Grid style={{ padding: 0 }}>
+                <Cell span={8}>
+                    <Select
+                        label={"Choose your dataset"}
+                        value={selectedFile?.title}
+                        options={files.map(f => f.title)}
+                        onChange={val => {
+                            const newValue = files.find(f => f.title === val)?.filename;
+                            handleTemplateChange(["from", "fromS3"], [newValue, true]);
+                        }}
+                    />
+                </Cell>
+                <CenteredCell span={2}>
+                    <ButtonPrimary onClick={handleAddJoin}>Add Data</ButtonPrimary>
+                </CenteredCell>
+                <CenteredCell span={2}>
+                    <ButtonPrimary onClick={toggleGroupDialog}>Group Data</ButtonPrimary>
+                </CenteredCell>
+                {template?.join?.length ? (
+                    <>
+                        {template.join.map((join, idx) => (
+                            <Cell span={12} key={idx}>
+                                <JoinBuilder
+                                    template={template}
+                                    join={join}
+                                    files={files}
+                                    handleTemplateChange={handleTemplateChange}
+                                    columns={availableColumns}
+                                    idx={idx}
+                                />
+                            </Cell>
+                        ))}
+                    </>
+                ) : null}
+            </Grid>
             {template?.from?.length && (
                 <>
                     <ColumnSelector
@@ -563,7 +778,7 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
                         handleTemplateChange={handleTemplateChange}
                         columns={availableColumns}
                     />
-                    <Grid>
+                    <Grid style={{ padding: 0 }}>
                         <Cell span={6} desktop={6} tablet={6}>
                             <p>Data Filters</p>
                         </Cell>
@@ -581,11 +796,36 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
                         template={template}
                         handleTemplateChange={handleTemplateChange}
                         columns={
-                            !template.columns || !template.columns.length
-                                ? availableColumns
-                                : template.columns
+                            availableColumns?.map(getColName) ||
+                            template.columns?.map(getColName) ||
+                            []
                         }
                     />
+                    <Dialog open={groupDialogOpen} onClose={toggleGroupDialog}>
+                        <DialogContent>
+                            <p>
+                                Grouping data allows you to combine summary statistics by different characteristics, such as a State or ZIP code, category, or other grouping variable.
+                                </p>
+                            <p>
+                                Choose a column to group by:
+                            </p>
+                            {/* @ts-ignore */}
+                            <Select
+                                label={"Choose a column"}
+                                value={5}
+                                onChange={idx => {
+                                    handleGroupChange(availableColumns[idx]);
+                                }}
+                            >
+                                {availableColumns.map((col,idx) => (
+                                    <option key={col.name} value={idx}>
+                                        {col.name}
+                                    </option>
+                                ))}
+                            </Select>
+                            
+                        </DialogContent>
+                    </Dialog>
                 </>
             )}
         </div>

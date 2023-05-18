@@ -4,11 +4,12 @@ export default /* GraphQL */ `
         title: String!
         description: String
         createdOn: DateTime!
-        isPublic: Boolean
-        canView: [String]
-        canEdit: [String]
-        canDelete: [String]
-        savedOn: DateTime!
+        // isPublic: Boolean
+        // columns: String
+        // canView: [String]
+        // canEdit: [String]
+        // canDelete: [String]
+        // savedOn: DateTime!
         createdBy: DataUploadCreatedBy
     }
 
@@ -21,19 +22,21 @@ export default /* GraphQL */ `
     input DataUploadCreateInput {
         title: String!
         description: String
-        isPublic: Boolean
-        canView: [String]
-        canEdit: [String]
-        canDelete: [String]
+        // isPublic: Boolean
+        // columns: String
+        // canView: [String]
+        // canEdit: [String]
+        // canDelete: [String]
     }
 
     input DataUploadUpdateInput {
         title: String
         description: String
-        isPublic: Boolean
-        canView: [String]
-        canEdit: [String]
-        canDelete: [String]
+        // isPublic: Boolean
+        // canView: [String]
+        // canEdit: [String]
+        // canDelete: [String]
+        // columns: String
     }
 
     type DataUploadsListMeta {

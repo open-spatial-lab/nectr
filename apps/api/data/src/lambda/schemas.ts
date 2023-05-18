@@ -1,13 +1,15 @@
 import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda";
-import { formatSql } from "../../../core/utils/formatSql";
-import table from "../../../core/aws/table";
-import { s3, S3_BUCKET } from "../../../core/aws/s3";
+import { formatSql } from "../../../../core/utils/formatSql";
+import table from "../../../../core/aws/table";
+import { s3, DATA_S3_BUCKET, S3_BUCKET } from "../../../../core/aws/s3";
 // types
-import type { DataUploadEntity } from "../../graphql/src/plugins/scaffolds/dataUploads/types";
-import type { ApiDataQueryEntity } from "../../graphql/src/plugins/scaffolds/apiDataQueries/types";
-import type { QueryResponse, SchemaIdAndParams, SqlString } from "../../../core/types/queryApi";
-import type { SelectQuery } from "../../../core/types/queryBuilder";
-import { ResultCacheEntity } from "./cacheEntity";
+import type { DataUploadEntity } from "../../../graphql/src/plugins/scaffolds/dataUploads/types";
+import type { ApiDataQueryEntity } from "../../../graphql/src/plugins/scaffolds/apiDataQueries/types";
+import type { QueryResponse, SchemaIdAndParams, SqlString } from "../../../../core/types/queryApi";
+import type { SelectQuery } from "../../../../admin/src/components/QueryBuilder/types";
+import { ResultCacheEntity } from "../types/cacheEntity";
+import { v4 as uuid } from 'uuid';
+import Papa from "papaparse";
 
 export default class QuerySchemas {
     async fetchSchemaEntry(id: string): Promise<QueryResponse<ApiDataQueryEntity, string>> {
@@ -102,12 +104,14 @@ export default class QuerySchemas {
             content: cacheKey
         };
         try {
-
+            const id = uuid()
+            const stringifiedResult = params["format"] === "csv" ? Papa.unparse(result) : JSON.stringify(result);
+                
             const putResult = await s3
                 .putObject({
-                    Bucket: S3_BUCKET,
-                    Key: fileId,
-                    Body: typeof result === "string" ? result : JSON.stringify(result),
+                    Bucket: DATA_S3_BUCKET,
+                    Key: id,
+                    Body: stringifiedResult,
                     ContentType: params["format"] === "csv" ? "text/csv" : "application/json",
                     ACL: "public-read"
                 })

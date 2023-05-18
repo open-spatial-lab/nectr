@@ -19,7 +19,11 @@ export const OPERATORS = [
     "ILike"
 ] as const;
 
+export const JOIN_OPERATORS = ["left", "right", "inner", "outer"] as const;
+
 export type OPERATOR_TYPES = (typeof OPERATORS)[number];
+
+export type JOIN_OPERATOR_TYPES = (typeof JOIN_OPERATORS)[number];
 
 export type OPERATOR_ARGS = {
     "=": [string | number];
@@ -50,18 +54,47 @@ export type WhereQuery = {
     customAlias?: string;
 };
 
+export type JoinQuery = {
+    from: string;
+    fromS3?: boolean;
+    leftOn: string;
+    rightOn: string;
+    operator: JOIN_OPERATOR_TYPES;
+}
+
 export type SelectQuery = {
     from: string;
     fromS3?: boolean;
-    columns?: string[];
+    columns?: Partial<ColumnSchema>[];
     where?: WhereQuery[];
     combinedOperator?: (typeof COMBINE_OPERATORS)[number];
     limit?: number;
     offset?: number;
+    join?: JoinQuery[];
 };
 
+
 export type QueryBuilderProps = {
-    files: string[];
+    files: {
+        title: string;
+        id: string;
+        filename: string;
+        columns: string;
+    }[];
     template: SelectQuery;
-    onChangeTemplate: BindComponentRenderPropOnChange<string>;
+    onChangeTemplate: BindComponentRenderPropOnChange<object>;
+};
+
+export const DATA_COLUMN_TYPES = ["Text", "Number", "Date", "Boolean"] as const;
+
+export const GEO_COLUMN_TYPES = ["Geometry (WKT)", "Geometry (GeoJSON)", "Geometry (WKB)"] as const;
+
+export type COLUMN_TYPES = (typeof DATA_COLUMN_TYPES)[number] | (typeof GEO_COLUMN_TYPES)[number];
+
+export type ColumnSchema = {
+    name: string;
+    type: COLUMN_TYPES;
+    description: string;
+    dataset?: string;
+    datasetId?: string;
 };

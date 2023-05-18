@@ -1,59 +1,67 @@
 {
-	"name": "admin",
-	"version": "0.1.0",
-	"private": true,
-	"dependencies": {
-		"@editorjs/delimiter": "^1.2.0",
-		"@editorjs/list": "^1.6.0",
-		"@editorjs/quote": "^2.4.0",
-		"@editorjs/underline": "^1.0.0",
-		"@types/react": "^17.0.2",
-		"@webiny/app-admin": "5.34.5",
-		"@webiny/app-admin-users-cognito": "5.34.5",
-		"@webiny/app-form-builder": "5.34.5",
-		"@webiny/app-page-builder": "5.34.5",
-		"@webiny/app-serverless-cms": "5.34.5",
-		"@webiny/cli": "5.34.5",
-		"@webiny/cli-plugin-deploy-pulumi": "5.34.5",
-		"@webiny/plugins": "5.34.5",
-		"@webiny/project-utils": "5.34.5",
-		"core-js": "^3.0.1",
-		"cross-fetch": "^3.0.4",
-		"invariant": "^2.2.4",
-		"prop-types": "^15.7.2",
-		"react": "17.0.2",
-		"react-dom": "17.0.2",
-		"regenerator-runtime": "^0.13.5",
-		"theme": "^0.1.0",
-		"tslib": "^2.4.0",
-		"type-analyzer": "^0.4.0"
-	},
-	"devDependencies": {
-		"cross-env": "^5.0.2"
-	},
-	"scripts": {
-		"analyze": "source-map-explorer build/static/js/main.*",
-		"watch": "cross-env PORT=3001 yarn webiny run watch",
-		"build": "yarn webiny run build"
-	},
-	"browserslist": {
-		"development": [
-			"last 2 chrome versions",
-			"last 2 firefox versions",
-			"last 2 edge versions"
-		],
-		"production": [
-			">0.25%",
-			"not op_mini all",
-			"ie 11"
-		]
-	},
-	"adio": {
-		"ignore": {
-			"dependencies": [
-				"@webiny/cli",
-				"tslib"
-			]
-		}
-	}
+  "name": "admin",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@dsnp/parquetjs": "^1.2.3",
+    "@duckdb/duckdb-wasm": "^1.25.0",
+    "@editorjs/delimiter": "^1.2.0",
+    "@editorjs/list": "^1.6.0",
+    "@editorjs/quote": "^2.4.0",
+    "@editorjs/underline": "^1.0.0",
+    "@types/react": "^17.0.2",
+    "@webiny/app-admin": "5.34.5",
+    "@webiny/app-admin-users-cognito": "5.34.5",
+    "@webiny/app-form-builder": "5.34.5",
+    "@webiny/app-page-builder": "5.34.5",
+    "@webiny/app-serverless-cms": "5.34.5",
+    "@webiny/cli": "5.34.5",
+    "@webiny/cli-plugin-deploy-pulumi": "5.34.5",
+    "@webiny/plugins": "5.34.5",
+    "@webiny/project-utils": "5.34.5",
+    "apache-arrow": "^12.0.0",
+    "core-js": "^3.0.1",
+    "cross-fetch": "^3.0.4",
+    "invariant": "^2.2.4",
+    "papaparse": "^5.4.1",
+    "parquet-wasm": "^0.4.0-beta.5",
+    "parquetjs": "^0.11.2",
+    "prop-types": "^15.7.2",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "regenerator-runtime": "^0.13.5",
+    "theme": "^0.1.0",
+    "tslib": "^2.4.0",
+    "type-analyzer": "^0.4.0",
+    "wasm-brotli": "^2.0.2"
+  },
+  "devDependencies": {
+    "cross-env": "^5.0.2",
+    "graphql-request": "^3.4.0"
+  },
+  "scripts": {
+    "analyze": "source-map-explorer build/static/js/main.*",
+    "watch": "cross-env PORT=3001 yarn webiny run watch",
+    "build": "yarn webiny run build"
+  },
+  "browserslist": {
+    "development": [
+      "last 2 chrome versions",
+      "last 2 firefox versions",
+      "last 2 edge versions"
+    ],
+    "production": [
+      ">0.25%",
+      "not op_mini all",
+      "ie 11"
+    ]
+  },
+  "adio": {
+    "ignore": {
+      "dependencies": [
+        "@webiny/cli",
+        "tslib"
+      ]
+    }
+  }
 }
