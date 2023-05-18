@@ -32,6 +32,7 @@ import iframe from "@webiny/app-page-builder/render/plugins/elements/iframe";
 import pagesList from "@webiny/app-page-builder/render/plugins/elements/pagesList";
 import imagesList from "@webiny/app-page-builder/render/plugins/elements/imagesList";
 
+import table from "theme/pageElements/table/website";
 /**
  * Page settings plugins (seo, social, etc.).
  */
@@ -61,7 +62,6 @@ import responsiveMode from "@webiny/app-page-builder/render/plugins/responsiveMo
 export default [
     linkPreload(),
     apolloCacheObjectId,
-
     // Page elements
     document(),
     block(),
@@ -100,5 +100,6 @@ export default [
     margin,
     textSetting,
     property,
+    table,
     responsiveMode()
 ];

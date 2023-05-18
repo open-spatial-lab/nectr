@@ -15,6 +15,7 @@
 		"@webiny/form": "5.34.5",
 		"@webiny/react-rich-text-renderer": "5.34.5",
 		"@webiny/react-router": "5.34.5",
+		"@webiny/ui": "^5.35.2",
 		"@webiny/validation": "5.34.5",
 		"graphql": "^15.7.2",
 		"graphql-request": "^6.0.0",
