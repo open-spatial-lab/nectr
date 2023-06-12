@@ -14,7 +14,6 @@ import { ButtonDefault } from "@webiny/ui/Button";
 
 export const TablePreview: React.FC<{ table: { columns: any[]; data: any[][] } }> = ({ table }) => {
   const [open, setOpen] = useState(false);
-  
   return (
       <>
           <ButtonDefault onClick={() => setOpen(true)}>View Table</ButtonDefault>
@@ -27,7 +26,7 @@ export const TablePreview: React.FC<{ table: { columns: any[]; data: any[][] } }
                               <DataTableRow>
                                   {table.columns.map((column, index) => (
                                       <DataTableHeadCell key={index}>
-                                          {column}
+                                          {JSON.stringify(column)}
                                       </DataTableHeadCell>
                                   ))}
                               </DataTableRow>
@@ -36,7 +35,7 @@ export const TablePreview: React.FC<{ table: { columns: any[]; data: any[][] } }
                               {table.data.map((row, irow) => (
                                   <DataTableRow key={irow}>
                                       {row.map((cell, icell) => (
-                                          <DataTableCell key={`${irow}-${icell}`}>{cell}</DataTableCell>
+                                          <DataTableCell key={`${irow}-${icell}`}>{JSON.stringify(cell)}</DataTableCell>
                                       ))}
                                   </DataTableRow>
                               )

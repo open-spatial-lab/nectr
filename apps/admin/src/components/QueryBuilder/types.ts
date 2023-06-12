@@ -139,7 +139,7 @@ export type QueryBuilderProps = {
     onChangeTemplate: BindComponentRenderPropOnChange<object>;
 };
 
-export const DATA_COLUMN_TYPES = ["Text", "Number", "Date", "Boolean"] as const;
+export const DATA_COLUMN_TYPES = ["Text", "Number", "Date", "Date and Time", "Boolean"] as const;
 
 export const GEO_COLUMN_TYPES = ["Geometry (WKT)", "Geometry (GeoJSON)", "Geometry (WKB)"] as const;
 

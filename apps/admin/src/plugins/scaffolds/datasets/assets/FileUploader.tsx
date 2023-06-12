@@ -2,14 +2,13 @@ import React from "react";
 // @ts-ignore
 import Files from "react-butterfiles";
 // import { dataFilesTypes } from "./constants";
-import * as Papa from "papaparse";
+// import * as Papa from "papaparse";
 import { FileItem } from "@webiny/app-admin/components/FileManager/types";
 import { ButtonIcon, ButtonPrimary } from "@webiny/ui/Button";
 import { UploadIcon } from "./uploadIcon";
 
 type FileUploaderProps = {
   uploadFile: (files: FileItem) => Promise<number | null>;
-  handlePreview: (setValue: Function) => (results: Papa.ParseResult<unknown>) => void;
   form: any;
   uploading: any;
 }
@@ -32,23 +31,23 @@ export const inferFileType = (filename: string) => {
     }
 }
 
-const handleReadParquet = async (file: File, callback: Function) => {
-    file
-    callback
-    // const reader = await parquet.ParquetReader.openFile(file.name);
-    // console.log(reader)
-    // const db = await initDB();
-    // console.log('CONNCETED TO DUCKDB')
-    // const c = await db.connect();
-    // // @ts-ignore
-    // await db.registerFileHandle("local.parquet", file);
-    // console.log('registered file')
-    // const r = await c.query(`SELECT * FROM local.parquet LIMIT 1`)
-    // console.log(r)
-}
+// const handleReadParquet = async (file: File, callback: Function) => {
+//     file
+//     callback
+//     // const reader = await parquet.ParquetReader.openFile(file.name);
+//     // console.log(reader)
+//     // const db = await initDB();
+//     // console.log('CONNCETED TO DUCKDB')
+//     // const c = await db.connect();
+//     // // @ts-ignore
+//     // await db.registerFileHandle("local.parquet", file);
+//     // console.log('registered file')
+//     // const r = await c.query(`SELECT * FROM local.parquet LIMIT 1`)
+//     // console.log(r)
+// }
+
 export const FileUploader: React.FC<FileUploaderProps> = ({
   uploadFile,
-  handlePreview,
   form,
   uploading
 }) => {
@@ -59,26 +58,6 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
     //    accept={dataFilesTypes}
        onSuccess={(files: any[]) => {
            console.log('received file', files[0])
-           const fileType = files[0].type.length ? files[0].type : inferFileType(files[0].name);
-           switch (fileType) {
-                case "text/csv":{
-                    Papa.parse(files[0].src.file, {
-                        complete: handlePreview(form.setValue),
-                        // only read 20 rows
-                        preview: 20,
-                        dynamicTyping: true
-                    });
-                    break;
-                }
-                case "application/parquet": {
-                    handleReadParquet(
-                        files[0].src.file,
-                        handlePreview(form.setValue)
-                    )
-                }
-
-            }
-
             const title = files[0].name.split(".").slice(0, -1).join(".");
             uploadFile(files[0].src.file as FileItem);
             form.setValue("title", title);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { request } from "graphql-request";
 import { createRenderer, useRenderer } from "@webiny/app-page-builder-elements";
-
+import { getApiUrl } from "../utils/dataApiUrl";
 export interface TableProps {
     variables: {
         source: string;
@@ -28,7 +28,7 @@ export const Table = createRenderer(() => {
     }, []);
 
     return <osl-table
-      data={source}
+      data={getApiUrl(source)}
     ></osl-table>
 });
 

@@ -29,41 +29,49 @@ export default class Connection {
             await this.query(`SET enable_object_cache=true;`);
             this.isInitialized = true;
         } catch (err) {
-            console.log('Failed to initialize...', err)
+            console.log("Failed to initialize...", err);
         }
     }
 
     async query(query: string): Promise<QueryResponse<any, string>> {
         return new Promise((resolve, reject) => {
-            this.connection.all(query, (err: any, res: any) => {
-                if (err) {
-                    reject({
-                        error: err,
-                        ok: false
+            try {
+                this.connection.all(query, (err: any, res: any) => {
+                    if (err) {
+                        reject({
+                            error: err,
+                            ok: false
+                        });
+                    }
+                    resolve({
+                        result: res,
+                        ok: true
                     });
-                }
-                resolve({
-                    result: res,
-                    ok: true
                 });
-            });
+            } catch (err) {
+                reject({
+                    error: err,
+                    ok: false
+                });
+            }
         });
     }
 
-    async handleRawQuery(body: string): Promise<QueryResponse<any, string>> {
-        try {
-            const json = JSON.parse(body);
-            const query = json.query;
-            const data = await this.query(query);
-            return data
-        } catch (error) {
-            const errorText = error.toString();
-            return {
-                error: `Error at handle raw query: ${errorText}`,
-                ok: false
-            };
-        }
-    }
+    // async handleRawQuery(body: string): Promise<QueryResponse<any, string>> {
+    //     try {
+    //         const json = JSON.parse(body);
+    //         const query = json.query;
+    //         console.log('RAW QUERY', query)
+    //         const data = await this.query(query);
+    //         return data
+    //     } catch (error) {
+    //         const errorText = JSON.stringify(error);
+    //         return {
+    //             error: `Error at handle raw query: ${errorText}`,
+    //             ok: false
+    //         };
+    //     }
+    // }
 
     async handleIdQuery(id: string, params: any): Promise<QueryResponse<any, string>> {
         const schema = await schemas.handleRequest({
@@ -73,7 +81,7 @@ export default class Connection {
         // console.log('SCHEMA', JSON.stringify(schema, null, 2))
 
         if (!schema.ok) {
-            return schema
+            return schema;
         }
 
         try {
@@ -85,11 +93,11 @@ export default class Connection {
             // )
             return data;
         } catch (err) {
-            console.log(err)
-            console.log(JSON.stringify(schema, null, 2))
+            console.log(err);
+            console.log(JSON.stringify(schema, null, 2));
             return {
                 error: `Error at handle id query: ${JSON.stringify(err, null, 2)}`,
-                ok: false,
+                ok: false
             };
         }
     }

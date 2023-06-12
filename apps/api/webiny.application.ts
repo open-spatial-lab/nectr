@@ -19,8 +19,8 @@ export default createApiApp({
             path: "/data-api/{id}",
             method: "ANY"
         });
-        console.log('################## graphQLModule.policy.config.policy: ')
-        console.log(graphQLModule.policy.config.policy)
+        // console.log('################## graphQLModule.policy.config.policy: ')
+        // console.log(graphQLModule.policy.config.policy)
         
         const core = app.getModule(CoreOutput);
 

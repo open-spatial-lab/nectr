@@ -596,7 +596,7 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
     template,
     onChangeTemplate
 }) => {
-    console.log(template)
+    // console.log(template)
     const [availableColumns, setAvailableColumns] = React.useState<ColumnSchema[]>([]);
     const [groupDialogOpen, setGroupDialogOpen] = React.useState(false);
     const selectedFile = files.find(f => f.filename === template.from);

@@ -60,6 +60,7 @@ import pageSettingsPlugins from "@webiny/app-page-builder/editor/plugins/pageSet
 // default presets for grid
 import { gridPresets } from "@webiny/app-page-builder/editor/plugins/gridPresets";
 import table from "theme/pageElements/table/admin";
+import map from "theme/pageElements/map/admin";
 
 export default [
     // Elements
@@ -103,6 +104,7 @@ export default [
     redo,
     // Element settings
     table,
+    map,
     animation,
     background,
     border,

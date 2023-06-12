@@ -10,6 +10,7 @@ import {
 } from "@webiny/app-page-builder/types";
 
 import { Table, TableProps } from "./Table";
+import { getApiUrl } from "../utils/dataApiUrl";
 
 const INITIAL_ELEMENT_DATA: TableProps = {
   variables: {  source: "https://d3uldu0bz6pkei.cloudfront.net/data-query/64653de73263910008137327" }
@@ -66,7 +67,7 @@ export default [
     name: "pb-editor-page-element-advanced-settings-table",
     type: "pb-editor-page-element-advanced-settings",
     elementType: "table",
-    render({ Bind, submit }) {
+    render({ data, Bind, submit }) {
       // In order to construct the settings form, we're using the
       // `@webiny/form`, `@webiny/ui`, and `@webiny/validation` packages.
       return (
@@ -82,6 +83,20 @@ export default [
                   description={"Data source to show in the table"}
                 />
               </Bind>
+            </Cell>
+            <Cell span={12}>
+              <p>Code Snippets</p>
+              <p>
+                <i>
+                  Copy and paste this code snippet into your page to display the table.
+                </i>
+              </p>
+              <pre style={{maxWidth:'100%', background: 'lightgray', overflow: "hidden", textOverflow: '', padding:'0.5rem'}}>
+                {`
+<script src="https://www.unpkg.com/@open-spatial-lab/table@0.0.0/dist/table.es.js" async></script>
+
+<osl-table data="${getApiUrl(data.variables.source)}"></osl-table>`}
+              </pre>
             </Cell>
             <Cell span={12}>
               <ButtonPrimary onClick={submit}>Save</ButtonPrimary>

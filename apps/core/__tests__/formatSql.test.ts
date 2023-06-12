@@ -183,10 +183,6 @@ const GROUPBY_MOCK = {
                 type: "Text",
                 aggregate: "count"
             },
-            {
-                name: "STATE",
-                type: "Text",
-            }
         ],
         where: [],
         groupby: "STATE"
@@ -216,7 +212,7 @@ const SIMPLE_RESULT = `select "place", "time", "felt", "magType", "mag", "x", "y
 const JOIN_RESULT = `select t0."Pop Density", t0."Total Pop", t1."Pop NH White", t1."Pop NH Black", t1."Pop NH AmIn", t1."Pop NH Asian", t1."Pop NH HawaiianPI", t1."Pop NH Other", t1."Pop NH Multiple", t1."Pop Hispanic", t0."FIPS" from 's3://data-api-dev/8lhrsgvfu-STATE_POP_2020.csv' as t0 inner join 's3://data-api-dev/8lhrslj7u-2020_STATE_RACE.csv' as t1 on t0."FIPS" = t1."GEOID";`;
 const AGG_RESULT = `select avg("index"), sum("index") from 's3://data-api-dev/8lhqoefc7-earthquakes.csv';`;
 const GROUPBY_RESULT = `select count("STATE"), "STATE" from 's3://data-api-dev/8lhtiptwp-2022_vision_providers.csv' group by "STATE";`;
-const GEO_RESULTS  = `select "id", ST_GEOGFROMTEXT("geometry") from 's3://data-api-dev/test.parquet';`;
+const GEO_RESULTS  = `select "id", ST_GEOGFROMTEXT("geometry") as geometry from 's3://data-api-dev/test.parquet';`;
 
 const tests = [
     {

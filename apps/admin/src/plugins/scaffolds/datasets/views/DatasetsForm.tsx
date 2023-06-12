@@ -28,6 +28,8 @@ import { FileUploader } from "../assets/FileUploader";
 import { TablePreview } from "../assets/TablePreview";
 import { Switch } from "@webiny/ui/Switch";
 import ColumnBuilder from "../../../../components/ColumnBuilder";
+import { getApiUrl } from "../../../../../../theme/pageElements/utils/dataApiUrl";
+
 /**
  * Renders a form which enables creating new or editing existing Dataset entries.
  * Includes two basic fields - title (required) and description.
@@ -63,65 +65,76 @@ const DatasetsForm: React.FC = () => {
                 status: "uploading",
                 filename: files.name
             });
-            const list: FileItem[] = Array.isArray(files) ? files : [files];
-
+            const file: FileItem = Array.isArray(files) ? files[0] : files;
+            const filetype = file.type.split("/")[0];
             const errors: any[] = [];
-            const uploadedFiles: FileItem[] = [];
-            await Promise.all(
-                list.map(async file => {
-                    try {
-                        const response = await getFileUploader()(file, { apolloClient });
-                        /**
-                         * Add "tags" while creating the new file.
-                         */
-                        const createFileResponse = await createFile({
-                            variables: {
-                                data: {
-                                    ...response,
-                                    tags: []
-                                }
-                            }
-                        });
 
-                        // Save create file data for later
-                        uploadedFiles.push(
-                            get(
-                                createFileResponse,
-                                "data.fileManager.createFile.data"
-                            ) as unknown as FileItem
-                        );
-                    } catch (e) {
-                        errors.push({ file, e });
+            try {
+                const response = await getFileUploader()(file, { apolloClient });
+                const createFileResponse = await createFile({
+                    variables: {
+                        data: {
+                            ...response,
+                            tags: ["data upload", filetype]
+                        }
                     }
-                })
-            );
-            setUploading({
-                status: "uploaded",
-                filename: uploadedFiles[0].name
-            });
-            form.setValue("filename", uploadedFiles[0].name);
+                });
+
+                const fileUploadData = get(
+                    createFileResponse,
+                    "data.fileManager.createFile.data"
+                ) as unknown as FileItem;
+                
+                const metadataUrl = new URL(getApiUrl("__"));
+                metadataUrl.searchParams.append("__metadata__", fileUploadData.key);
+                const metadataResponse = await fetch(metadataUrl.toString());
+                const {
+                    columns,
+                    preview
+                } = await metadataResponse.json();
+
+                const colList = JSON.parse(columns).map((col: ColumnSchema) => col.name);
+                const dataList = preview.map((row: Record<string, any>) => Object.values(row));
+
+                setTable({
+                    columns: colList,
+                    data: dataList
+                });
+                setUploading({
+                    status: "uploaded",
+                    filename: fileUploadData.name
+                });
+                
+
+                form.setValue("columns", columns);
+                form.setValue("filename", fileUploadData.name);
+                
+                return 1;
+            } catch (e) {
+                errors.push({ file, e });
+            }
 
             return null;
         };
 
-    const handlePreview = (setValue: Function) => (results: Papa.ParseResult<unknown>) => {
-        if (results.errors.length > 0) {
-            return;
-        }
-        const columns = results.data[0] as unknown[];
-        const data = results.data.slice(1) as any[][];
-        setTable({
-            columns,
-            data
-        });
-        const columnData: Array<ColumnSchema> = columns.map(column => ({
-            name: column as string,
-            type: "Text",
-            description: `A column named "${column}"`
-        }));
+    // const handlePreview = (setValue: Function) => (results: Papa.ParseResult<unknown>) => {
+    //     if (results.errors.length > 0) {
+    //         return;
+    //     }
+    //     const columns = results.data[0] as unknown[];
+    //     const data = results.data.slice(1) as any[][];
+    //     setTable({
+    //         columns,
+    //         data
+    //     });
+    //     const columnData: Array<ColumnSchema> = columns.map(column => ({
+    //         name: column as string,
+    //         type: "Text",
+    //         description: `A column named "${column}"`
+    //     }));
 
-        setValue("columns", JSON.stringify(columnData));
-    };
+    //     setValue("columns", JSON.stringify(columnData));
+    // };
 
     if (emptyViewIsShown) {
         return (
@@ -144,7 +157,6 @@ const DatasetsForm: React.FC = () => {
                     <SimpleFormHeader title={data.title || "New Dataset"} />
                     <FileUploader
                         uploading={uploading}
-                        handlePreview={handlePreview}
                         uploadFile={uploadFile(form)}
                         form={form}
                     />

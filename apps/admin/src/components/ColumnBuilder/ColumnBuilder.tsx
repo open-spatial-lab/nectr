@@ -67,10 +67,10 @@ export const ColumnBuilder: React.FC<ColumnBuilderProps> = ({ columns, onChange 
                                         .slice(page * 10, page * 10 + 10)
                                         .map((column, index) => (
                                             <ColumnRow
-                                                key={index}
+                                                key={`${page}-${index}`}
                                                 column={column}
-                                                onChange={column => updateColumn(index, column)}
-                                                onDelete={() => removeColumn(index)}
+                                                onChange={column => updateColumn(index+page*10, column)}
+                                                onDelete={() => removeColumn(index+page*10)}
                                             />
                                         ))}
                                 </Grid>

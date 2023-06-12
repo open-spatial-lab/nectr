@@ -1,3 +1,4 @@
+import { ColumnSchema } from "apps/admin/src/plugins/scaffolds/dataUploads/types";
 import { JOIN_OPERATOR_TYPES, JoinQuery, SelectQuery } from "../../admin/src/components/QueryBuilder/types";
 import { QueryResponse } from "../types/queryApi";
 import knex from "knex";
@@ -83,8 +84,8 @@ export function formatSql(params: {
             fromS3,
             join
         )
-
-        const columnList = generateColumnList(columns);
+        const appendedColumnList = groupby ? [...columns||[], {name: groupby, type: 'Text', description: ''} as ColumnSchema] : columns!
+        const columnList = generateColumnList(appendedColumnList);
         const statement = QueryBuilder("query")
             .select(columnList)
             .fromRaw(tableString);

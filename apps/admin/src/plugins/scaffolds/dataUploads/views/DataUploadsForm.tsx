@@ -55,6 +55,7 @@ import { DisableGate } from "../../../../components/DisabledGate";
 import * as Papa from "papaparse";
 import { ColumnSchema } from "../types";
 import ColumnBuilder from "../../../../components/ColumnBuilder";
+import { getApiUrl } from "apps/theme/pageElements/utils/dataApiUrl";
 // import { MutationUpdaterFn } from "apollo-client/core/watchQueryOptions";
 
 const UploadIcon = () => (
@@ -200,7 +201,8 @@ const DataUploadsForm: React.FC = () => {
         // tgz
     ];
 
-    const uploadFile = async (files: FileItem): Promise<number | null> => {
+
+    const uploadFile = (setValue: Function) => async (files: FileItem): Promise<number | null> => {
         console.log('uploading file...', files)
         setUploading({
             status: "uploading",
@@ -225,59 +227,33 @@ const DataUploadsForm: React.FC = () => {
                             }
                         }
                     });
-
+                    const fileResponse = get(
+                        createFileResponse,
+                        "data.fileManager.createFile.data"
+                    ) as unknown as FileItem
+                    uploadedFiles.push(fileResponse);
+                    const fileResponseFull = get(
+                        createFileResponse,
+                        "data.fileManager"
+                    ) as unknown 
+                    
+                    // console.log('fileResponse', fileResponse)
+                    // console.log(' createFileResponse',  fileResponseFull)
+                    // console.log('full response', createFileResponse)
+                    // const previewResponse = await fetch()
                     // Save create file data for later
-                    uploadedFiles.push(
-                        get(
-                            createFileResponse,
-                            "data.fileManager.createFile.data"
-                        ) as unknown as FileItem
-                    );
+                    
                 } catch (e) {
                     errors.push({ file, e });
                 }
             })
         );
 
-        // if (!hasPreviouslyUploadedFiles) {
-        //     setHasPreviouslyUploadedFiles(true);
-        // }
-        console.log(uploadedFiles);
-
         setUploading({
             status: "uploaded",
             filename: uploadedFiles[0].name
         });
 
-        // if (errors.length > 0) {
-        //     // We wait 750ms, just for everything to settle down a bit.
-        //     return setTimeout(() => {
-        //         showSnackbar(
-        //             <>
-        //                 {t`One or more files were not uploaded successfully:`}
-        //                 <ol>
-        //                     {errors.map(({ file, e }) => (
-        //                         <li key={file.name}>
-        //                             <strong>{file.name}</strong>: {getFileUploadErrorMessage(e)}
-        //                         </li>
-        //                     ))}
-        //                 </ol>
-        //             </>
-        //         );
-        //         // TODO @ts-refactor
-        //     }, 750) as unknown as number;
-        // }
-
-        // We wait 750ms, just for everything to settle down a bit.
-        // setTimeout(() => showSnackbar(t`File upload complete.`), 750);
-        // if (typeof onUploadCompletion === "function") {
-        //     // We wait 750ms, just for everything to settle down a bit.
-        //     return setTimeout(() => {
-        //         onUploadCompletion(uploadedFiles);
-        //         onClose && onClose();
-        //         // TODO @ts-refactor
-        //     }, 750) as unknown as number;
-        // }
         return null;
     };
 
@@ -295,25 +271,6 @@ const DataUploadsForm: React.FC = () => {
         );
     }
 
-    const handlePreview = (setValue: Function) => (results: Papa.ParseResult<unknown>) => {
-        if (results.errors.length > 0) {
-            return;
-        }
-        const columns = results.data[0] as unknown[];
-        const data = results.data.slice(1) as any[][];
-        setTable({
-            columns,
-            data
-        });
-        const columnData: Array<ColumnSchema> = columns.map(column => ({
-            name: column as string,
-            type: "Text",
-            description: `A column named "${column}"`
-        }));
-
-        setValue("columns", JSON.stringify(columnData));
-    };
-
     return (
         <Form data={dataUpload} onSubmit={onSubmit}>
             {({ form, data, submit, Bind }) => {
@@ -328,18 +285,9 @@ const DataUploadsForm: React.FC = () => {
                             multipleMaxSize={"1TB"}
                             accept={dataFilesTypes}
                             onSuccess={(files: any[]) => {
-                                console.log('received file', files)
-                                Papa.parse(files[0].src.file, {
-                                    complete: handlePreview(form.setValue),
-                                    // only read 20 rows
-                                    preview: 20,
-                                    dynamicTyping: true
-                                });
                                 const title = files[0].name.split(".").slice(0, -1).join(".");
-                                uploadFile(files[0].src.file as FileItem);
+                                uploadFile(form.setValue)(files[0].src.file as FileItem);
                                 form.setValue("title", title);
-
-                                // uploadFile(files.map(file => file.src.file as FileItem).filter(Boolean));
                             }}
                             onError={(errors: any) => {
                                 console.error("File selection error", errors);
