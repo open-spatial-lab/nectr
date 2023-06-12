@@ -6,8 +6,8 @@ import { DataUploadEntity, DataUploadsPermission } from "../types";
 import mdbid from "mdbid";
 import { DataUpload } from "../entities";
 import DataUploadsResolver from "./DataUploadsResolver";
-import { FullAccessPermission } from "@webiny/api-security/types";
-import { Authorize } from "~/plugins/utils/authorize";
+// import { FullAccessPermission } from "@webiny/api-security/types";
+// import { Authorize } from "~/plugins/utils/authorize";
 /**
  * Contains base `createDataUpload`, `updateDataUpload`, and `deleteDataUpload` GraphQL resolver functions.
  * Feel free to adjust the code to your needs. Also, note that at some point in time, you will
@@ -19,6 +19,8 @@ interface CreateDataUploadParams {
     data: {
         title: string;
         description?: string;
+        // columns?: string;
+        // isPublic?: boolean;
     };
 }
 
@@ -27,6 +29,7 @@ interface UpdateDataUploadParams {
     data: {
         title: string;
         description?: string;
+        // columns?: string;
     };
 }
 
@@ -48,21 +51,21 @@ export default class DataUploadsMutationImplementation
     extends DataUploadsResolver
     implements DataUploadsMutation
 {
-    permission: Authorize<DataUploadsPermission> | null = null;
+    // permission: Authorize<DataUploadsPermission> | null = null;
 
-    initPermission() {
-        this.permission = new Authorize<DataUploadsPermission>(
-            this.context.security,
-            "data-uploads",
-        );
-    }
+    // initPermission() {
+    //     this.permission = new Authorize<DataUploadsPermission>(
+    //         this.context.security,
+    //         "data-uploads",
+    //     );
+    // }
     /**
      * Creates and returns a new DataUpload entry.
      * @param data
      */
     async createDataUpload({ data }: CreateDataUploadParams) {
-        if(!this.permission) this.initPermission();
-        await this.permission?.authorizeRW();
+        // if(!this.permission) this.initPermission();
+        // await this.permission?.authorizeRW();
         // If our GraphQL API uses Webiny Security Framework, we can retrieve the
         // currently logged in identity and assign it to the `createdBy` property.
         // https://www.webiny.com/docs/key-topics/security-framework/introduction
@@ -87,7 +90,7 @@ export default class DataUploadsMutationImplementation
             },
             webinyVersion: process.env.WEBINY_VERSION ? process.env.WEBINY_VERSION : "5.0.0",
         } satisfies DataUploadEntity;
-
+        console.log('data upload', dataUpload)
         // Will throw an error if something goes wrong.
         await DataUpload.put(dataUpload);
 
@@ -100,14 +103,14 @@ export default class DataUploadsMutationImplementation
      * @param data
      */
     async updateDataUpload({ id, data }: UpdateDataUploadParams) {
-        if(!this.permission) this.initPermission();
-        this.permission?.authorizeRW();
+        // if(!this.permission) this.initPermission();
+        // this.permission?.authorizeRW();
 
         const { Item: dataUpload } = await DataUpload.get({ PK: this.getPK(), SK: id });
         if (!dataUpload) {
             throw new Error(`DataUpload "${id}" not found.`);
         }
-        this.permission?.authorizeEntry(dataUpload, "canEdit");
+        // this.permission?.authorizeEntry(dataUpload, "canEdit");
 
         const updatedDataUpload = { ...dataUpload, ...data };
 
@@ -122,8 +125,8 @@ export default class DataUploadsMutationImplementation
      * @param id
      */
     async deleteDataUpload({ id }: DeleteDataUploadParams) {
-        if(!this.permission) this.initPermission();
-        this.permission?.authorizeRWD();
+        // if(!this.permission) this.initPermission();
+        // this.permission?.authorizeRWD();
 
         // If entry is not found, we throw an error.
         const { Item: dataUpload } = await DataUpload.get({ PK: this.getPK(), SK: id });
@@ -131,7 +134,7 @@ export default class DataUploadsMutationImplementation
             throw new Error(`DataUpload "${id}" not found.`);
         }
 
-        this.permission?.authorizeEntry(dataUpload, "canDelete");
+        // this.permission?.authorizeEntry(dataUpload, "canDelete");
         // Will throw an error if something goes wrong.
         await DataUpload.delete(dataUpload);
 

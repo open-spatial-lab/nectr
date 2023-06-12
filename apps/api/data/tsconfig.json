@@ -5,6 +5,10 @@
     "paths": {
       "~/*": ["./src/*"]
     },
+    "target": "es6",
+    "module": "commonjs",
+
+    "strict": true,
     "baseUrl": "."
   }
 }

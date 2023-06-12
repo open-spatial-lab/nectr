@@ -1,4 +1,3 @@
-
 import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda"
 
 export type QueryResponse<Res, Err> = {

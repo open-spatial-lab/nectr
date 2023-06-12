@@ -1,9 +1,12 @@
 import { metricScope, Unit } from "aws-embedded-metrics";
 import { Context, APIGatewayProxyCallback, APIGatewayEvent } from "aws-lambda";
-import Connection from "./connection";
-import getLogger from "./logger";
-import { QueryResponse } from "./types";
+import Connection from "./lambda/connection";
+import getLogger from "./lambda/logger";
+import ColumnParser from "./lambda/columnParser";
+import { QueryResponse } from "./types/types";
+import Papa from "papaparse";
 
+const S3_BUCKET = (process.env.S3_BUCKET as string) || "data-api-dev";
 const connection = new Connection();
 const logger = getLogger();
 
@@ -16,9 +19,41 @@ export const handler = metricScope(
             metrics.setProperty("RequestId", context.awsRequestId);
             const id = event.pathParameters?.["id"];
             const params = event?.queryStringParameters || {};
-            console.log('INDEX PARAMS', params, JSON.stringify({event}))
+            const metadataFile = params["__metadata__"];
 
-            // parse request
+            const queryStartTimestamp = new Date().getTime();
+            await connection.initialize();
+
+            if (metadataFile) {
+                const metaQuery = metadataFile.includes(".parquet")
+                    ? `SELECT * FROM parquet_schema('s3://${S3_BUCKET}/${metadataFile}');`
+                    : `SELECT * FROM 's3://${S3_BUCKET}/${metadataFile}' LIMIT 1;`;
+
+                const previewQuery = `SELECT * FROM 's3://${S3_BUCKET}/${metadataFile}' LIMIT 10;`;
+
+                const [colData, previewData] = await Promise.all([
+                    connection.query(metaQuery),
+                    connection.query(previewQuery)
+                ]);
+
+                if (colData.ok && previewData.ok) {
+                    const columnParser = new ColumnParser(metadataFile, colData.result);
+                    const body = JSON.stringify({
+                        columns: columnParser.formatColumns(),
+                        preview: previewData.result
+                    });
+                    return {
+                        statusCode: 200,
+                        body
+                    };
+                } else {
+                    return {
+                        statusCode: 500,
+                        body: JSON.stringify({ columns: colData, table: previewData, params })
+                    };
+                }
+            }
+
             if (!id) {
                 return {
                     statusCode: 400,
@@ -31,13 +66,10 @@ export const handler = metricScope(
                 };
             }
 
-            const queryStartTimestamp = new Date().getTime();
-            await connection.initialize();
-
-            const data =
-                "query" in params
-                    ? await connection.handleRawQuery(params["query"] as string)
-                    : await connection.handleIdQuery(id, params);
+            // const data = event?.body
+            //     ? await connection.handleRawQuery(event.body)
+            //     : await connection.handleIdQuery(id, params);
+            const data = await connection.handleIdQuery(id, params);
 
             requestLogger.debug({ data });
 
@@ -48,9 +80,14 @@ export const handler = metricScope(
             );
 
             if (data.ok) {
+                const result =
+                    params["format"] === "csv"
+                        ? Papa.unparse(data.result)
+                        : JSON.stringify(data.result);
+                // const cacheResult
                 return {
                     statusCode: 200,
-                    body: JSON.stringify(data.result)
+                    body: result
                 };
             } else {
                 return {

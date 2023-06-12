@@ -4,7 +4,7 @@
 import { SecurityIdentity } from "@webiny/api-security/types";
 import { SecurityPermission } from "@webiny/app-security/types";
 
-export interface DataUploadEntity {
+type DataUploadEntity = {
     PK: string;
     SK: string;
     id: string;
@@ -15,13 +15,19 @@ export interface DataUploadEntity {
     canEdit?: Array<{name: string, id: string}>;
     canDelete?: Array<{name: string, id: string}>;
     isPublic?: boolean;
+    columns?: string;
     savedOn: string;
     createdBy: Pick<SecurityIdentity, "id" | "displayName" | "type">;
     webinyVersion: string;
 }
 
-export interface DataUploadsPermission extends SecurityPermission {
+interface DataUploadsPermission extends SecurityPermission {
     name: "data-uploads";
     rwd?: "r" | "rw" | "rwd";
     specialFeature?: boolean;
+}
+
+export {
+    DataUploadEntity,
+    DataUploadsPermission
 }

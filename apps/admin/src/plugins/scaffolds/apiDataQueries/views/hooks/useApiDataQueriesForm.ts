@@ -8,6 +8,7 @@ import {
     UPDATE_API_DATA_QUERY,
     LIST_API_DATA_QUERIES
 } from "./graphql";
+import { LIST_DATASETS } from "../../../datasets/views/hooks/graphql";
 
 /**
  * Contains essential form functionality: data fetching, form submission, notifications, redirecting, and more.
@@ -37,6 +38,7 @@ export const useApiDataQueriesForm = () => {
             showSnackbar(error.message);
         }
     });
+    const datasetsQuery = useQuery(LIST_DATASETS, {});
 
     const [create, createMutation] = useMutation(CREATE_API_DATA_QUERY, {
         refetchQueries: [{ query: LIST_API_DATA_QUERIES }]
@@ -45,6 +47,7 @@ export const useApiDataQueriesForm = () => {
     const [update, updateMutation] = useMutation(UPDATE_API_DATA_QUERY);
 
     const loading = [getQuery, createMutation, updateMutation].some(item => item.loading);
+    const datasets = datasetsQuery?.data?.datasets?.listDatasets?.data;
 
     const onSubmit = useCallback(
         async formData => {
@@ -80,6 +83,7 @@ export const useApiDataQueriesForm = () => {
         currentApiDataQuery,
         cancelEditing,
         apiDataQuery,
-        onSubmit
+        onSubmit,
+        datasets
     };
 };

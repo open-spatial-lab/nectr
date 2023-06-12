@@ -41,6 +41,7 @@ import { Table } from "dynamodb-toolbox";
 import { DataUploadEntity } from "./plugins/scaffolds/dataUploads/types";
 import { ApiDataQueryEntity } from "./plugins/scaffolds/apiDataQueries/types";
 import Mustache from "mustache";
+import s3StoragePlugin from '../src/plugins/s3-uploader/index';
 
 // Store initialization
 let isInitialized = false;
@@ -86,6 +87,9 @@ export const handler = createHandler({
         fileManagerPlugins(),
         fileManagerDynamoDbStorageOperation(),
         fileManagerS3(),
+        s3StoragePlugin({
+            bucketName: process.env.S3_BUCKET!,
+        }),
         prerenderingServicePlugins({
             eventBus: String(process.env.EVENT_BUS)
         }),
@@ -115,52 +119,7 @@ export const handler = createHandler({
             storageOperations: createApwSaStorageOperations({ documentClient })
         }),
         createACO(),
-        scaffoldsPlugins(),
-        createApiGatewayRoute(({ onGet, context }) => {
-            onGet("/data-api/:id", async (request, reply) => {
-                const { id } = request.params as { id: string };
-                let dataSchemas: { Items: ApiDataQueryEntity[] } = await table.query(
-                    "L#en-US#ApiDataQuery"
-                );
-                const schema = dataSchemas.Items.find(item => item.id === id);
-                if (!schema) {
-                    return reply.code(404).send({
-                        message: `Data schema with ID "${id}" not found.`
-                    });
-                }
-                const { defaultParameters, template } = schema;
-
-                if (!template) {
-                    return reply.code(404).send({
-                        message: `Data schema with ID "${id}" does not have a data view template.`
-                    });
-                }
-                const parsedDefaultParameters = JSON.parse(defaultParameters || "{}");
-                const query = request.query as { [key: string]: string };
-                const templateParams = {
-                    ...parsedDefaultParameters,
-                    ...query
-                };
-                const sql = Mustache.render(template, templateParams);
-                
-                return reply
-                    .headers({
-                        "x-route-example": "yes"
-                    })
-                    .send({
-                        schema,
-                        id, 
-                        query,
-                        sql,
-                        // rows,
-                        // json
-                    });
-            });
-        })
+        scaffoldsPlugins()
     ],
     http: { debug }
 });
-
-type DataApiSchema = {
-    id: string;
-};

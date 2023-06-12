@@ -1,3 +1,3 @@
 import routes from "./routes";
-
-export default [routes];
+import menus from "./menus";
+export default [menus, routes];

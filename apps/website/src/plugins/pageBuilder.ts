@@ -32,6 +32,8 @@ import iframe from "@webiny/app-page-builder/render/plugins/elements/iframe";
 import pagesList from "@webiny/app-page-builder/render/plugins/elements/pagesList";
 import imagesList from "@webiny/app-page-builder/render/plugins/elements/imagesList";
 
+import table from "theme/pageElements/table/website";
+import map from "theme/pageElements/map/website";
 /**
  * Page settings plugins (seo, social, etc.).
  */
@@ -61,7 +63,6 @@ import responsiveMode from "@webiny/app-page-builder/render/plugins/responsiveMo
 export default [
     linkPreload(),
     apolloCacheObjectId,
-
     // Page elements
     document(),
     block(),
@@ -89,6 +90,7 @@ export default [
 
     // Page element settings
     align,
+    map,
     animation,
     background,
     border,
@@ -100,5 +102,6 @@ export default [
     margin,
     textSetting,
     property,
+    table,
     responsiveMode()
 ];
