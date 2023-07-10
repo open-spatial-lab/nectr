@@ -2,21 +2,28 @@ import React, { useEffect } from "react";
 import {
     AGGREGATE_FUNCTIONS,
     AGGREGATE_FUNCTION_TYPES,
+    JOIN_OPERATORS,
+    JoinQuery,
     QueryBuilderProps,
     SelectQuery,
     WhereQuery
 } from "./types";
 import { Select } from "@webiny/ui/Select";
-import { ButtonDefault as Button, ButtonPrimary } from "@webiny/ui/Button";
+import { ButtonDefault as Button, ButtonPrimary, IconButton } from "@webiny/ui/Button";
 import { Grid, Cell } from "@webiny/ui/Grid";
 import { Input } from "@webiny/ui/Input";
 import { Chips, Chip } from "@webiny/ui/Chips";
 import { Checkbox } from "@webiny/ui/Checkbox";
-import { Dialog, DialogContent } from "@webiny/ui/Dialog";
+import { Dialog, DialogContent, DialogAccept, DialogCancel } from "@webiny/ui/Dialog";
 import { ColumnSchema } from "../../plugins/scaffolds/datasets/types";
 import { Tooltip } from "@webiny/ui/Tooltip";
-import { JoinBuilder } from "../JoinBuilder/JoinBuilder";
-import { CenteredCell } from "../CenteredCell";
+// import { JoinBuilder } from "../JoinBuilder/JoinBuilder";
+// import { CenteredCell } from "../CenteredCell";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
+import { ReactComponent as DeleteIcon } from "@webiny/ui/AutoComplete/icons/delete.svg";
+import { ReactComponent as SettingsIcon } from "@webiny/app-admin/assets/icons/round-settings-24px.svg";
+// import { Tabs, Tab } from "@webiny/ui/Tabs";
 
 const onlyUnique = (value: any, index: number, self: any) => {
     return self.indexOf(value) === index;
@@ -220,6 +227,7 @@ const WhereBuilderRow: React.FC<{
     }
     const getHandleInputchange =
         (entryIndex: number) => (action: "remove" | "update" | "add", value: string | number) => {
+            console.log("action", action, value);
             switch (action) {
                 case "remove":
                     if (Array.isArray(value)) {
@@ -247,6 +255,7 @@ const WhereBuilderRow: React.FC<{
                 case "add": {
                     const oldValues = Array.isArray(clause.value[0]) ? clause.value[0] : [];
                     const newValue = [...oldValues, value];
+                    console.log("newValue", newValue);
                     handleWhereChange({
                         action: "update",
                         index: index,
@@ -395,7 +404,7 @@ const WhereBuilder: React.FC<{
     return (
         <div>
             {template.where?.map((clause, index) => (
-                <Grid style={{padding:"1rem 0"}} key={index}>
+                <Grid style={{ padding: "1rem 0" }} key={index}>
                     <Cell span={3} desktop={3} tablet={3}>
                         <Select
                             label={"Column"}
@@ -596,10 +605,16 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
     template,
     onChangeTemplate
 }) => {
-    // console.log(template)
     const [availableColumns, setAvailableColumns] = React.useState<ColumnSchema[]>([]);
     const [groupDialogOpen, setGroupDialogOpen] = React.useState(false);
     const selectedFile = files.find(f => f.filename === template.from);
+    const [joinDiagOpen, setJoinDiagOpen] = React.useState<
+        | { open: false }
+        | { open: true; leftOnColumns: ColumnSchema[]; rightOnColumns: ColumnSchema[]; idx: number }
+    >({
+        open: false
+    });
+    const [tempJoin, setTempJoin] = React.useState<Partial<JoinQuery>>({});
 
     const handleTemplateChange = <T extends keyof SelectQuery>(
         key: T | T[],
@@ -713,11 +728,11 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
     const AndButton = template.combinedOperator === "or" ? Button : ButtonPrimary;
     const OrButton = template.combinedOperator !== "or" ? Button : ButtonPrimary;
 
-    const handleAddJoin = () => {
+    const handleAddJoin = (filename?: string) => {
         handleTemplateChange("join", [
             ...(template.join || []),
             {
-                from: files[0].filename,
+                from: filename || files[0].filename,
                 fromS3: true,
                 leftOn: "",
                 rightOn: "",
@@ -725,10 +740,45 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
             }
         ]);
     };
+
+    const handleConfirmJoin = () => {
+        // @ts-ignore
+        const idx = joinDiagOpen.idx;
+        if (!template.join) {
+            return;
+        }
+        const newJoin = [...template.join];
+        newJoin[idx] = {
+            ...newJoin[idx],
+            ...tempJoin
+        };
+        handleTemplateChange("join", newJoin);
+        setJoinDiagOpen({
+            open: false
+        });
+    };
+
+    const handleOpenJoinDialog = (idx: number, join: JoinQuery) => () => {
+        const fromName = files.find(f => f.filename === join.from)?.title;
+        const rightOnColumns = availableColumns.filter(col => col.dataset === fromName);
+        const leftOnColumns = availableColumns.filter(col => col.dataset !== fromName);
+        setJoinDiagOpen({
+            open: true,
+            leftOnColumns,
+            rightOnColumns,
+            idx
+        });
+        setTempJoin({
+            leftOn: join.leftOn,
+            rightOn: join.rightOn,
+            operator: join.operator
+        });
+    };
+    console.log(selectedFile?.title);
     return (
         <div>
-            <h4>Query Builder</h4>
-            <br />
+            {/* <h4>Query Builder</h4> */}
+            {/* <br /> */}
             {/* <code>
                 {JSON.stringify(
                     template,
@@ -737,39 +787,258 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
                 )}
             </code> */}
             <Grid style={{ padding: 0 }}>
-                <Cell span={8}>
-                    <Select
-                        label={"Choose your dataset"}
-                        value={selectedFile?.title}
-                        options={files.map(f => f.title)}
-                        onChange={val => {
-                            const newValue = files.find(f => f.title === val)?.filename;
-                            handleTemplateChange(["from", "fromS3"], [newValue, true]);
+                <Cell
+                    span={12}
+                    style={{
+                        background: "#f5f5f577",
+                        padding: "1rem",
+                        border: "1px solid #e0e0e0"
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginBottom: "1rem",
+                            fontWeight: "bold",
+                            textTransform: "uppercase"
                         }}
+                    >
+                        Start From
+                    </h2>
+                    <Autocomplete
+                        disablePortal
+                        sx={{ flexGrow: 1 }}
+                        id="dataset-select"
+                        options={files.map(f => f.title)}
+                        value={selectedFile?.title}
+                        onChange={(event, newValue) => {
+                            const newFile = files.find(f => f.title === newValue);
+                            handleTemplateChange(["from", "fromS3"], [newFile?.filename, true]);
+                        }}
+                        renderInput={params => (
+                            <TextField
+                                {...params}
+                                label="Dataset"
+                                defaultValue={selectedFile?.title}
+                            />
+                        )}
                     />
                 </Cell>
-                <CenteredCell span={2}>
-                    <ButtonPrimary onClick={handleAddJoin}>Add Data</ButtonPrimary>
-                </CenteredCell>
-                <CenteredCell span={2}>
-                    <ButtonPrimary onClick={toggleGroupDialog}>Group Data</ButtonPrimary>
-                </CenteredCell>
-                {template?.join?.length ? (
-                    <>
-                        {template.join.map((join, idx) => (
-                            <Cell span={12} key={idx}>
-                                <JoinBuilder
-                                    template={template}
-                                    join={join}
-                                    files={files}
-                                    handleTemplateChange={handleTemplateChange}
-                                    columns={availableColumns}
-                                    idx={idx}
+
+                <Cell
+                    span={12}
+                    style={{
+                        // light blue bacground
+                        // background: "#72CDC155",
+                        padding: "1rem",
+                        border: "1px solid #72CDC1"
+                    }}
+                >
+                    <h2
+                        style={{
+                            marginBottom: "1rem",
+                            fontWeight: "bold",
+                            textTransform: "uppercase"
+                        }}
+                    >
+                        Add more data:
+                    </h2>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center"
+                        }}
+                    >
+                        <Autocomplete
+                            disablePortal
+                            sx={{ flexGrow: 0, width: 300 }}
+                            id="dataset-select"
+                            options={files.map(f => f.title).filter(t => t !== selectedFile?.title)}
+                            value={null}
+                            onChange={(event, newValue) => {
+                                const newFile = files.find(f => f.title === newValue);
+                                handleAddJoin(newFile?.filename);
+                            }}
+                            renderInput={params => (
+                                <TextField
+                                    {...params}
+                                    label={`Join data to ${selectedFile?.title}`}
                                 />
-                            </Cell>
-                        ))}
-                    </>
-                ) : null}
+                            )}
+                        />
+                        {template?.join?.length ? (
+                            <>
+                                {template.join.map((join, idx) => {
+                                    const joinedFile = files.find(
+                                        file => file.filename === join.from
+                                    );
+                                    const handleRemove = () => {
+                                        const newJoin = [...(template?.join || [])];
+                                        newJoin.splice(idx, 1);
+                                        handleTemplateChange("join", newJoin);
+                                    };
+                                    return (
+                                        <div
+                                            key={idx}
+                                            style={{
+                                                display: "inline-block",
+                                                minWidth: "100px",
+                                                margin: ".25rem"
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    padding: "0 0 0 .5rem",
+                                                    background: "#eee",
+                                                    borderRadius: "1rem"
+                                                }}
+                                            >
+                                                <span style={{ paddingRight: "0.5rem" }}>
+                                                    {joinedFile?.title}
+                                                </span>
+                                                {/* settings */}
+                                                <IconButton
+                                                    icon={<SettingsIcon />}
+                                                    label="Join Settings these data"
+                                                    onClick={handleOpenJoinDialog(idx, join)}
+                                                />
+                                                {/* remove */}
+                                                <IconButton
+                                                    icon={<DeleteIcon />}
+                                                    onClick={handleRemove}
+                                                    label="Remove these data"
+                                                >
+                                                    asdf
+                                                </IconButton>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </>
+                        ) : null}
+                    </div>
+                </Cell>
+                {/* <Cell
+                    span={12}
+                    style={{
+                        // light blue bacground
+                        background: "#ECFFE3",
+                        padding: "1rem",
+                    }}
+                >
+
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "flex-start",
+                                alignItems: "center",
+                                marginBottom: "1rem"
+                            }}
+                        >
+                <h2
+                    style={{
+                        marginBottom: "1rem",
+                        marginRight: "1rem",
+                        fontWeight: "bold",
+                        textTransform: "uppercase",
+                    }}
+                >
+                    Filter your data:
+                </h2>
+                        <AndButton onClick={() => handleChangeWhereOperator("and")}>
+                            Data must match all
+                        </AndButton>
+                        <OrButton onClick={() => handleChangeWhereOperator("or")}>
+                            Data could match any
+                        </OrButton>
+                    </div>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center"
+                        }}
+                    >
+                        
+                        <Autocomplete
+                            disablePortal
+                            sx={{ flexGrow: 0, width: 300 }}
+                            id="filter-select"
+                            options={availableColumns.map(f => f.name)}
+                            value={null}
+                            onChange={(event, newValue) => {
+                                const newFile = files.find(f => f.title === newValue);
+                                handleAddJoin(newFile?.filename);
+                            }}
+                            renderInput={params => (
+                                <TextField {...params} label={`Choose a data column to filter`} />
+                            )}
+                        />
+                        <br />
+                    </div>
+                    <div
+                        style={{
+                            flexGrow: 1,
+                            paddingLeft: "1rem"
+                        }}
+                    ></div>
+                </Cell> */}
+                {/* <Cell span={12}>
+                    <Tabs onActivate={e => console.log(e)}>
+                        <Tab label="Select Data">asdf</Tab>
+                        <Tab label="Summarize Data">asdf2</Tab>
+                    </Tabs>
+                </Cell> */}
+                <Cell
+                    span={12}
+                    style={{
+                        // light blue bacground
+                        background: "#efefef",
+                        padding: "1rem"
+                    }}
+                >
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "flex-start",
+                            alignItems: "center",
+                            marginBottom: "1rem"
+                        }}
+                    >
+                        <div>
+                            <h2
+                                style={{
+                                    marginBottom: "1rem",
+                                    marginRight: "1rem",
+                                    fontWeight: "bold",
+                                    textTransform: "uppercase"
+                                }}
+                            >
+                                Summarize your data:
+                            </h2>
+                            <p>Choose a column to summarize data based on:</p>
+                        </div>
+                    </div>
+                        <Autocomplete
+                            disablePortal
+                            id="filter-select"
+                            options={availableColumns.map(f => f.name)}
+                            value={template.groupby}
+                            onChange={(event, newValue) => {
+                                const column = availableColumns.find(f => f.name === newValue);
+                                if (!column) {
+                                    return;
+                                }
+                                handleGroupChange(column);
+                            }}
+                            renderInput={params => (
+                                <TextField {...params} label={`Choose a column that data should group by`} />
+                            )}
+                        />
+                </Cell>
             </Grid>
             {template?.from?.length && (
                 <>
@@ -804,27 +1073,109 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
                     <Dialog open={groupDialogOpen} onClose={toggleGroupDialog}>
                         <DialogContent>
                             <p>
-                                Grouping data allows you to combine summary statistics by different characteristics, such as a State or ZIP code, category, or other grouping variable.
-                                </p>
-                            <p>
-                                Choose a column to group by:
+                                Grouping data allows you to combine summary statistics by different
+                                characteristics, such as a State or ZIP code, category, or other
+                                grouping variable.
                             </p>
                             {/* @ts-ignore */}
                             <Select
                                 label={"Choose a column"}
-                                value={5}
+                                value={template.groupby}
                                 onChange={idx => {
                                     handleGroupChange(availableColumns[idx]);
                                 }}
                             >
-                                {availableColumns.map((col,idx) => (
+                                {availableColumns.map((col, idx) => (
                                     <option key={col.name} value={idx}>
                                         {col.name}
                                     </option>
                                 ))}
                             </Select>
-                            
                         </DialogContent>
+                    </Dialog>
+
+                    <Dialog
+                        open={!!joinDiagOpen.open}
+                        onClose={() => setJoinDiagOpen({ open: false })}
+                    >
+                        <div style={{ padding: "1rem" }}>
+                            <h1>Add More Data Settings</h1>
+                            <hr />
+                            <p>
+                                Data Joins connect two or more tables of data. Below, select the
+                                column from dataset name that you want to connect to your other
+                                data.
+                            </p>
+                            <br />
+                            {joinDiagOpen.open && (
+                                <Select
+                                    label={"Left on"}
+                                    value={tempJoin.leftOn}
+                                    onChange={val => {
+                                        setTempJoin(j => ({
+                                            ...j,
+                                            leftOn: val
+                                        }));
+                                    }}
+                                >
+                                    {joinDiagOpen.leftOnColumns.map(col => {
+                                        return (
+                                            <option
+                                                value={`${col.datasetId}.${col.name}`}
+                                                key={`${col.datasetId}___${col.name}`}
+                                            >
+                                                [{col.dataset}] {col.name}
+                                            </option>
+                                        );
+                                    })}
+                                </Select>
+                            )}
+                            <br />
+                            {joinDiagOpen.open && (
+                                <Select
+                                    label={"Right on"}
+                                    value={tempJoin.rightOn}
+                                    onChange={val => {
+                                        setTempJoin({
+                                            ...tempJoin,
+                                            rightOn: val
+                                        });
+                                    }}
+                                >
+                                    {joinDiagOpen.rightOnColumns.map(col => {
+                                        return (
+                                            <option
+                                                value={`${col.datasetId}.${col.name}`}
+                                                key={`${col.datasetId}___${col.name}`}
+                                            >
+                                                [{col.dataset}] {col.name}
+                                            </option>
+                                        );
+                                    })}
+                                </Select>
+                            )}
+                            <br />
+                            <Select
+                                label={"Join Type"}
+                                value={tempJoin.operator}
+                                onChange={val => {
+                                    setTempJoin({
+                                        ...tempJoin,
+                                        operator: val
+                                    });
+                                }}
+                            >
+                                {JOIN_OPERATORS.map(operator => {
+                                    return (
+                                        <option value={operator} key={operator}>
+                                            {operator.charAt(0).toUpperCase() + operator.slice(1)}
+                                        </option>
+                                    );
+                                })}
+                            </Select>
+                        </div>
+                        <DialogCancel>Cancel</DialogCancel>
+                        <DialogAccept onClick={handleConfirmJoin}>OK</DialogAccept>
                     </Dialog>
                 </>
             )}

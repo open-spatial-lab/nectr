@@ -10,7 +10,8 @@ const externalOrIgnore = [
     "pg-native",
     "pg-query-stream",
     "sqlite3",
-    "tedious"
+    "tedious",
+    // '@aws-sdk/client-s3'
 ]
 const webpack = (config: any) => {
     config.externals = [

@@ -11,7 +11,7 @@ export default function getLogger(options?: LoggerOptions){
   if (loggerInstance === null) {
     loggerInstance = bunyan.createLogger({
       name: options?.name || 'duckdb-lambda-logger',
-      level: (options?.level || process.env.LOG_LEVEL || 'info') as LogLevel,
+      level: (options?.level || process.env['LOG_LEVEL'] || 'info') as LogLevel,
     });
   }
   return loggerInstance

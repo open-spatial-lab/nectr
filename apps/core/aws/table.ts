@@ -1,5 +1,6 @@
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { Table } from "dynamodb-toolbox";
+// @ts-ignore
 import { documentClient } from "./documentClient";
 /**
  * Everything starts with a table. Note that the `name` property is passed via an environment

@@ -10,6 +10,7 @@ const S3_BUCKET = (process.env.S3_BUCKET as string) || "data-api-dev";
 const connection = new Connection();
 const logger = getLogger();
 
+
 export const handler = metricScope(
     metrics =>
         async (event: APIGatewayEvent, context: Context, callback: APIGatewayProxyCallback) => {
@@ -22,7 +23,11 @@ export const handler = metricScope(
             const metadataFile = params["__metadata__"];
 
             const queryStartTimestamp = new Date().getTime();
-            await connection.initialize();
+
+            if (!connection.isInitialized) {
+                await connection.initialize();
+            }
+            console.log("Initialized connection...")
 
             if (metadataFile) {
                 const metaQuery = metadataFile.includes(".parquet")
@@ -54,6 +59,16 @@ export const handler = metricScope(
                 }
             }
 
+            const rawQuery = params["__dangerous_raw__"];
+            if (rawQuery) {
+                return {
+                    statusCode: 200,
+                    body: JSON.stringify({
+                        data: await connection.query(rawQuery)
+                    })
+                };
+            }
+
             if (!id) {
                 return {
                     statusCode: 400,
@@ -65,12 +80,9 @@ export const handler = metricScope(
                     })
                 };
             }
-
-            // const data = event?.body
-            //     ? await connection.handleRawQuery(event.body)
-            //     : await connection.handleIdQuery(id, params);
+            console.log("ID", id)
             const data = await connection.handleIdQuery(id, params);
-
+            console.log("hanlded ID")
             requestLogger.debug({ data });
 
             metrics.putMetric(

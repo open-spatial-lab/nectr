@@ -213,7 +213,9 @@ const JOIN_RESULT = `select t0."Pop Density", t0."Total Pop", t1."Pop NH White",
 const AGG_RESULT = `select avg("index"), sum("index") from 's3://data-api-dev/8lhqoefc7-earthquakes.csv';`;
 const GROUPBY_RESULT = `select count("STATE"), "STATE" from 's3://data-api-dev/8lhtiptwp-2022_vision_providers.csv' group by "STATE";`;
 const GEO_RESULTS  = `select "id", ST_GEOGFROMTEXT("geometry") as geometry from 's3://data-api-dev/test.parquet';`;
-
+// a sql query that first groups data based on column "site" then joins it to another table based on column "site"
+const STAGED_GROUPBY_MOCK = `
+    select t0."site", t0."count", t1."site", t1."site_name" from 's3://data-api-dev/8lhtiptwp-2022_vision_providers.csv' as t0 inner join (select "id", "site", "geometry" from 's3://data-api-dev/8lhtiptwp-2022_vision_providers.csv' group by "site") as t1 on t0."site" = t1."site";`;
 const tests = [
     {
         name: "Simple",

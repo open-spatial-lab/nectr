@@ -2,29 +2,35 @@
 import DuckDB from "duckdb";
 import { QueryResponse } from "../types/types";
 import QuerySchemas from "./schemas";
+import { BucketManager } from "./bucketManager";
 
 const schemas = new QuerySchemas();
+const bucket = new BucketManager(process.env["DATA_BUCKET"]!, process.env["AWS_REGION"]!);
 
 export default class Connection {
-    duckDB: DuckDB.Database;
-    connection: DuckDB.Connection;
+    duckDB?: DuckDB.Database;
+    connection?: DuckDB.Connection;
     isInitialized: boolean = false;
 
     constructor() {
-        this.duckDB = new DuckDB.Database(":memory:");
-        this.connection = this.duckDB.connect();
     }
 
     async initialize() {
         if (this.isInitialized) {
             return;
         }
+        this.duckDB = new DuckDB.Database(":memory:", {
+            allow_unsigned_extensions: "true"
+        });
+        
+        this.connection = new DuckDB.Connection(this.duckDB)
+
         try {
-            await this.query(`SET home_directory='/tmp';`);
-            await this.query(`INSTALL httpfs;`);
-            await this.query(`LOAD httpfs;`);
-            // await this.query(`INSTALL '/opt/nodejs/node_modules/duckdb/extensions/geo.duckdb_extension';`)
-            // await this.query(`LOAD '/opt/nodejs/node_modules/duckdb/extensions/geo.duckdb_extension';`)
+            await this.query("SET home_directory='/tmp';")
+            await this.query(`INSTALL httpfs;`)
+            await this.query(`LOAD httpfs;`)
+            await this.query(`INSTALL '/opt/nodejs/node_modules/duckdb/extensions/geo.duckdb_extension';`)
+            await this.query(`LOAD '/opt/nodejs/node_modules/duckdb/extensions/geo.duckdb_extension';`)
             await this.query(`SET enable_http_metadata_cache=true;`);
             await this.query(`SET enable_object_cache=true;`);
             this.isInitialized = true;
@@ -36,7 +42,7 @@ export default class Connection {
     async query(query: string): Promise<QueryResponse<any, string>> {
         return new Promise((resolve, reject) => {
             try {
-                this.connection.all(query, (err: any, res: any) => {
+                this.connection!.all(query, (err: any, res: any) => {
                     if (err) {
                         reject({
                             error: err,
@@ -85,6 +91,8 @@ export default class Connection {
         }
 
         try {
+            console.log("Schema", JSON.stringify(schema, null, 2))
+            console.log(this.connection, this.duckDB)
             const data = await this.query(schema.result);
             // if (data.ok) await schemas.cacheResult(
             //     id,
@@ -96,7 +104,9 @@ export default class Connection {
             console.log(err);
             console.log(JSON.stringify(schema, null, 2));
             return {
-                error: `Error at handle id query: ${JSON.stringify(err, null, 2)}`,
+                error: `Error at handle id query: ${JSON.stringify(
+                    err
+                )}; \n Schema: \n ${JSON.stringify(schema)}`,
                 ok: false
             };
         }

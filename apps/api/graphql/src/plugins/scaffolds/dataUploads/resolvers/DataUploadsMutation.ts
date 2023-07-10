@@ -89,7 +89,7 @@ export default class DataUploadsMutationImplementation
                 displayName: identity.displayName
             },
             webinyVersion: process.env.WEBINY_VERSION ? process.env.WEBINY_VERSION : "5.0.0",
-        } satisfies DataUploadEntity;
+        } as DataUploadEntity;
         console.log('data upload', dataUpload)
         // Will throw an error if something goes wrong.
         await DataUpload.put(dataUpload);
@@ -102,6 +102,7 @@ export default class DataUploadsMutationImplementation
      * @param id
      * @param data
      */
+    // @ts-ignore
     async updateDataUpload({ id, data }: UpdateDataUploadParams) {
         // if(!this.permission) this.initPermission();
         // this.permission?.authorizeRW();
@@ -124,6 +125,7 @@ export default class DataUploadsMutationImplementation
      * Deletes and returns an existing DataUpload entry.
      * @param id
      */
+    // @ts-ignore
     async deleteDataUpload({ id }: DeleteDataUploadParams) {
         // if(!this.permission) this.initPermission();
         // this.permission?.authorizeRWD();

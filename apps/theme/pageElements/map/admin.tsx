@@ -99,6 +99,26 @@ export default [
             const [dataViews, setDataViews] = useState<
                 { id: string; title: string; template: string }[]
             >([]);
+            const [timeoutId, setTimeoutId] = useState<null | ReturnType<typeof setTimeout>>(null);
+            useEffect(() => {
+                // Clear the previous timeout when the prop changes
+                timeoutId && clearTimeout(timeoutId);
+
+                // Set a new timeout to run the function after 1 second (1000 milliseconds)
+                const newTimeoutId = setTimeout(() => {
+                    // Your function logic here
+                    submit();
+                }, 100);
+
+                // Save the timeout ID for cleanup
+                setTimeoutId(newTimeoutId);
+
+                // Cleanup function to clear the timeout on component unmount or prop change
+                return () => {
+                    clearTimeout(newTimeoutId);
+                };
+            }, [JSON.stringify(data.variables)]);
+
             useEffect(() => {
                 // @ts-ignore
                 request(GQL_API_URL, DATA_VIEWS_QUERY).then(({ apiDataQueries }) => {
@@ -135,18 +155,20 @@ export default [
                                 <b>{currentDataview?.title || ""}</b>
                             </p>
                             <br />
-                            {data.variables.source && dataViews.length ? <Bind name={"variables.source"}>
-                                <Select
-                                    label={"Data Source"}
-                                    description={"Data source to show in the map"}
-                                >
-                                    {dataViews?.map((item: any, idx:number) => (
-                                        <option key={`${item.id}-view-${idx}`} value={item.id}>
-                                            {item.title}
-                                        </option>
-                                    ))}
-                                </Select>
-                            </Bind> : null}
+                            {data.variables.source && dataViews.length ? (
+                                <Bind name={"variables.source"}>
+                                    <Select
+                                        label={"Data Source"}
+                                        description={"Data source to show in the map"}
+                                    >
+                                        {dataViews?.map((item: any, idx: number) => (
+                                            <option key={`${item.id}-view-${idx}`} value={item.id}>
+                                                {item.title}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                </Bind>
+                            ) : null}
                         </Cell>
                         <Cell span={12}>
                             <h3>Initial Map View</h3>
@@ -187,32 +209,46 @@ export default [
                             </Bind>
                         </Cell>
                         <Cell span={12}>
-                        {cleanColumnList.length ? <Bind name="variables.geometryColumn">
-                                <Select
-                                    label={"Geometry Column:"}
-                                    description={"Name of the data column that contains geometry."}
-                                >
-                                    {cleanColumnList?.map((item: any, idx: number) => (
-                                        <option key={`${item.id}-geomcol-${idx}`} value={item.name}>
-                                            {item.name}
-                                        </option>
-                                    ))}
-                                </Select>
-                            </Bind> : null}
+                            {cleanColumnList.length ? (
+                                <Bind name="variables.geometryColumn">
+                                    <Select
+                                        label={"Geometry Column:"}
+                                        description={
+                                            "Name of the data column that contains geometry."
+                                        }
+                                    >
+                                        {cleanColumnList?.map((item: any, idx: number) => (
+                                            <option
+                                                key={`${item.id}-geomcol-${idx}`}
+                                                value={item.name}
+                                            >
+                                                {item.name}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                </Bind>
+                            ) : null}
                         </Cell>
                         <Cell span={12}>
-                            {cleanColumnList.length ? <Bind name="variables.choroplethColumn">
-                                <Select
-                                    label={"Map Data Column (choropleth):"}
-                                    description={"Name of the column to generate map colors from."}
-                                >
-                                    {cleanColumnList?.map((item: any, idx: number) => (
-                                        <option key={`${item.id}-datacol-${idx}`} value={item.name}>
-                                            {item.name}
-                                        </option>
-                                    ))}
-                                </Select>
-                            </Bind> : null}
+                            {cleanColumnList.length ? (
+                                <Bind name="variables.choroplethColumn">
+                                    <Select
+                                        label={"Map Data Column (choropleth):"}
+                                        description={
+                                            "Name of the column to generate map colors from."
+                                        }
+                                    >
+                                        {cleanColumnList?.map((item: any, idx: number) => (
+                                            <option
+                                                key={`${item.id}-datacol-${idx}`}
+                                                value={item.name}
+                                            >
+                                                {item.name}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                </Bind>
+                            ) : null}
                         </Cell>
                         {/* TODO CODE SNIPPETS */}
                         <Cell span={12}>

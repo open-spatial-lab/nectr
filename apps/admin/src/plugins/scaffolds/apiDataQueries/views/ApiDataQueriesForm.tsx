@@ -17,6 +17,7 @@ import { useApiDataQueriesForm } from "./hooks/useApiDataQueriesForm";
 import { Switch } from "@webiny/ui/Switch";
 import { QueryBuilder } from "../../../../components/QueryBuilder/QueryBuilder";
 import { SelectQuery } from "../../../../components/QueryBuilder/types";
+import { getApiUrl } from "../../../../../../theme/pageElements/utils/dataApiUrl";
 
 
 /**
@@ -47,6 +48,7 @@ const ApiDataQueriesForm: React.FC = () => {
             />
         );
     }
+    const dataQueryLink = apiDataQuery?.id ? getApiUrl(apiDataQuery.id) : null
     return (
         <Form data={apiDataQuery} onSubmit={onSubmit}>
             {({ data, submit, Bind }) => (
@@ -55,19 +57,22 @@ const ApiDataQueriesForm: React.FC = () => {
                     <SimpleFormHeader title={data.title || "New Data View"} />
                     <SimpleFormContent>
                         <Grid>
-                            <Cell span={12}>
+                            <Cell span={10}>
                                 <Bind name="title" validators={validation.create("required")}>
                                     <Input label={"Title"} />
                                 </Bind>
                             </Cell>
-                            <Cell span={12}>
+                            <Cell span={2}>
                                 <Bind name="isPublic">
                                     <Switch
                                         label={"Make this data public"}
-                                        description={"Should this data be visible to the public?"}
+                                        description={"Allow anyone to use this data"}
                                     />
                                 </Bind>
                             </Cell>
+                            {!!dataQueryLink && <Cell span={12}>
+                                <a href={dataQueryLink} target="_blank" rel="noopener noreferrer">Data link</a>
+                            </Cell>}
                             <Cell span={12}>
                                 <Bind name="template">
                                     {({ onChange: _onChangeTemplate, value: _template }) => {

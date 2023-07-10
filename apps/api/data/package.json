@@ -60,6 +60,7 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@aws-sdk/s3-request-presigner": "^3.363.0",
     "@types/bunyan": "^1.8.8",
     "@types/mustache": "^4.2.2",
     "@types/papaparse": "^5.3.7",

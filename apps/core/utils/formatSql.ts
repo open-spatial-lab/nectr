@@ -1,5 +1,8 @@
-import { ColumnSchema } from "apps/admin/src/plugins/scaffolds/dataUploads/types";
+// @ts-ignore
+import { ColumnSchema } from "../../admin/src/plugins/scaffolds/dataUploads/types";
+// @ts-ignore
 import { JOIN_OPERATOR_TYPES, JoinQuery, SelectQuery } from "../../admin/src/components/QueryBuilder/types";
+// @ts-ignore
 import { QueryResponse } from "../types/queryApi";
 import knex from "knex";
 

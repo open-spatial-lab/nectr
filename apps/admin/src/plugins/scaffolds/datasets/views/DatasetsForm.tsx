@@ -66,7 +66,7 @@ const DatasetsForm: React.FC = () => {
                 filename: files.name
             });
             const file: FileItem = Array.isArray(files) ? files[0] : files;
-            const filetype = file.type.split("/")[0];
+            const filetype = file.name.split(".").pop();
             const errors: any[] = [];
 
             try {
@@ -75,7 +75,10 @@ const DatasetsForm: React.FC = () => {
                     variables: {
                         data: {
                             ...response,
-                            tags: ["data upload", filetype]
+                            tags: [
+                                'data upload',
+                                filetype || 'uknown filetype'
+                            ]
                         }
                     }
                 });

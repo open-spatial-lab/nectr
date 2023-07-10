@@ -1,6 +1,8 @@
+// @ts-ignore
 import type {
     DataUploadEntity,
     DataUploadsPermission
+    // @ts-ignore
 } from "../../../../../api/graphql/src/plugins/scaffolds/dataUploads/types";
 
 const DATA_COLUMN_TYPES = ["Text", "Number", "Date", "Boolean"] as const;

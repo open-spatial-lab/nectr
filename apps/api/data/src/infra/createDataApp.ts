@@ -42,6 +42,7 @@ function createDataResources(app: PulumiApp, params: DataApiParams) {
         name: "data-api-lambda-role",
         policy: policy.output
     }); 
+    // create an S#
 
     const awsRegion = getAwsRegion(app);
     const dataQuery = app.addResource(aws.lambda.Function, {
@@ -49,7 +50,7 @@ function createDataResources(app: PulumiApp, params: DataApiParams) {
         config: {
             role: role.output.arn,
             runtime: "nodejs14.x",
-            handler: "handler.handler",
+            handler: "handler.handler", 
             timeout: 60,
             memorySize: 4096,
             description: "Runs data jobs for the Nectr data API",
@@ -59,12 +60,13 @@ function createDataResources(app: PulumiApp, params: DataApiParams) {
                     path.join(app.paths.workspace, "data/build")
                 )
             }),
-            layers: ['arn:aws:lambda:us-east-2:041475135427:layer:duckdb-nodejs-layer:3'],
+            layers: ['arn:aws:lambda:us-east-2:041475135427:layer:duckdb-nodejs-extensions-x86:1'],
             environment: {
                 variables: getCommonLambdaEnvVariables().apply(value => ({
                     ...value,
                     ...params.env,
                     S3_BUCKET: core.fileManagerBucketId,
+                    EXTENSION_BUCKET: '',
                     DATA_BUCKET: pulumi.interpolate`${params.env['S3_BUCKET'].id}`,
                 }))
             }
