@@ -1,5 +1,6 @@
 import React from "react";
-import { ReactComponent as Icon } from "./assets/round-ballot-24px.svg";
+import { ReactComponent as Icon } from "./assets/noun-atom-73150.svg";
+
 import { MenuPlugin } from "@webiny/app-admin/plugins/MenuPlugin";
 
 /**
@@ -10,6 +11,7 @@ export default new MenuPlugin({
         return (
             <Menu name="menu-datasets" label={"Datasets"} icon={<Icon />}>
                 <Item label={"Datasets"} path={"/datasets"} />
+                <Item label={"Data Views"} path={"/api-data-queries"} />
             </Menu>
         );
     }

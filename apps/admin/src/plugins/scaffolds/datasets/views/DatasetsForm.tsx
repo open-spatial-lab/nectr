@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Form, type FormAPI } from "@webiny/form";
 import { Grid, Cell } from "@webiny/ui/Grid";
 import { Input } from "@webiny/ui/Input";
@@ -58,6 +58,22 @@ const DatasetsForm: React.FC = () => {
         CREATE_FILE,
         {}
     );
+    const handleMeta = async (key: string, form?: FormAPI) => {
+        const metadataUrl = new URL(getApiUrl("__"));
+        metadataUrl.searchParams.append("__metadata__", key);
+        const metadataResponse = await fetch(metadataUrl.toString());
+        const { columns, preview } = await metadataResponse.json();
+
+        const colList = JSON.parse(columns).map((col: ColumnSchema) => col.name);
+        const dataList = preview.map((row: Record<string, any>) => Object.values(row));
+
+        setTable({
+            columns: colList,
+            data: dataList
+        });
+        form && form.setValue("columns", columns);
+    };
+
     const uploadFile =
         (form: FormAPI) =>
         async (files: FileItem): Promise<number | null> => {
@@ -75,43 +91,22 @@ const DatasetsForm: React.FC = () => {
                     variables: {
                         data: {
                             ...response,
-                            tags: [
-                                'data upload',
-                                filetype || 'uknown filetype'
-                            ]
+                            tags: ["data upload", filetype || "uknown filetype"]
                         }
                     }
                 });
-
                 const fileUploadData = get(
                     createFileResponse,
                     "data.fileManager.createFile.data"
                 ) as unknown as FileItem;
-                
-                const metadataUrl = new URL(getApiUrl("__"));
-                metadataUrl.searchParams.append("__metadata__", fileUploadData.key);
-                const metadataResponse = await fetch(metadataUrl.toString());
-                const {
-                    columns,
-                    preview
-                } = await metadataResponse.json();
-
-                const colList = JSON.parse(columns).map((col: ColumnSchema) => col.name);
-                const dataList = preview.map((row: Record<string, any>) => Object.values(row));
-
-                setTable({
-                    columns: colList,
-                    data: dataList
-                });
+                await handleMeta(fileUploadData.key, form);
                 setUploading({
                     status: "uploaded",
                     filename: fileUploadData.name
                 });
-                
 
-                form.setValue("columns", columns);
                 form.setValue("filename", fileUploadData.name);
-                
+
                 return 1;
             } catch (e) {
                 errors.push({ file, e });
@@ -119,6 +114,10 @@ const DatasetsForm: React.FC = () => {
 
             return null;
         };
+    console.log(dataset)
+    useEffect(() => {
+        dataset?.filename && handleMeta(dataset?.filename);
+    }, [dataset?.filename]);
 
     // const handlePreview = (setValue: Function) => (results: Papa.ParseResult<unknown>) => {
     //     if (results.errors.length > 0) {
@@ -158,11 +157,7 @@ const DatasetsForm: React.FC = () => {
                 <SimpleForm>
                     {loading && <CircularProgress />}
                     <SimpleFormHeader title={data.title || "New Dataset"} />
-                    <FileUploader
-                        uploading={uploading}
-                        uploadFile={uploadFile(form)}
-                        form={form}
-                    />
+                    <FileUploader uploading={uploading} uploadFile={uploadFile(form)} form={form} />
 
                     <SimpleFormContent>
                         <Grid>

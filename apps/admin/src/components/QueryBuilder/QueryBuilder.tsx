@@ -774,7 +774,9 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
             operator: join.operator
         });
     };
-    console.log(selectedFile?.title);
+    
+    // console.log(selectedFile, files);
+
     return (
         <div>
             {/* <h4>Query Builder</h4> */}
@@ -804,24 +806,27 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
                     >
                         Start From
                     </h2>
-                    <Autocomplete
-                        disablePortal
-                        sx={{ flexGrow: 1 }}
-                        id="dataset-select"
-                        options={files.map(f => f.title)}
-                        value={selectedFile?.title}
-                        onChange={(event, newValue) => {
-                            const newFile = files.find(f => f.title === newValue);
-                            handleTemplateChange(["from", "fromS3"], [newFile?.filename, true]);
-                        }}
-                        renderInput={params => (
-                            <TextField
-                                {...params}
-                                label="Dataset"
-                                defaultValue={selectedFile?.title}
-                            />
-                        )}
-                    />
+                    {selectedFile && (
+                        <Autocomplete
+                            disablePortal
+                            sx={{ flexGrow: 1 }}
+                            id="dataset-select"
+                            options={files.map(f => f.title)}
+                            value={selectedFile?.title}
+                            defaultValue={selectedFile?.title}
+                            onChange={(event, newValue) => {
+                                const newFile = files.find(f => f.title === newValue);
+                                handleTemplateChange(["from", "fromS3"], [newFile?.filename, true]);
+                            }}
+                            renderInput={params => (
+                                <TextField
+                                    {...params}
+                                    label="Dataset"
+                                    defaultValue={selectedFile?.title}
+                                />
+                            )}
+                        />
+                    )}
                 </Cell>
 
                 <Cell
@@ -1022,22 +1027,25 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
                             <p>Choose a column to summarize data based on:</p>
                         </div>
                     </div>
-                        <Autocomplete
-                            disablePortal
-                            id="filter-select"
-                            options={availableColumns.map(f => f.name)}
-                            value={template.groupby}
-                            onChange={(event, newValue) => {
-                                const column = availableColumns.find(f => f.name === newValue);
-                                if (!column) {
-                                    return;
-                                }
-                                handleGroupChange(column);
-                            }}
-                            renderInput={params => (
-                                <TextField {...params} label={`Choose a column that data should group by`} />
-                            )}
-                        />
+                    <Autocomplete
+                        disablePortal
+                        id="filter-select"
+                        options={availableColumns.map(f => f.name)}
+                        value={template.groupby}
+                        onChange={(event, newValue) => {
+                            const column = availableColumns.find(f => f.name === newValue);
+                            if (!column) {
+                                return;
+                            }
+                            handleGroupChange(column);
+                        }}
+                        renderInput={params => (
+                            <TextField
+                                {...params}
+                                label={`Choose a column that data should group by`}
+                            />
+                        )}
+                    />
                 </Cell>
             </Grid>
             {template?.from?.length && (
