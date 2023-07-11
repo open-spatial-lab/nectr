@@ -48,7 +48,7 @@ export const useDatasetsDataList: useDatasetsDataListHook = () => {
     const { showSnackbar } = useSnackbar();
     const { showConfirmation } = useConfirmationDialog();
     const [variables, setVariables] = useReducer(reducer, {
-        limit: undefined,
+        limit: 999999,
         after: undefined,
         before: undefined,
         sort: undefined
@@ -104,25 +104,25 @@ export const useDatasetsDataList: useDatasetsDataListHook = () => {
         []
     );
 
-    // Pagination metadata and controls.
-    const setPreviousPage = useCallback(
-        () => setVariables({ after: undefined, before: meta.before }),
-        []
-    );
-    const setNextPage = useCallback(
-        () => setVariables({ after: meta.after, before: undefined }),
-        []
-    );
-    const setLimit = useCallback(
-        value => setVariables({ after: undefined, before: undefined, limit: value }),
-        []
-    );
+    // // Pagination metadata and controls.
+    // const setPreviousPage = useCallback(
+    //     () => setVariables({ after: undefined, before: meta.before }),
+    //     []
+    // );
+    // const setNextPage = useCallback(
+    //     () => setVariables({ after: meta.after, before: undefined }),
+    //     []
+    // );
+    // const setLimit = useCallback(
+    //     value => setVariables({ after: undefined, before: undefined, limit: value }),
+    //     []
+    // );
 
     const pagination: PaginationProp = {
-        setPerPage: setLimit,
-        perPageOptions: [10, 25, 50],
-        setPreviousPage,
-        setNextPage,
+        // setPerPage: setLimit,
+        // perPageOptions: [10, 25, 50],
+        // setPreviousPage,
+        // setNextPage,
         hasPreviousPage: meta.before,
         hasNextPage: meta.after
     };

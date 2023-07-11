@@ -38,7 +38,11 @@ export const useApiDataQueriesForm = () => {
             showSnackbar(error.message);
         }
     });
-    const datasetsQuery = useQuery(LIST_DATASETS, {});
+    const datasetsQuery = useQuery(LIST_DATASETS, {
+        variables: {
+            limit: 999999
+        }
+    });
 
     const [create, createMutation] = useMutation(CREATE_API_DATA_QUERY, {
         refetchQueries: [{ query: LIST_API_DATA_QUERIES }]

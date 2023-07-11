@@ -16,6 +16,7 @@ export default class Connection {
     }
 
     async initialize() {
+
         if (this.isInitialized) {
             return;
         }
@@ -24,13 +25,15 @@ export default class Connection {
         });
         
         this.connection = new DuckDB.Connection(this.duckDB)
-
+        
         try {
             await this.query("SET home_directory='/tmp';")
             await this.query(`INSTALL httpfs;`)
             await this.query(`LOAD httpfs;`)
-            await this.query(`INSTALL '/opt/nodejs/node_modules/duckdb/extensions/geo.duckdb_extension';`)
-            await this.query(`LOAD '/opt/nodejs/node_modules/duckdb/extensions/geo.duckdb_extension';`)
+            // await this.query(`INSTALL '/opt/nodejs/node_modules/duckdb/extensions/spatial.duckdb_extension';`)
+            // await this.query(`LOAD '/opt/nodejs/node_modules/duckdb/extensions/spatial.duckdb_extension';`)
+            await this.query(`INSTALL spatial;`)
+            await this.query(`LOAD spatial;`)
             await this.query(`SET enable_http_metadata_cache=true;`);
             await this.query(`SET enable_object_cache=true;`);
             this.isInitialized = true;

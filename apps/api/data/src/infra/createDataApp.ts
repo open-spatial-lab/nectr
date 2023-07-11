@@ -60,7 +60,8 @@ function createDataResources(app: PulumiApp, params: DataApiParams) {
                     path.join(app.paths.workspace, "data/build")
                 )
             }),
-            layers: ['arn:aws:lambda:us-east-2:041475135427:layer:duckdb-nodejs-extensions-x86:1'],
+            // layers: ['arn:aws:lambda:us-east-2:041475135427:layer:duckdb-nodejs-extensions-x86:1'],
+            layers: ['arn:aws:lambda:us-east-2:217827289796:layer:duckdb-test:1'],
             environment: {
                 variables: getCommonLambdaEnvVariables().apply(value => ({
                     ...value,
