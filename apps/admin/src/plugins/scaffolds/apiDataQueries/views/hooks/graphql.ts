@@ -5,7 +5,6 @@ export const API_DATA_QUERY_FIELDS_FRAGMENT = /* GraphQL */ `
     fragment ApiDataQueryFields on ApiDataQuery {
         id
         title
-        template
         createdOn
         savedOn
         canView
@@ -13,6 +12,37 @@ export const API_DATA_QUERY_FIELDS_FRAGMENT = /* GraphQL */ `
         canDelete
         isPublic
         defaultParameters
+        sources {
+            id
+            type
+            title
+        }
+        wheres {
+            sourceId
+            column
+            operator
+            value
+            allowCustom
+            customAlias
+        }
+        joins {
+            leftSourceId
+            leftOn
+            rightSourceId
+            rightOn
+            operator
+        }
+        columns {
+            name
+            sourceId
+            sourceTitle
+            alias
+            aggregate
+        }
+        groupbys {
+            sourceId
+            column
+        }
         createdBy {
             id
             displayName

@@ -100,6 +100,7 @@ export type OPERATOR_ARGS = {
 export const COMBINE_OPERATORS = ["and", "or"] as const;
 
 export type WhereQuery = {
+    sourceId: string;
     column: string;
     operator: OPERATOR_TYPES;
     value: OPERATOR_ARGS[OPERATOR_TYPES];
@@ -108,7 +109,7 @@ export type WhereQuery = {
 };
 
 
-export type SourceTypes = "ApiDAtaQuery" | "Dataset" | "Connection"
+export type SourceTypes = "ApiDataQuery" | "Dataset" | "Connection"
 
 export type Source = {
     // webiny ID of the source
@@ -125,10 +126,16 @@ export type SourceMeta = Source & {
 }
 
 export type JoinQuery = {
-    joinTo: SelectQuery;
+    leftSourceId: string;
     leftOn: string;
+    rightSourceId: string;
     rightOn: string;
     operator: JOIN_OPERATOR_TYPES;
+}
+
+export type GroupByQuery = {
+    sourceId: string;
+    column: string;
 }
 
 export type SelectQuery = {
@@ -147,7 +154,7 @@ export type SelectQuery = {
 export type QueryBuilderProps = {
     sources: Array<SourceMeta>;
     template: SelectQuery;
-    onChangeTemplate: BindComponentRenderPropOnChange<object>;
+    onChangeTemplate: BindComponentRenderPropOnChange<SelectQuery>;
 };
 
 export const DATA_COLUMN_TYPES = ["Text", "Number", "Date", "Date and Time", "Boolean"] as const;
@@ -166,6 +173,7 @@ export type ColumnSchema = {
 };
 
 export type MetaColumnSchema = ColumnSchema & {
-    sourceId: string,
-    sourceTitle: string
+    sourceId: string;
+    sourceTitle: string;
+    alias?: string;
 }

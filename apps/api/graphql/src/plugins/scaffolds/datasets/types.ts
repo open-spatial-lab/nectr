@@ -2,6 +2,7 @@
 // currently logged in identity and assign it to the `createdBy` property.
 // https://www.webiny.com/docs/key-topics/security-framework/introduction
 import { SecurityIdentity } from "@webiny/api-security/types";
+import { MetaColumnSchema } from "admin/src/components/QueryBuilder/types";
 
 export interface DatasetEntity {
     PK: string;
@@ -14,7 +15,7 @@ export interface DatasetEntity {
     createdBy: Pick<SecurityIdentity, "id" | "displayName" | "type">;
     webinyVersion: string;
     isPublic: boolean;
-    columns: string;
+    columns: Array<Pick<MetaColumnSchema, 'name'|'description'|'type'>>;
     filename: string;
 }
 

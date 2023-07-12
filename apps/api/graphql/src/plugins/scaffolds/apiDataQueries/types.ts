@@ -3,6 +3,7 @@
 // https://www.webiny.com/docs/key-topics/security-framework/introduction
 import { SecurityIdentity } from "@webiny/api-security/types";
 import { SecurityPermission } from "@webiny/app-security/types";
+import { GroupByQuery, JoinQuery, MetaColumnSchema, Source, WhereQuery } from "admin/src/components/QueryBuilder/types";
 
 export interface ApiDataQueryEntity {
     PK: string;
@@ -19,6 +20,12 @@ export interface ApiDataQueryEntity {
     isPublic?: boolean;
     createdBy: Pick<SecurityIdentity, "id" | "displayName" | "type">;
     webinyVersion: string;
+
+    sources?: Array<Source>;
+    wheres?: Array<WhereQuery>;
+    joins?: Array<JoinQuery>;
+    columns?: Array<Pick<MetaColumnSchema, 'name'|'sourceId'|'sourceTitle'|'alias'|'aggregate'>>;
+    groupbys?: Array<GroupByQuery>;
 }
 
 export interface ApiDataQueryPermissions extends SecurityPermission {

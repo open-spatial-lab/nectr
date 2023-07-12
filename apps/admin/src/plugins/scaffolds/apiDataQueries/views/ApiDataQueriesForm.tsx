@@ -95,7 +95,7 @@ const ApiDataQueriesForm: React.FC = () => {
                                         const template = JSON.parse(
                                             _template || "{}"
                                         ) as SelectQuery;
-                                        const onChangeTemplate = (template: object) => {
+                                        const onChangeTemplate = (template: SelectQuery) => {
                                             _onChangeTemplate(JSON.stringify(template));
                                         };
                                         return (

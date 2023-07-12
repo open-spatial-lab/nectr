@@ -63,15 +63,15 @@ const DatasetsForm: React.FC = () => {
         metadataUrl.searchParams.append("__metadata__", key);
         const metadataResponse = await fetch(metadataUrl.toString());
         const { columns, preview } = await metadataResponse.json();
-
-        const colList = JSON.parse(columns).map((col: ColumnSchema) => col.name);
+        const parsedColumns = JSON.parse(columns);
+        const colList = parsedColumns.map((col: ColumnSchema) => col.name);
         const dataList = preview.map((row: Record<string, any>) => Object.values(row));
 
         setTable({
             columns: colList,
             data: dataList
         });
-        form && form.setValue("columns", columns);
+        form && form.setValue("columns", parsedColumns);
     };
 
     const uploadFile =
@@ -114,7 +114,7 @@ const DatasetsForm: React.FC = () => {
 
             return null;
         };
-    console.log(dataset)
+
     useEffect(() => {
         dataset?.filename && handleMeta(dataset?.filename);
     }, [dataset?.filename]);
@@ -189,18 +189,19 @@ const DatasetsForm: React.FC = () => {
 
                             <Cell span={12}>
                                 <Bind name="columns">
-                                    {({ value: _columns }) => {
-                                        const columns = JSON.parse(
-                                            _columns || "[]"
-                                        ) as Array<ColumnSchema>;
+                                    {({ value }) => {
+                                        // console.log(columns)
+                                        // const columns = JSON.parse(
+                                        //     _columns || "[]"
+                                        // ) as Array<ColumnSchema>;
 
-                                        const onChangeColumns = (columns: object) => {
-                                            form.setValue("columns", JSON.stringify(columns));
+                                        const onChangeColumns = (value: object) => {
+                                            form.setValue("columns", value);
                                         };
 
                                         return (
                                             <ColumnBuilder
-                                                columns={columns}
+                                                columns={value || []}
                                                 onChange={onChangeColumns}
                                             />
                                         );

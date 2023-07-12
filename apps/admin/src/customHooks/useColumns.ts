@@ -15,7 +15,10 @@ const parseColumns = (source: SourceMeta): Array<MetaColumnSchema> => {
 };
 
 export const useColumns = (query: SelectQuery, sources: Array<SourceMeta>) => {
-    const joins = query.join?.map(join => join.joinTo.from) || [];
+    const joins: any[] = []
+    // let joinDatasets = [];
+    // query.join?.forEach(join => {
+    // const joins = query.join?.map(join => join) || [];
     const fromId = query?.from?.id;
     const columns = React.useMemo(() => {
         let columns: Array<MetaColumnSchema> = [];
@@ -24,12 +27,12 @@ export const useColumns = (query: SelectQuery, sources: Array<SourceMeta>) => {
         if (mainSource) {
             columns = [...columns, ...parseColumns(mainSource)];
         }
-        joins.forEach(join => {
-            const joinSource = sources.find(source => source.id === join.id);
-            if (joinSource) {
-                columns = [...columns, ...parseColumns(joinSource)];
-            }
-        });
+        // joins.forEach(join => {
+        //     const joinSource = sources.find(source => source.id === join.id);
+        //     if (joinSource) {
+        //         columns = [...columns, ...parseColumns(joinSource)];
+        //     }
+        // });
         return columns;
     }, [fromId, JSON.stringify(joins)]);
     return columns;

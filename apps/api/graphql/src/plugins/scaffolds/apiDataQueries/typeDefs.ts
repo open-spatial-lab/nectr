@@ -1,8 +1,89 @@
 export default /* GraphQL */ `
+    enum SourceTypes {
+        ApiDataQuery
+        Dataset
+        Connection
+    }
+    
+    type Source {
+        id: String!
+        type: SourceTypes!
+        title: String!
+    }
+
+    type WhereQuery {
+        sourceId: String!
+        column: String!
+        operator: String!
+        value: String!
+        allowCustom: Boolean
+        customAlias: String
+    }
+
+    type JoinQuery {
+        leftSourceId: String!
+        leftOn: String!
+        rightSourceId: String!
+        rightOn: String!
+        operator: String!
+    }
+
+    type MetaColumnSchema {
+        name: String!
+        sourceId: String!
+        sourceTitle: String!
+        alias: String
+        aggregate: String
+    }
+
+    type GroupByQuery {
+        sourceId: String!
+        column: String!
+    }
+    input SourceInput {
+        id: String!
+        type: SourceTypes!
+        title: String!
+    }
+
+    input WhereQueryInput {
+        sourceId: String!
+        column: String!
+        operator: String!
+        value: String!
+        allowCustom: Boolean
+        customAlias: String
+    }
+
+    input JoinQueryInput {
+        leftSourceId: String!
+        leftOn: String!
+        rightSourceId: String!
+        rightOn: String!
+        operator: String!
+    }
+
+    input MetaColumnSchemaInput {
+        name: String!
+        sourceId: String!
+        sourceTitle: String!
+        alias: String
+        aggregate: String
+    }
+
+    input GroupByQueryInput {
+        sourceId: String!
+        column: String!
+    }
+
     type ApiDataQuery {
         id: ID!
         title: String!
-        template: String
+        sources: [Source]
+        wheres: [WhereQuery]
+        joins: [JoinQuery]
+        columns: [MetaColumnSchema]
+        groupbys: [GroupByQuery]
         createdOn: DateTime!
         savedOn: DateTime!
         isPublic: Boolean
@@ -12,6 +93,8 @@ export default /* GraphQL */ `
         defaultParameters: String
         createdBy: ApiDataQueryCreatedBy
     }
+
+    
 
     type ApiDataQueryCreatedBy {
         id: String!
@@ -27,6 +110,11 @@ export default /* GraphQL */ `
         canEdit: [String]
         canDelete: [String]
         defaultParameters: String
+        sources: [SourceInput]
+        wheres: [WhereQueryInput]
+        joins: [JoinQueryInput]
+        columns: [MetaColumnSchemaInput]
+        groupbys: [GroupByQueryInput]
     }
 
     input ApiDataQueryUpdateInput {
@@ -37,6 +125,11 @@ export default /* GraphQL */ `
         canEdit: [String]
         canDelete: [String]
         defaultParameters: String
+        sources: [SourceInput]
+        wheres: [WhereQueryInput]
+        joins: [JoinQueryInput]
+        columns: [MetaColumnSchemaInput]
+        groupbys: [GroupByQueryInput]
     }
 
     type ApiDataQueriesListMeta {

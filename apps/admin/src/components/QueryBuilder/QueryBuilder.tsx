@@ -132,17 +132,13 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
 
     const handleAddJoin = (source: SourceMeta) => {
         const previousJoin = template.join || [];
-        const joinTo = {
-            id: source.id,
-            from: source,
-            columns: []
-        } as SelectQuery;
 
         handleTemplateChange("join", [
             ...previousJoin,
             {
-                joinTo,
+                leftSourceId: template.from.id,
                 leftOn: "",
+                rightSourceId: source.id,
                 rightOn: "",
                 operator: "inner"
             }
@@ -490,11 +486,12 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
             </Grid>
             {template?.from?.id && (
                 <>
-                    <ColumnSelector
-                        template={template}
+                    {/* <ColumnSelector
+                        // template={template}
+                        sources={[]}
                         handleTemplateChange={handleTemplateChange}
                         columns={availableColumns}
-                    />
+                    /> */}
                     <Grid style={{ padding: 0 }}>
                         <Cell span={6} desktop={6} tablet={6}>
                             <p>Data Filters</p>

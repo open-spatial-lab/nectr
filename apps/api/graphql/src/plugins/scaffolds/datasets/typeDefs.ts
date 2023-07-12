@@ -7,7 +7,7 @@ export default /* GraphQL */ `
         savedOn: DateTime!
         createdBy: DatasetCreatedBy
         isPublic: Boolean!
-        columns: String!
+        columns: [DatasetColumn]
         filename: String!
     }
 
@@ -16,12 +16,25 @@ export default /* GraphQL */ `
         type: String!
         displayName: String!
     }
+    
+    type DatasetColumn {
+        name: String!
+        type: String!
+        description: String
+    }
+
+    input DatasetColumnInput {
+        name: String!
+        type: String!
+        description: String
+    }
+
 
     input DatasetCreateInput {
         title: String!
         description: String
         isPublic: Boolean!
-        columns: String!
+        columns: [DatasetColumnInput]
         filename: String!
     }
 
@@ -29,7 +42,7 @@ export default /* GraphQL */ `
         title: String
         description: String
         isPublic: Boolean!
-        columns: String!
+        columns: [DatasetColumnInput]
         filename: String!
     }
 

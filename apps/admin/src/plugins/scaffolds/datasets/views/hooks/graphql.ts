@@ -8,7 +8,11 @@ export const DATASET_FIELDS_FRAGMENT = /* GraphQL */ `
         description
         createdOn
         savedOn
-        columns
+        columns {
+            name
+            type
+            description
+        }
         isPublic
         filename
         createdBy {

@@ -24,6 +24,11 @@ export default new Entity<ApiDataQueryEntity>({
         canView: { type: "list", default: [] },
         canEdit: { type: "list", default: [] },
         canDelete: { type: "list", default: [] },
+        sources: { type: "list", default: []},
+        wheres: { type: "list", default: []},
+        joins: { type: "list", default: []},
+        columns: { type: "list", default: []},
+        groupbys: { type: "list", default: []},
         defaultParameters: {
             type: "string",
             default: "{}"
