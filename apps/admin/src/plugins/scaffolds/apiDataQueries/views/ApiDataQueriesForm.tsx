@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Form } from "@webiny/form";
 import { Grid, Cell } from "@webiny/ui/Grid";
 import { Input } from "@webiny/ui/Input";
@@ -18,7 +18,7 @@ import { Switch } from "@webiny/ui/Switch";
 import { QueryBuilder } from "../../../../components/QueryBuilder/QueryBuilder";
 import { SelectQuery } from "../../../../components/QueryBuilder/types";
 import { getApiUrl } from "../../../../../../theme/pageElements/utils/dataApiUrl";
-
+import { useApiDataQueriesDataList } from "./hooks/useApiDataQueriesDataList";
 
 /**
  * Renders a form which enables creating new or editing existing Api Data Query entries.
@@ -35,7 +35,14 @@ const ApiDataQueriesForm: React.FC = () => {
         onSubmit,
         datasets
     } = useApiDataQueriesForm();
-    
+
+    const { apiDataQueries } = useApiDataQueriesDataList();
+    console.log(apiDataQuery)
+    const datasetsAndDataviews = useMemo(
+        () => datasets && apiDataQueries ? [...datasets, ...apiDataQueries] : [],
+        [datasets, apiDataQueries]
+    );
+
     if (emptyViewIsShown) {
         return (
             <EmptyView
@@ -48,7 +55,8 @@ const ApiDataQueriesForm: React.FC = () => {
             />
         );
     }
-    const dataQueryLink = apiDataQuery?.id ? getApiUrl(apiDataQuery.id) : null
+    const dataQueryLink = apiDataQuery?.id ? getApiUrl(apiDataQuery.id) : null;
+
     return (
         <Form data={apiDataQuery} onSubmit={onSubmit}>
             {({ data, submit, Bind }) => (
@@ -70,9 +78,17 @@ const ApiDataQueriesForm: React.FC = () => {
                                     />
                                 </Bind>
                             </Cell>
-                            {!!dataQueryLink && <Cell span={12}>
-                                <a href={dataQueryLink} target="_blank" rel="noopener noreferrer">Data link</a>
-                            </Cell>}
+                            {!!dataQueryLink && (
+                                <Cell span={12}>
+                                    <a
+                                        href={dataQueryLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Data link
+                                    </a>
+                                </Cell>
+                            )}
                             <Cell span={12}>
                                 <Bind name="template">
                                     {({ onChange: _onChangeTemplate, value: _template }) => {
@@ -81,10 +97,10 @@ const ApiDataQueriesForm: React.FC = () => {
                                         ) as SelectQuery;
                                         const onChangeTemplate = (template: object) => {
                                             _onChangeTemplate(JSON.stringify(template));
-                                        }
+                                        };
                                         return (
                                             <QueryBuilder
-                                                files={datasets || []}
+                                                sources={datasetsAndDataviews}
                                                 template={template}
                                                 onChangeTemplate={onChangeTemplate}
                                             />

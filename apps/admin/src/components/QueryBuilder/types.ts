@@ -107,19 +107,36 @@ export type WhereQuery = {
     customAlias?: string;
 };
 
+
+export type SourceTypes = "ApiDAtaQuery" | "Dataset" | "Connection"
+
+export type Source = {
+    // webiny ID of the source
+    // can persist through file changes
+    id: string;
+    type: SourceTypes
+    title: string;
+}
+
+export type SourceMeta = Source & {
+    title: string;
+    columns: string;
+    __typename: SourceTypes;
+}
+
 export type JoinQuery = {
-    from: string;
-    fromS3?: boolean;
+    joinTo: SelectQuery;
     leftOn: string;
     rightOn: string;
     operator: JOIN_OPERATOR_TYPES;
 }
 
 export type SelectQuery = {
-    from: string;
-    fromS3?: boolean;
-    columns?: Partial<ColumnSchema>[];
+    from: Source;
+    id: string;
+    columns?: Array<Partial<MetaColumnSchema>>;
     where?: WhereQuery[];
+    // where operator
     combinedOperator?: (typeof COMBINE_OPERATORS)[number];
     limit?: number;
     offset?: number;
@@ -127,14 +144,8 @@ export type SelectQuery = {
     groupby?: string;
 };
 
-
 export type QueryBuilderProps = {
-    files: {
-        title: string;
-        id: string;
-        filename: string;
-        columns: string;
-    }[];
+    sources: Array<SourceMeta>;
     template: SelectQuery;
     onChangeTemplate: BindComponentRenderPropOnChange<object>;
 };
@@ -153,3 +164,8 @@ export type ColumnSchema = {
     datasetId?: string;
     aggregate?:  AGGREGATE_FUNCTION_TYPES;
 };
+
+export type MetaColumnSchema = ColumnSchema & {
+    sourceId: string,
+    sourceTitle: string
+}
