@@ -1,4 +1,3 @@
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { Table } from "dynamodb-toolbox";
 // @ts-ignore
 import { documentClient } from "./documentClient";
@@ -9,8 +8,12 @@ import { documentClient } from "./documentClient";
  * during a previous deployment).
  * https://www.webiny.com/docs/how-to-guides/scaffolding/extend-graphql-api#essential-files
  */
+const name = process.env['TESTING'] == 'true'
+ ? 'test'
+ : process.env.DB_TABLE as string;
+
 export default new Table({
-    name: process.env.DB_TABLE as string,
+    name,
     partitionKey: "PK",
     sortKey: "SK",
     entityField: "TYPE",
