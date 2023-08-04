@@ -10,7 +10,7 @@ const S3_BUCKET = (process.env.S3_BUCKET as string) || "data-api-dev";
 const connection = new Connection();
 const logger = getLogger();
 
-
+ 
 export const handler = metricScope(
     metrics =>
         async (event: APIGatewayEvent, context: Context, callback: APIGatewayProxyCallback) => {

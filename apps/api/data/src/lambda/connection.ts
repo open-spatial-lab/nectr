@@ -1,10 +1,11 @@
 // @ts-ignore
 import DuckDB from "duckdb";
 import { QueryResponse } from "../types/types";
-import QuerySchemas from "./schemas";
+import SchemaService from "./schemas";
 import { BucketManager } from "./bucketManager";
+import { SqlBuilder } from "./sqlBuilder";
 
-const schemas = new QuerySchemas();
+const schemaService = new SchemaService();
 const bucket = new BucketManager(process.env["DATA_BUCKET"]!, process.env["AWS_REGION"]!);
 
 export default class Connection {
@@ -30,8 +31,6 @@ export default class Connection {
             await this.query("SET home_directory='/tmp';")
             await this.query(`INSTALL httpfs;`)
             await this.query(`LOAD httpfs;`)
-            // await this.query(`INSTALL '/opt/nodejs/node_modules/duckdb/extensions/spatial.duckdb_extension';`)
-            // await this.query(`LOAD '/opt/nodejs/node_modules/duckdb/extensions/spatial.duckdb_extension';`)
             await this.query(`INSTALL spatial;`)
             await this.query(`LOAD spatial;`)
             await this.query(`SET enable_http_metadata_cache=true;`);
@@ -83,25 +82,20 @@ export default class Connection {
     // }
 
     async handleIdQuery(id: string, params: any): Promise<QueryResponse<any, string>> {
-        const schema = await schemas.handleRequest({
-            id,
-            params
-        });
-        // console.log('SCHEMA', JSON.stringify(schema, null, 2))
+        const schema = await schemaService.getSchema(id);
 
         if (!schema.ok) {
             return schema;
         }
-
+        const sqlBuilder = new SqlBuilder(
+            // @ts-ignore
+            schema.result,
+            params,
+        )
+        await sqlBuilder.buildStatement();
+        const query = sqlBuilder.queryString;
         try {
-            console.log("Schema", JSON.stringify(schema, null, 2))
-            console.log(this.connection, this.duckDB)
-            const data = await this.query(schema.result);
-            // if (data.ok) await schemas.cacheResult(
-            //     id,
-            //     params,
-            //     data.result
-            // )
+            const data = await this.query(query);
             return data;
         } catch (err) {
             console.log(err);
@@ -109,7 +103,7 @@ export default class Connection {
             return {
                 error: `Error at handle id query: ${JSON.stringify(
                     err
-                )}; \n Schema: \n ${JSON.stringify(schema)}`,
+                )}; \n Schema: \n ${JSON.stringify(schema)} \n Query: ${query}`,
                 ok: false
             };
         }

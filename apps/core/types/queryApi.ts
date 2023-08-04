@@ -1,12 +1,15 @@
 import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda"
-
-export type QueryResponse<Res, Err> = {
-  result: Res;
-  ok: true;
-} | {
+export type ErrorResponse<Err> = {
   error: Err;
   ok: false;
 }
+
+export type SuccessResponse<Res> = {
+  ok: true;
+  result: Res;
+}
+
+export type QueryResponse<Res, Err> = SuccessResponse<Res> | ErrorResponse<Err>
 
 export type SqlString = string;
 
