@@ -5,6 +5,7 @@ import { SourceMeta } from "../components/QueryBuilder/types";
 
 const parseColumns = (source: SourceMeta): Array<MetaColumnSchema> => {
     const columns = source.columns;
+    // @ts-ignore
     const parsedColumns = JSON.parse(columns) as Array<ColumnSchema>;
     const mappedColumns = parsedColumns.map(column => ({
         ...column,

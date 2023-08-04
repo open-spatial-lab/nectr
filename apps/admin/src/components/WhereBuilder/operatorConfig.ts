@@ -35,6 +35,11 @@ export const operatorConfig: {
       inputs: ["number"],
       explanation: "a number"
   },
+  Not: {
+        label: "Not",
+        inputs: ["text"],
+        explanation: "a number or text"
+  },
   In: {
       label: "One of",
       inputs: ["chips"],

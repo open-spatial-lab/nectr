@@ -506,7 +506,7 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
                         </Cell>
                     </Grid>
 
-                    <WhereBuilder
+                    {/* <WhereBuilder
                         template={template}
                         handleTemplateChange={handleTemplateChange}
                         columns={
@@ -514,7 +514,7 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
                             template.columns?.map(getColName) ||
                             []
                         }
-                    />
+                    /> */}
                     <Dialog open={groupDialogOpen} onClose={toggleGroupDialog}>
                         <DialogContent>
                             <p>

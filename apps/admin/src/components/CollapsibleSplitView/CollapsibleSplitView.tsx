@@ -68,6 +68,8 @@ const CollapsibleLeftPanel: React.FC<LeftPanelCollabsibleCellProps> = props => {
     const propList = clone(props);
     const { expanded, title, onToggle } = props as LeftPanelCollabsibleCellProps;
     const span = expanded ? 4 : 0;
+    // @ts-ignore
+    propList.expanded = propList.expanded.toString();
 
     return (
         <Cell
@@ -101,6 +103,8 @@ const CollapsibleLeftPanel: React.FC<LeftPanelCollabsibleCellProps> = props => {
 const CollapsibleRightPanel: React.FC<CollapsibleCellProps> = props => {
     const propList = clone(props);
     const span = props.expanded ? 12 : 8;
+    // @ts-ignore
+    propList.expanded = propList.expanded.toString();
 
     return (
         <Cell {...getClasses(propList, "webiny-split-view__right-panel")} span={span}>

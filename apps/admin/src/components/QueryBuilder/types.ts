@@ -97,13 +97,14 @@ export type OPERATOR_ARGS = {
     ILike: [string];
 };
 
+
 export const COMBINE_OPERATORS = ["and", "or"] as const;
 
 export type WhereQuery = {
     sourceId: string;
     column: string;
     operator: OPERATOR_TYPES;
-    value: OPERATOR_ARGS[OPERATOR_TYPES];
+    value?: OPERATOR_ARGS[OPERATOR_TYPES] | any;
     allowCustom?: boolean;
     customAlias?: string;
 };
@@ -116,12 +117,13 @@ export type Source = {
     // can persist through file changes
     id: string;
     type: SourceTypes
+    TYPE?: string;
     title: string;
 }
 
 export type SourceMeta = Source & {
     title: string;
-    columns: string;
+    columns: Array<ColumnSchema>;
     __typename: SourceTypes;
 }
 
@@ -150,6 +152,19 @@ export type SelectQuery = {
     join?: JoinQuery[];
     groupby?: string;
 };
+
+export type QuerySchema = {
+    id: string;
+    name: string;
+    columns?: Array<Partial<MetaColumnSchema>>;
+    sources?: Array<SourceMeta>;
+    wheres?: Array<WhereQuery>;
+    joins?: Array<JoinQuery>;
+    groupbys?: GroupByQuery;
+    combinedOperator?: (typeof COMBINE_OPERATORS)[number];
+    limit?: number;
+    offset?: number;
+}
 
 export type QueryBuilderProps = {
     sources: Array<SourceMeta>;

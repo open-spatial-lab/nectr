@@ -1,99 +1,168 @@
 import React from "react";
-import { SelectQuery, WhereQuery } from "../QueryBuilder";
-import { WhereBuilderRow } from "./WhereBuilderRow";
+import { WhereQuery } from "../QueryBuilder";
+import { OPERATORS, OPERATOR_TYPES, SourceMeta } from "../QueryBuilder/types";
+import {
+    Chip,
+    FormControl,
+    FormControlLabel,
+    MenuItem,
+    Select,
+    Switch,
+    TextField,
+    InputLabel
+} from "@mui/material";
+import DialogTitle from "@mui/material/DialogTitle";
+import Dialog from "@mui/material/Dialog";
+import { ColumnExplorer } from "../ColumnSelector";
+import { NoPaddingGrid } from "../SplitView";
+import { Cell } from "@webiny/ui/Grid";
 import { operatorConfig } from "./operatorConfig";
-import { HandleWhereChangeArgs } from "./types";
-import { Grid, Cell } from "@webiny/ui/Grid";
-import { Select } from "@webiny/ui/Select";
-import { ButtonDefault as Button } from "@webiny/ui/Button";
-
 export const WhereBuilder: React.FC<{
-  template: SelectQuery;
-  handleTemplateChange: (key: keyof SelectQuery, value: SelectQuery[keyof SelectQuery]) => void;
-  columns: string[];
-}> = ({ template, handleTemplateChange, columns }) => {
-  const handleWhereChange = ({ action, index, key, value }: HandleWhereChangeArgs) => {
-      switch (action) {
-          case "add":
-              handleTemplateChange("where", [
-                  ...(template.where || []),
-                  {
-                      column: "",
-                      operator: "=",
-                      value: [""]
-                  }
-              ] as WhereQuery[]);
-              break;
-          case "remove":
-              handleTemplateChange(
-                  "where",
-                  (template.where || []).filter((_, i) => i !== index)
-              );
-              break;
-          case "update":
-              if (index == undefined || key === undefined || !template?.where?.[index]) {
-                  return;
-              }
-              const clause = {
-                  ...template.where[index],
-                  [key]: value
-              };
-              const newWhereTemplate = template.where.map((item, i) =>
-                  i === index ? clause : item
-              );
-              handleTemplateChange("where", newWhereTemplate);
-              break;
-          default:
-              break;
-      }
-  };
-  return (
-      <div>
-          {template.where?.map((clause, index) => (
-              <Grid style={{ padding: "1rem 0" }} key={index}>
-                  <Cell span={3} desktop={3} tablet={3}>
-                      <Select
-                          label={"Column"}
-                          description={"Choose your column"}
-                          value={clause.column}
-                          options={columns}
-                          onChange={val =>
-                              handleWhereChange({
-                                  action: "update",
-                                  index,
-                                  key: "column",
-                                  value: val
-                              })
-                          }
-                      />
-                  </Cell>
-                  <Cell span={3} desktop={3} tablet={6}>
-                      <Select
-                          label={"Constraint"}
-                          description={"Choose a constraint"}
-                          value={operatorConfig[clause.operator]?.label}
-                          options={Object.values(operatorConfig).map(item => item.label)}
-                          onChange={val =>
-                              handleWhereChange({
-                                  action: "update",
-                                  index,
-                                  key: "operator",
-                                  value: Object.entries(operatorConfig).find(
-                                      ([, value]) => value.label === val
-                                  )?.[0]
-                              })
-                          }
-                      />
-                  </Cell>
+    currentSources: SourceMeta[];
+    wheres: WhereQuery[];
+    onChange: (value: WhereQuery[]) => void;
+}> = ({ currentSources, wheres, onChange }) => {
+    const [openWhereDialogIndex, setOpenWhereDialogIndex] = React.useState<number>(-1);
+    const handleWhereChangeAtIndex = <T extends keyof WhereQuery>(
+        index: number,
+        property: T,
+        value: WhereQuery[T]
+    ) => {
+        wheres[index][property] = value;
+        onChange([...wheres]);
+    };
+    const removeWhereAtIndex = (index: number) => {
+        wheres.splice(index, 1);
+        onChange([...wheres]);
+    };
+    const addWhere = () => {
+        onChange([
+            ...wheres,
+            {
+                sourceId: currentSources[0].id,
+                column: currentSources[0].columns[0].name,
+                operator: OPERATORS[0],
+                value: undefined
+            } as WhereQuery
+        ]);
+    };
+    const openWhereConfig = wheres[openWhereDialogIndex];
+    return (
+        <div>
+            {wheres.map((where, index) => (
+                <Chip
+                    key={index}
+                    label={`${where.column} ${where.operator} ${where.value || ""}`}
+                    onClick={() => setOpenWhereDialogIndex(index)}
+                    onDelete={() => removeWhereAtIndex(index)}
+                />
+            ))}
+            <Chip
+                label="Add New Filter"
+                component="a"
+                href="#basic-chip"
+                variant="outlined"
+                clickable
+                onClick={addWhere}
+            />
+            {!!openWhereConfig && (
+                <WhereDialog
+                    where={openWhereConfig}
+                    currentSources={currentSources}
+                    onChange={(prop, val) =>
+                        handleWhereChangeAtIndex(openWhereDialogIndex, prop, val)
+                    }
+                    onClose={() => setOpenWhereDialogIndex(-1)}
+                />
+            )}
+        </div>
+    );
+};
 
-                  <WhereBuilderRow
-                      clause={clause}
-                      index={index}
-                      handleWhereChange={handleWhereChange}
-                  />
-              </Grid>
-          ))}
-          <Button onClick={() => handleWhereChange({ action: "add" })}>Add New Filter</Button>
-      </div>
-  );
+export const WhereDialog: React.FC<{
+    where: WhereQuery;
+    currentSources: SourceMeta[];
+    onChange: <T extends keyof WhereQuery>(property: T, value: WhereQuery[T]) => void;
+    onClose: () => void;
+}> = ({ where, currentSources, onChange, onClose }) => {
+    return (
+        <Dialog onClose={onClose} open={true} fullWidth maxWidth="lg">
+            <DialogTitle>Configure Data Filter</DialogTitle>
+            {/* column */}
+            <NoPaddingGrid style={{ padding: "1rem", width: "100%" }}>
+                <Cell span={8}>
+                    <ColumnExplorer
+                        sources={currentSources}
+                        onClick={(column, source) => {
+                            onChange("column", column.name);
+                            source && onChange("sourceId", source.id);
+                        }}
+                        currentColumn={where.column}
+                        currentSourceId={where.sourceId}
+                    />
+                </Cell>
+                {/* operation */}
+                {/* default */}
+                <Cell span={4}>
+                    <FormControl fullWidth variant="filled">
+                        <InputLabel id="demo-simple-select-label">Filter Type</InputLabel>
+                        <Select
+                            value={where.operator}
+                            label={"Filter Type"}
+                            onChange={e => {
+                                onChange("operator", e.target.value as OPERATOR_TYPES);
+                                onChange("value", undefined);
+                            }}
+                        >
+                            {OPERATORS.map((op, idx) => (
+                                <MenuItem key={idx} value={op}>
+                                    {operatorConfig[op]?.label}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <hr style={{ margin: "1rem 0 " }} />
+                    <TextField
+                        fullWidth
+                        variant="filled"
+                        value={where.value || ""}
+                        label={"Default Filter Value"}
+                        // @ts-ignore
+                        onChange={e => onChange("value", e.target.value)}
+                    />
+                </Cell>
+                {/* allow custom */}
+                {/* alias */}
+                <Cell span={12}>
+                    <hr />
+                    <p>Advanced</p>
+                </Cell>
+                <Cell span={3}>
+                    <FormControl>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={where.allowCustom}
+                                    onChange={() => onChange("allowCustom", !where.allowCustom)}
+                                />
+                            }
+                            label="Allow Custom Query Values"
+                        />
+                    </FormControl>
+                </Cell>
+                <Cell span={6}>
+                    <TextField
+                        fullWidth
+                        variant="filled"
+                        disabled={!where.allowCustom}
+                        label="Custom Query Value Alias"
+                        value={where.customAlias || ""}
+                        required={where.allowCustom}
+                        // @ts-ignore
+                        onChange={e => onChange("customAlias", e.target.value)}
+                    />
+                </Cell>
+            </NoPaddingGrid>
+        </Dialog>
+    );
 };
