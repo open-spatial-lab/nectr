@@ -1,13 +1,8 @@
 export default /* GraphQL */ `
-    enum SourceTypes {
-        ApiDataQuery
-        Dataset
-        Connection
-    }
     
     type Source {
         id: String!
-        type: SourceTypes!
+        type: String!
         title: String!
     }
 
@@ -42,7 +37,7 @@ export default /* GraphQL */ `
     }
     input SourceInput {
         id: String!
-        type: SourceTypes!
+        type: String!
         title: String!
     }
 

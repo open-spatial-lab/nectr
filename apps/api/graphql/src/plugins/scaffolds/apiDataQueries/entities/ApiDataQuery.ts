@@ -7,6 +7,7 @@ import { ApiDataQueryEntity } from "../types";
  * Once we have the table, we define the ApiDataQueryEntity entity.
  * If needed, additional entities can be defined using the same approach.
  */
+// @ts-ignore
 export default new Entity<ApiDataQueryEntity>({
     table,
     name: "ApiDataQuery",

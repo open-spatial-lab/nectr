@@ -9,6 +9,7 @@ import {
     LIST_API_DATA_QUERIES
 } from "./graphql";
 import { LIST_DATASETS } from "../../../datasets/views/hooks/graphql";
+import { QuerySchema } from "apps/admin/src/components/QueryBuilder/types";
 
 /**
  * Contains essential form functionality: data fetching, form submission, notifications, redirecting, and more.
@@ -76,7 +77,7 @@ export const useApiDataQueriesForm = () => {
         [currentApiDataQueryId]
     );
 
-    const apiDataQuery = getQuery?.data?.apiDataQueries?.getApiDataQuery;
+    const apiDataQuery = getQuery?.data?.apiDataQueries?.getApiDataQuery as QuerySchema;
     const emptyViewIsShown = !searchParams.has("new") && !loading && !apiDataQuery;
     const currentApiDataQuery = useCallback(() => history.push("/api-data-queries?new"), []);
     const cancelEditing = useCallback(() => history.push("/api-data-queries"), []);
