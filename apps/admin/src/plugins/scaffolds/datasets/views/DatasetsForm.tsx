@@ -1,34 +1,34 @@
-import React, { useEffect, useState } from "react";
-import { Form, type FormAPI } from "@webiny/form";
-import { Grid, Cell } from "@webiny/ui/Grid";
-import { Input } from "@webiny/ui/Input";
-import { ButtonDefault, ButtonIcon, ButtonPrimary } from "@webiny/ui/Button";
-import { CircularProgress } from "@webiny/ui/Progress";
-import EmptyView from "@webiny/app-admin/components/EmptyView";
-import { validation } from "@webiny/validation";
-import { ReactComponent as AddIcon } from "@webiny/app-admin/assets/icons/add-18px.svg";
+import React, { useEffect, useState } from 'react'
+import { Form, type FormAPI } from '@webiny/form'
+import { Grid, Cell } from '@webiny/ui/Grid'
+import { Input } from '@webiny/ui/Input'
+import { ButtonDefault, ButtonIcon, ButtonPrimary } from '@webiny/ui/Button'
+import { CircularProgress } from '@webiny/ui/Progress'
+import EmptyView from '@webiny/app-admin/components/EmptyView'
+import { validation } from '@webiny/validation'
+import { ReactComponent as AddIcon } from '@webiny/app-admin/assets/icons/add-18px.svg'
 import {
-    SimpleForm,
-    SimpleFormFooter,
-    SimpleFormContent,
-    SimpleFormHeader
-} from "@webiny/app-admin/components/SimpleForm";
-import { useDatasetsForm } from "./hooks/useDatasetsForm";
-import { useMutation, useApolloClient } from "@apollo/react-hooks";
-import get from "lodash/get";
+  SimpleForm,
+  SimpleFormFooter,
+  SimpleFormContent,
+  SimpleFormHeader
+} from '@webiny/app-admin/components/SimpleForm'
+import { useDatasetsForm } from './hooks/useDatasetsForm'
+import { useMutation, useApolloClient } from '@apollo/react-hooks'
+import get from 'lodash/get'
 import {
-    CREATE_FILE,
-    CreateFileMutationVariables,
-    CreateFileMutationResponse
-} from "@webiny/app-admin/components/FileManager/graphql";
-import { type FileItem } from "@webiny/app-admin/components/FileManager/types";
-import getFileUploader from "@webiny/app-admin/components/FileManager/getFileUploader";
-import { ColumnSchema } from "../types";
-import { FileUploader } from "../assets/FileUploader";
-import { TablePreview } from "../assets/TablePreview";
-import { Switch } from "@webiny/ui/Switch";
-import ColumnBuilder from "../../../../components/ColumnBuilder";
-import { getApiUrl } from "../../../../../../theme/pageElements/utils/dataApiUrl";
+  CREATE_FILE,
+  CreateFileMutationVariables,
+  CreateFileMutationResponse
+} from '@webiny/app-admin/components/FileManager/graphql'
+import { type FileItem } from '@webiny/app-admin/components/FileManager/types'
+import getFileUploader from '@webiny/app-admin/components/FileManager/getFileUploader'
+import { ColumnSchema } from '../types'
+import { FileUploader } from '../assets/FileUploader'
+import { TablePreview } from '../assets/TablePreview'
+import { Switch } from '@webiny/ui/Switch'
+import ColumnBuilder from '../../../../components/ColumnBuilder'
+import { getApiUrl } from '../../../../../../theme/pageElements/utils/dataApiUrl'
 
 /**
  * Renders a form which enables creating new or editing existing Dataset entries.
@@ -36,202 +36,194 @@ import { getApiUrl } from "../../../../../../theme/pageElements/utils/dataApiUrl
  * The form submission-related functionality is located in the `useDatasetsForm` React hook.
  */
 const DatasetsForm: React.FC = () => {
-    const { loading, emptyViewIsShown, currentDataset, cancelEditing, dataset, onSubmit } =
-        useDatasetsForm();
+  const { loading, emptyViewIsShown, currentDataset, cancelEditing, dataset, onSubmit } =
+    useDatasetsForm()
 
-    const [uploading, setUploading] = useState({
-        status: "not uploaded",
-        filename: ""
-    });
+  const [uploading, setUploading] = useState({
+    status: 'not uploaded',
+    filename: ''
+  })
 
-    const [table, setTable] = useState<{
-        columns: any[];
-        data: any[][];
-    }>({
-        columns: [],
-        data: [[]]
-    });
+  const [table, setTable] = useState<{
+    columns: any[]
+    data: any[][]
+  }>({
+    columns: [],
+    data: [[]]
+  })
 
-    const apolloClient = useApolloClient();
+  const apolloClient = useApolloClient()
 
-    const [createFile] = useMutation<CreateFileMutationResponse, CreateFileMutationVariables>(
-        CREATE_FILE,
-        {}
-    );
-    const handleMeta = async (key: string, form?: FormAPI) => {
-        const metadataUrl = new URL(getApiUrl("__"));
-        metadataUrl.searchParams.append("__metadata__", key);
-        const metadataResponse = await fetch(metadataUrl.toString());
-        const { columns, preview } = await metadataResponse.json();
-        const parsedColumns = JSON.parse(columns);
-        const colList = parsedColumns.map((col: ColumnSchema) => col.name);
-        const dataList = preview.map((row: Record<string, any>) => Object.values(row));
+  const [createFile] = useMutation<CreateFileMutationResponse, CreateFileMutationVariables>(
+    CREATE_FILE,
+    {}
+  )
+  const handleMeta = async (key: string, form?: FormAPI) => {
+    const metadataUrl = new URL(getApiUrl('__'))
+    metadataUrl.searchParams.append('__metadata__', key)
+    const metadataResponse = await fetch(metadataUrl.toString())
+    const { columns, preview } = await metadataResponse.json()
+    const parsedColumns = JSON.parse(columns)
+    const colList = parsedColumns.map((col: ColumnSchema) => col.name)
+    const dataList = preview.map((row: Record<string, any>) => Object.values(row))
 
-        setTable({
-            columns: colList,
-            data: dataList
-        });
-        form && form.setValue("columns", parsedColumns);
-    };
+    setTable({
+      columns: colList,
+      data: dataList
+    })
+    form && form.setValue('columns', parsedColumns)
+  }
 
-    const uploadFile =
-        (form: FormAPI) =>
-        async (files: FileItem): Promise<number | null> => {
-            setUploading({
-                status: "uploading",
-                filename: files.name
-            });
-            const file: FileItem = Array.isArray(files) ? files[0] : files;
-            const filetype = file.name.split(".").pop();
-            const errors: any[] = [];
+  const uploadFile =
+    (form: FormAPI) =>
+    async (files: FileItem): Promise<number | null> => {
+      setUploading({
+        status: 'uploading',
+        filename: files.name
+      })
+      const file: FileItem = Array.isArray(files) ? files[0] : files
+      const filetype = file.name.split('.').pop()
+      const errors: any[] = []
 
-            try {
-                const response = await getFileUploader()(file, { apolloClient });
-                const createFileResponse = await createFile({
-                    variables: {
-                        data: {
-                            ...response,
-                            tags: ["data upload", filetype || "uknown filetype"]
-                        }
-                    }
-                });
-                const fileUploadData = get(
-                    createFileResponse,
-                    "data.fileManager.createFile.data"
-                ) as unknown as FileItem;
-                await handleMeta(fileUploadData.key, form);
-                setUploading({
-                    status: "uploaded",
-                    filename: fileUploadData.name
-                });
-
-                form.setValue("filename", fileUploadData.name);
-
-                return 1;
-            } catch (e) {
-                errors.push({ file, e });
+      try {
+        const response = await getFileUploader()(file, { apolloClient })
+        const createFileResponse = await createFile({
+          variables: {
+            data: {
+              ...response,
+              tags: ['data upload', filetype || 'uknown filetype']
             }
+          }
+        })
+        const fileUploadData = get(
+          createFileResponse,
+          'data.fileManager.createFile.data'
+        ) as unknown as FileItem
+        await handleMeta(fileUploadData.key, form)
+        setUploading({
+          status: 'uploaded',
+          filename: fileUploadData.name
+        })
 
-            return null;
-        };
+        form.setValue('filename', fileUploadData.name)
 
-    useEffect(() => {
-        dataset?.filename && handleMeta(dataset?.filename);
-    }, [dataset?.filename]);
+        return 1
+      } catch (e) {
+        errors.push({ file, e })
+      }
 
-    // const handlePreview = (setValue: Function) => (results: Papa.ParseResult<unknown>) => {
-    //     if (results.errors.length > 0) {
-    //         return;
-    //     }
-    //     const columns = results.data[0] as unknown[];
-    //     const data = results.data.slice(1) as any[][];
-    //     setTable({
-    //         columns,
-    //         data
-    //     });
-    //     const columnData: Array<ColumnSchema> = columns.map(column => ({
-    //         name: column as string,
-    //         type: "Text",
-    //         description: `A column named "${column}"`
-    //     }));
-
-    //     setValue("columns", JSON.stringify(columnData));
-    // };
-
-    if (emptyViewIsShown) {
-        return (
-            <EmptyView
-                title={"Click on the left side list to display Datasets details or create a..."}
-                action={
-                    <ButtonDefault onClick={currentDataset}>
-                        <ButtonIcon icon={<AddIcon />} /> {"New Dataset"}
-                    </ButtonDefault>
-                }
-            />
-        );
+      return null
     }
 
+  useEffect(() => {
+    dataset?.filename && handleMeta(dataset?.filename)
+  }, [dataset?.filename])
+
+  // const handlePreview = (setValue: Function) => (results: Papa.ParseResult<unknown>) => {
+  //     if (results.errors.length > 0) {
+  //         return;
+  //     }
+  //     const columns = results.data[0] as unknown[];
+  //     const data = results.data.slice(1) as any[][];
+  //     setTable({
+  //         columns,
+  //         data
+  //     });
+  //     const columnData: Array<ColumnSchema> = columns.map(column => ({
+  //         name: column as string,
+  //         type: "Text",
+  //         description: `A column named "${column}"`
+  //     }));
+
+  //     setValue("columns", JSON.stringify(columnData));
+  // };
+
+  if (emptyViewIsShown) {
     return (
-        <Form data={dataset} onSubmit={onSubmit}>
-            {({ form, data, submit, Bind }) => (
-                <SimpleForm>
-                    {loading && <CircularProgress />}
-                    <SimpleFormHeader title={data.title || "New Dataset"} />
-                    <FileUploader uploading={uploading} uploadFile={uploadFile(form)} form={form} />
+      <EmptyView
+        title={'Click on the left side list to display Datasets details or create a...'}
+        action={
+          <ButtonDefault onClick={currentDataset}>
+            <ButtonIcon icon={<AddIcon />} /> {'New Dataset'}
+          </ButtonDefault>
+        }
+      />
+    )
+  }
 
-                    <SimpleFormContent>
-                        <Grid>
-                            <Cell span={5}>
-                                <Bind name="title" validators={validation.create("required")}>
-                                    <Input label={"Title"} />
-                                </Bind>
-                            </Cell>
-                            <Cell span={5}>
-                                <Bind name="filename" validators={validation.create("required")}>
-                                    <Input label={"File"} disabled />
-                                </Bind>
-                            </Cell>
-                            <Cell span={2}>
-                                <TablePreview table={table} />
-                            </Cell>
-                            <Cell span={12}>
-                                <Bind
-                                    name="description"
-                                    validators={validation.create("maxLength:500")}
-                                >
-                                    <Input
-                                        label={"Description"}
-                                        description={"Provide a short description here."}
-                                        rows={4}
-                                    />
-                                </Bind>
-                            </Cell>
+  return (
+    <Form data={dataset} onSubmit={onSubmit}>
+      {({ form, data, submit, Bind }) => (
+        <SimpleForm>
+          {loading && <CircularProgress />}
+          <SimpleFormHeader title={data.title || 'New Dataset'} />
+          <FileUploader uploading={uploading} uploadFile={uploadFile(form)} form={form} />
 
-                            <Cell span={12}>
-                                <Bind name="columns">
-                                    {({ value }) => {
-                                        // console.log(columns)
-                                        // const columns = JSON.parse(
-                                        //     _columns || "[]"
-                                        // ) as Array<ColumnSchema>;
+          <SimpleFormContent>
+            <Grid>
+              <Cell span={5}>
+                <Bind name="title" validators={validation.create('required')}>
+                  <Input label={'Title'} />
+                </Bind>
+              </Cell>
+              <Cell span={5}>
+                <Bind name="filename" validators={validation.create('required')}>
+                  <Input label={'File'} disabled />
+                </Bind>
+              </Cell>
+              <Cell span={2}>
+                <TablePreview table={table} />
+              </Cell>
+              <Cell span={12}>
+                <Bind name="description" validators={validation.create('maxLength:500')}>
+                  <Input
+                    label={'Description'}
+                    description={'Provide a short description here.'}
+                    rows={4}
+                  />
+                </Bind>
+              </Cell>
 
-                                        const onChangeColumns = (value: object) => {
-                                            form.setValue("columns", value);
-                                        };
+              <Cell span={12}>
+                <Bind name="columns">
+                  {({ value }) => {
+                    // console.log(columns)
+                    // const columns = JSON.parse(
+                    //     _columns || "[]"
+                    // ) as Array<ColumnSchema>;
 
-                                        return (
-                                            <ColumnBuilder
-                                                columns={value || []}
-                                                onChange={onChangeColumns}
-                                            />
-                                        );
-                                    }}
-                                </Bind>
-                            </Cell>
-                            <Cell span={12}>
-                                <Bind name="isPublic">
-                                    <Switch
-                                        label={"Data Visible"}
-                                        description={"Should this data be visible to the public?"}
-                                    />
-                                </Bind>
-                            </Cell>
-                        </Grid>
-                    </SimpleFormContent>
-                    <SimpleFormFooter>
-                        <ButtonDefault onClick={cancelEditing}>Cancel</ButtonDefault>
-                        <ButtonPrimary
-                            onClick={ev => {
-                                submit(ev);
-                            }}
-                        >
-                            Save Dataset
-                        </ButtonPrimary>
-                    </SimpleFormFooter>
-                </SimpleForm>
-            )}
-        </Form>
-    );
-};
+                    const onChangeColumns = (value: object) => {
+                      form.setValue('columns', value)
+                    }
 
-export default DatasetsForm;
+                    return <ColumnBuilder columns={value || []} onChange={onChangeColumns} />
+                  }}
+                </Bind>
+              </Cell>
+              <Cell span={12}>
+                <Bind name="isPublic">
+                  <Switch
+                    label={'Data Visible'}
+                    description={'Should this data be visible to the public?'}
+                  />
+                </Bind>
+              </Cell>
+            </Grid>
+          </SimpleFormContent>
+          <SimpleFormFooter>
+            <ButtonDefault onClick={cancelEditing}>Cancel</ButtonDefault>
+            <ButtonPrimary
+              onClick={ev => {
+                submit(ev)
+              }}
+            >
+              Save Dataset
+            </ButtonPrimary>
+          </SimpleFormFooter>
+        </SimpleForm>
+      )}
+    </Form>
+  )
+}
+
+export default DatasetsForm

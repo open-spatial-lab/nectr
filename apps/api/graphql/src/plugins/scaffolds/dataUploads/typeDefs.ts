@@ -86,4 +86,4 @@ export default /* GraphQL */ `
     extend type Mutation {
         dataUploads: DataUploadMutation
     }
-`;
+`

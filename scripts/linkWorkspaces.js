@@ -3,7 +3,7 @@
  * - {workspace}/package.json -> publishConfig.directory
  * - workspace root directory
  */
-(async () => {
-    const { linkWorkspaces } = require("@webiny/project-utils/workspaces");
-    await linkWorkspaces();
-})();
+;(async () => {
+  const { linkWorkspaces } = require('@webiny/project-utils/workspaces')
+  await linkWorkspaces()
+})()

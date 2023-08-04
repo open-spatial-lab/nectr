@@ -1,7 +1,7 @@
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
+import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 
 // https://github.com/jeremydaly/dynamodb-toolbox
-import { Table } from "dynamodb-toolbox";
+import { Table } from 'dynamodb-toolbox'
 
 /**
  * Everything starts with a table. Note that the `name` property is passed via an environment
@@ -11,9 +11,9 @@ import { Table } from "dynamodb-toolbox";
  * https://www.webiny.com/docs/how-to-guides/scaffolding/extend-graphql-api#essential-files
  */
 export default new Table({
-    name: process.env.DB_TABLE as string,
-    partitionKey: "PK",
-    sortKey: "SK",
-    entityField: "TYPE",
-    DocumentClient: new DocumentClient()
-});
+  name: process.env.DB_TABLE as string,
+  partitionKey: 'PK',
+  sortKey: 'SK',
+  entityField: 'TYPE',
+  DocumentClient: new DocumentClient()
+})

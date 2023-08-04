@@ -1,3 +1,3 @@
-import { ColumnBuilder } from "./ColumnBuilder";
+import { ColumnBuilder } from './ColumnBuilder'
 
-export default ColumnBuilder;
+export default ColumnBuilder

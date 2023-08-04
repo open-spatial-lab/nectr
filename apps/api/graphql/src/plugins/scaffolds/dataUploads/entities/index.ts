@@ -1,5 +1,5 @@
-export { default as table } from "./table";
-export { default as DataUpload } from "./DataUpload";
+export { default as table } from './table'
+export { default as DataUpload } from './DataUpload'
 
 /**
  * This folder contains all of the entities that you might need in your application.

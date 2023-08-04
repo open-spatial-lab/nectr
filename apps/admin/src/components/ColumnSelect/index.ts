@@ -1,5 +1,3 @@
-import { ColumnSelect } from "./ColumnSelect";
+import { ColumnSelect } from './ColumnSelect'
 
-export {
-  ColumnSelect,
-}
+export { ColumnSelect }

@@ -1,11 +1,11 @@
-import { ApiDataQueryEntity } from "../types";
+import { ApiDataQueryEntity } from '../types'
 /**
  * Package mdbid is missing types.
  */
 // @ts-ignore
-import mdbid from "mdbid";
-import { ApiDataQuery } from "../entities";
-import ApiDataQueriesResolver from "./ApiDataQueriesResolver";
+import mdbid from 'mdbid'
+import { ApiDataQuery } from '../entities'
+import ApiDataQueriesResolver from './ApiDataQueriesResolver'
 
 /**
  * Contains base `createApiDataQuery`, `updateApiDataQuery`, and `deleteApiDataQuery` GraphQL resolver functions.
@@ -15,28 +15,28 @@ import ApiDataQueriesResolver from "./ApiDataQueriesResolver";
  */
 
 interface CreateApiDataQueryParams {
-    data: {
-        title: string;
-        template?: string;
-    };
+  data: {
+    title: string
+    template?: string
+  }
 }
 
 interface UpdateApiDataQueryParams {
-    id: string;
-    data: {
-        title: string;
-        template?: string;
-    };
+  id: string
+  data: {
+    title: string
+    template?: string
+  }
 }
 
 interface DeleteApiDataQueryParams {
-    id: string;
+  id: string
 }
 
 interface ApiDataQueriesMutation {
-    createApiDataQuery(params: CreateApiDataQueryParams): Promise<ApiDataQueryEntity>;
-    updateApiDataQuery(params: UpdateApiDataQueryParams): Promise<ApiDataQueryEntity>;
-    deleteApiDataQuery(params: DeleteApiDataQueryParams): Promise<ApiDataQueryEntity>;
+  createApiDataQuery(params: CreateApiDataQueryParams): Promise<ApiDataQueryEntity>
+  updateApiDataQuery(params: UpdateApiDataQueryParams): Promise<ApiDataQueryEntity>
+  deleteApiDataQuery(params: DeleteApiDataQueryParams): Promise<ApiDataQueryEntity>
 }
 
 /**
@@ -44,79 +44,79 @@ interface ApiDataQueriesMutation {
  * https://www.graphql-tools.com/docs/resolvers#class-method-resolvers
  */
 export default class ApiDataQueriesMutationImplementation
-    extends ApiDataQueriesResolver
-    implements ApiDataQueriesMutation
+  extends ApiDataQueriesResolver
+  implements ApiDataQueriesMutation
 {
-    /**
-     * Creates and returns a new ApiDataQuery entry.
-     * @param data
-     */
-    async createApiDataQuery({ data }: CreateApiDataQueryParams) {
-        // If our GraphQL API uses Webiny Security Framework, we can retrieve the
-        // currently logged in identity and assign it to the `createdBy` property.
-        // https://www.webiny.com/docs/key-topics/security-framework/introduction
-        const { security } = this.context;
+  /**
+   * Creates and returns a new ApiDataQuery entry.
+   * @param data
+   */
+  async createApiDataQuery({ data }: CreateApiDataQueryParams) {
+    // If our GraphQL API uses Webiny Security Framework, we can retrieve the
+    // currently logged in identity and assign it to the `createdBy` property.
+    // https://www.webiny.com/docs/key-topics/security-framework/introduction
+    const { security } = this.context
 
-        // We use `mdbid` (https://www.npmjs.com/package/mdbid) library to generate
-        // a random, unique, and sequential (sortable) ID for our new entry.
-        const id = mdbid();
+    // We use `mdbid` (https://www.npmjs.com/package/mdbid) library to generate
+    // a random, unique, and sequential (sortable) ID for our new entry.
+    const id = mdbid()
 
-        const identity = await security.getIdentity();
-        const apiDataQuery = {
-            ...data,
-            PK: this.getPK(),
-            SK: id,
-            id,
-            createdOn: new Date().toISOString(),
-            savedOn: new Date().toISOString(),
-            createdBy: identity && {
-                id: identity.id,
-                type: identity.type,
-                displayName: identity.displayName
-            },
-            webinyVersion: process.env.WEBINY_VERSION
-        };
-
-        // Will throw an error if something goes wrong.
-        await ApiDataQuery.put(apiDataQuery);
-
-        return apiDataQuery;
+    const identity = await security.getIdentity()
+    const apiDataQuery = {
+      ...data,
+      PK: this.getPK(),
+      SK: id,
+      id,
+      createdOn: new Date().toISOString(),
+      savedOn: new Date().toISOString(),
+      createdBy: identity && {
+        id: identity.id,
+        type: identity.type,
+        displayName: identity.displayName
+      },
+      webinyVersion: process.env.WEBINY_VERSION
     }
 
-    /**
-     * Updates and returns an existing ApiDataQuery entry.
-     * @param id
-     * @param data
-     */
-    async updateApiDataQuery({ id, data }: UpdateApiDataQueryParams) {
-        // If entry is not found, we throw an error.
-        const { Item: apiDataQuery } = await ApiDataQuery.get({ PK: this.getPK(), SK: id });
-        if (!apiDataQuery) {
-            throw new Error(`ApiDataQuery "${id}" not found.`);
-        }
+    // Will throw an error if something goes wrong.
+    await ApiDataQuery.put(apiDataQuery)
 
-        const updatedApiDataQuery = { ...apiDataQuery, ...data };
+    return apiDataQuery
+  }
 
-        // Will throw an error if something goes wrong.
-        await ApiDataQuery.update(updatedApiDataQuery);
-
-        return updatedApiDataQuery;
+  /**
+   * Updates and returns an existing ApiDataQuery entry.
+   * @param id
+   * @param data
+   */
+  async updateApiDataQuery({ id, data }: UpdateApiDataQueryParams) {
+    // If entry is not found, we throw an error.
+    const { Item: apiDataQuery } = await ApiDataQuery.get({ PK: this.getPK(), SK: id })
+    if (!apiDataQuery) {
+      throw new Error(`ApiDataQuery "${id}" not found.`)
     }
 
-    /**
-     * Deletes and returns an existing ApiDataQuery entry.
-     * @param id
-     */
-    async deleteApiDataQuery({ id }: DeleteApiDataQueryParams) {
-        // If entry is not found, we throw an error.
-        const { Item: apiDataQuery } = await ApiDataQuery.get({ PK: this.getPK(), SK: id });
-        if (!apiDataQuery) {
-            throw new Error(`ApiDataQuery "${id}" not found.`);
-        }
+    const updatedApiDataQuery = { ...apiDataQuery, ...data }
 
-        // Will throw an error if something goes wrong.
-        await ApiDataQuery.delete(apiDataQuery);
+    // Will throw an error if something goes wrong.
+    await ApiDataQuery.update(updatedApiDataQuery)
 
-        return apiDataQuery;
+    return updatedApiDataQuery
+  }
+
+  /**
+   * Deletes and returns an existing ApiDataQuery entry.
+   * @param id
+   */
+  async deleteApiDataQuery({ id }: DeleteApiDataQueryParams) {
+    // If entry is not found, we throw an error.
+    const { Item: apiDataQuery } = await ApiDataQuery.get({ PK: this.getPK(), SK: id })
+    if (!apiDataQuery) {
+      throw new Error(`ApiDataQuery "${id}" not found.`)
     }
+
+    // Will throw an error if something goes wrong.
+    await ApiDataQuery.delete(apiDataQuery)
+
+    return apiDataQuery
+  }
 }

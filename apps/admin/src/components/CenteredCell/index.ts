@@ -1,7 +1,3 @@
-import {
-  CenteredCell,
-} from './CenteredCell';
+import { CenteredCell } from './CenteredCell'
 
-export {
-  CenteredCell,
-};
+export { CenteredCell }

@@ -1,30 +1,30 @@
 {
-	"name": "api-headless-cms",
-	"version": "0.1.0",
-	"scripts": {
-		"build": "yarn webiny run build",
-		"watch": "yarn webiny run watch"
-	},
-	"dependencies": {
-		"@webiny/api-apw": "5.34.5",
-		"@webiny/api-apw-scheduler-so-ddb": "5.34.5",
-		"@webiny/api-headless-cms": "5.34.5",
-		"@webiny/api-headless-cms-ddb": "5.34.5",
-		"@webiny/api-i18n": "5.34.5",
-		"@webiny/api-i18n-content": "5.34.5",
-		"@webiny/api-i18n-ddb": "5.34.5",
-		"@webiny/api-security": "5.34.5",
-		"@webiny/api-security-cognito": "5.34.5",
-		"@webiny/api-security-so-ddb": "5.34.5",
-		"@webiny/api-tenancy": "5.34.5",
-		"@webiny/api-tenancy-so-ddb": "5.34.5",
-		"@webiny/api-wcp": "5.34.5",
-		"@webiny/cli": "5.34.5",
-		"@webiny/db-dynamodb": "5.34.5",
-		"@webiny/handler-aws": "5.34.5",
-		"@webiny/handler-client": "5.34.5",
-		"@webiny/handler-db": "5.34.5",
-		"@webiny/handler-logs": "5.34.5",
-		"@webiny/project-utils": "5.34.5"
-	}
+  "name": "api-headless-cms",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "yarn webiny run build",
+    "watch": "yarn webiny run watch"
+  },
+  "dependencies": {
+    "@webiny/api-apw": "5.34.5",
+    "@webiny/api-apw-scheduler-so-ddb": "5.34.5",
+    "@webiny/api-headless-cms": "5.34.5",
+    "@webiny/api-headless-cms-ddb": "5.34.5",
+    "@webiny/api-i18n": "5.34.5",
+    "@webiny/api-i18n-content": "5.34.5",
+    "@webiny/api-i18n-ddb": "5.34.5",
+    "@webiny/api-security": "5.34.5",
+    "@webiny/api-security-cognito": "5.34.5",
+    "@webiny/api-security-so-ddb": "5.34.5",
+    "@webiny/api-tenancy": "5.34.5",
+    "@webiny/api-tenancy-so-ddb": "5.34.5",
+    "@webiny/api-wcp": "5.34.5",
+    "@webiny/cli": "5.34.5",
+    "@webiny/db-dynamodb": "5.34.5",
+    "@webiny/handler-aws": "5.34.5",
+    "@webiny/handler-client": "5.34.5",
+    "@webiny/handler-db": "5.34.5",
+    "@webiny/handler-logs": "5.34.5",
+    "@webiny/project-utils": "5.34.5"
+  }
 }

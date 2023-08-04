@@ -1,3 +1,3 @@
-import { DisableGate } from './DisabledGate';
+import { DisableGate } from './DisabledGate'
 
-export { DisableGate };
+export { DisableGate }

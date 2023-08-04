@@ -1,3 +1,3 @@
-import { createAdminAppConfig } from "@webiny/serverless-cms-aws";
+import { createAdminAppConfig } from '@webiny/serverless-cms-aws'
 
-export default createAdminAppConfig();
+export default createAdminAppConfig()

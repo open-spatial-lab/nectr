@@ -1,7 +1,7 @@
-import { GraphQLSchemaPlugin } from "@webiny/handler-graphql/plugins/GraphQLSchemaPlugin";
-import { Context } from "~/types";
-import typeDefs from "./typeDefs";
-import resolvers from "./resolvers";
+import { GraphQLSchemaPlugin } from '@webiny/handler-graphql/plugins/GraphQLSchemaPlugin'
+import { Context } from '~/types'
+import typeDefs from './typeDefs'
+import resolvers from './resolvers'
 
 /**
  * We expand the existing schema of our GraphQL server via the `GraphQLSchemaPlugin` plugin.
@@ -10,17 +10,17 @@ import resolvers from "./resolvers";
  * To learn more, open the imported `typeDefs` and `resolvers` files.
  */
 export default new GraphQLSchemaPlugin<Context>({
-    typeDefs,
-    resolvers: {
-        Query: {
-            apiDataQueries: (_, __, context) => {
-                return new resolvers.ApiDataQueriesQuery(context);
-            }
-        },
-        Mutation: {
-            apiDataQueries: (_, __, context) => {
-                return new resolvers.ApiDataQueriesMutation(context);
-            }
-        }
+  typeDefs,
+  resolvers: {
+    Query: {
+      apiDataQueries: (_, __, context) => {
+        return new resolvers.ApiDataQueriesQuery(context)
+      }
+    },
+    Mutation: {
+      apiDataQueries: (_, __, context) => {
+        return new resolvers.ApiDataQueriesMutation(context)
+      }
     }
-});
+  }
+})

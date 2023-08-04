@@ -1,11 +1,11 @@
-import styled from "@emotion/styled";
+import styled from '@emotion/styled'
 
 interface FlexRowProps {
-  border?: boolean;
-  color?: string;
+  border?: boolean
+  color?: string
 }
 
-export const FlexRow = styled("div")<FlexRowProps>`
+export const FlexRow = styled('div')<FlexRowProps>`
     display: flex;
     align-items: center;
     border: props => (props.border ? "1px solid var(--mdc-theme-on-background)" : null),
@@ -20,4 +20,4 @@ export const FlexRow = styled("div")<FlexRowProps>`
     //         marginRight: 0
     //     }
     // }
-`;
+`

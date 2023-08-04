@@ -1,5 +1,5 @@
-import DataUploadsMutation from "./DataUploadsMutation";
-import DataUploadsQuery from "./DataUploadsQuery";
+import DataUploadsMutation from './DataUploadsMutation'
+import DataUploadsQuery from './DataUploadsQuery'
 
 // Check the exported classes for more information.
-export default { DataUploadsMutation, DataUploadsQuery };
+export default { DataUploadsMutation, DataUploadsQuery }
