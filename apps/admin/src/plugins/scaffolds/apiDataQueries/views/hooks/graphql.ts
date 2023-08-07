@@ -43,6 +43,10 @@ export const API_DATA_QUERY_FIELDS_FRAGMENT = /* GraphQL */ `
       sourceId
       column
     }
+    limit
+    offset
+    combinedOperator
+    dataViewTemplate
     createdBy {
       id
       displayName

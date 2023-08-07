@@ -85,6 +85,10 @@ export default /* GraphQL */ `
     canEdit: [String]
     canDelete: [String]
     defaultParameters: String
+    limit: Int
+    offset: Int
+    combinedOperator: String
+    dataViewTemplate: String
     createdBy: ApiDataQueryCreatedBy
   }
 
@@ -107,6 +111,10 @@ export default /* GraphQL */ `
     joins: [JoinQueryInput]
     columns: [MetaColumnSchemaInput]
     groupbys: [GroupByQueryInput]
+    limit: Int
+    offset: Int
+    combinedOperator: String
+    dataViewTemplate: String
   }
 
   input ApiDataQueryUpdateInput {
@@ -122,6 +130,10 @@ export default /* GraphQL */ `
     joins: [JoinQueryInput]
     columns: [MetaColumnSchemaInput]
     groupbys: [GroupByQueryInput]
+    limit: Int
+    offset: Int
+    combinedOperator: String
+    dataViewTemplate: String
   }
 
   type ApiDataQueriesListMeta {

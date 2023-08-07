@@ -166,7 +166,7 @@ export const ColumnSelector: React.FC<{
                   idx={idx}
                   onRemove={handleRemoveColumnAtIndex}
                   onChange={handleColumnPropertyAtIndex}
-                  // simple={simple}
+                  simple={simple}
                 />
               ))}
             </div>

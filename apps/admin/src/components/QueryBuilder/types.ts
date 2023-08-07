@@ -162,6 +162,7 @@ export type QuerySchema = {
   combinedOperator?: (typeof COMBINE_OPERATORS)[number]
   limit?: number
   offset?: number
+  dataViewTemplate?: string
 }
 
 export type QueryBuilderProps = {

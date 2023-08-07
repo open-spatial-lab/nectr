@@ -38,6 +38,7 @@ export interface ApiDataQueryEntity {
   groupbys?: Array<GroupByQuery>
   limit?: number
   offset?: number
+  dataViewTemplate?: String
 }
 
 export interface ApiDataQueryPermissions extends SecurityPermission {
