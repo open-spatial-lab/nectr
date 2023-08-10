@@ -3,12 +3,14 @@ import { Context, APIGatewayProxyCallback, APIGatewayEvent } from 'aws-lambda'
 import Connection from './lambda/connection'
 import getLogger from './lambda/logger'
 import ColumnParser from './lambda/columnParser'
-import { QueryResponse } from './types/types'
 import Papa from 'papaparse'
+import { verifyToken } from './lambda/identity'
+import { QuerySchema } from 'apps/admin/src/components/QueryBuilder/types'
+import { SqlBuilder } from './lambda/sqlBuilder'
 
 const S3_BUCKET = (process.env.S3_BUCKET as string) || 'data-api-dev'
 const connection = new Connection()
-const logger = getLogger()
+export const logger = getLogger()
 
 export const handler = metricScope(
   metrics =>
@@ -21,12 +23,14 @@ export const handler = metricScope(
       const params = event?.queryStringParameters || {}
       const metadataFile = params['__metadata__']
 
-      const queryStartTimestamp = new Date().getTime()
+      const queryDate = new Date()
+      const queryStartTimestamp = queryDate.getTime()
 
       if (!connection.isInitialized) {
         await connection.initialize()
       }
-      console.log('Initialized connection...')
+
+      logger.info(`Initialized connection at ${queryDate.toISOString()}`)
 
       if (metadataFile) {
         const metaQuery = metadataFile.includes('.parquet')
@@ -58,13 +62,49 @@ export const handler = metricScope(
         }
       }
 
-      const rawQuery = params['__dangerous_raw__']
-      if (rawQuery) {
-        return {
-          statusCode: 200,
-          body: JSON.stringify({
-            data: await connection.query(rawQuery)
-          })
+      const isAdminTestQuery = params['__adminQuery__']
+      if (isAdminTestQuery && event.body) {
+        const schema = JSON.parse(event.body) as DataView
+        const token = event.headers['X-Authorization']
+        if (!token) {
+          return {
+            statusCode: 401,
+            body: JSON.stringify({
+              message: 'Unauthorized'
+            })
+          }
+        }
+
+        const auth = await verifyToken(token)
+        if (!auth.ok) {
+          return {
+            statusCode: 401,
+            body: JSON.stringify({
+              message: 'Unauthorized'
+            })
+          }
+        }
+        try {
+          const queryResponse = await connection.handleQuery(schema, params)
+          logger.info(queryResponse)
+
+          if (queryResponse.ok) {
+            return {
+              statusCode: 200,
+              body: JSON.stringify(queryResponse.result)
+            }
+          }
+        } catch (error) {
+          logger.error({ error })
+          return {
+            statusCode: 500,
+            body: JSON.stringify({
+              message: 'Internal Server Error',
+              error,
+              schema,
+              params
+            })
+          }
         }
       }
 
@@ -79,17 +119,14 @@ export const handler = metricScope(
           })
         }
       }
-      console.log('ID', id)
-      const data = await connection.handleIdQuery(id, params)
-      console.log('hanlded ID')
-      requestLogger.debug({ data })
 
+      const data = await connection.handleIdQuery(id, params)
+      requestLogger.debug({ data })
       metrics.putMetric(
         'QueryDuration',
         new Date().getTime() - queryStartTimestamp,
         Unit.Milliseconds
       )
-
       if (data.ok) {
         const result =
           params['format'] === 'csv' ? Papa.unparse(data.result) : JSON.stringify(data.result)

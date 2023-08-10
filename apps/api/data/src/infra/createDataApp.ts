@@ -21,7 +21,6 @@ export const DataFunction = createAppModule({
   config(app: PulumiApp, params: DataApiParams) {
     const core = app.getModule(CoreOutput)
     const dataResources = createDataResources(app, params)
-
     return {
       data: dataResources
     }
@@ -66,7 +65,8 @@ function createDataResources(app: PulumiApp, params: DataApiParams) {
           ...params.env,
           S3_BUCKET: core.fileManagerBucketId,
           EXTENSION_BUCKET: '',
-          DATA_BUCKET: pulumi.interpolate`${params.env['S3_BUCKET'].id}`
+          DATA_BUCKET: pulumi.interpolate`${params.env['S3_BUCKET'].id}`,
+          COGNITO_USER_POOL_ID: core.cognitoUserPoolId,
         }))
       }
     }
@@ -125,14 +125,25 @@ function createReadOnlyLambdaPolicy(app: PulumiApp, params: DataApiParams) {
               's3:ListBucket',
               's3:PutObject',
               's3:PutObjectAcl',
-              's3:DeleteObject'
+              's3:DeleteObject',
+              "cognito-idp:DescribeUserPoolClient",
+              "cognito-idp:DescribeUserPoolDomain",
+              "cognito-idp:DescribeUserPool",
+              "cognito-idp:ListUserPoolClients",
+              "cognito-idp:ListUserPoolDomains",
+              "cognito-idp:ListUserPools",
+              "cognito-idp:AdminGetUser",
+              "cognito-idp:AdminInitiateAuth",
+              "cognito-idp:AdminRespondToAuthChallenge",
+              "cognito-idp:AssociateSoftwareToken"
             ],
             Resource: [
               pulumi.interpolate`${params.env['S3_BUCKET'].arn}/*`,
               // We need to explicitly add bucket ARN to "Resource" list for "s3:ListBucket" action.
               pulumi.interpolate`${params.env['S3_BUCKET'].arn}`,
               pulumi.interpolate`arn:aws:s3:::${core.fileManagerBucketId}/*`,
-              pulumi.interpolate`arn:aws:s3:::${core.fileManagerBucketId}`
+              pulumi.interpolate`arn:aws:s3:::${core.fileManagerBucketId}`,
+              pulumi.interpolate`${core.cognitoUserPoolArn}/*`,
             ]
             // Principal: "*"
           },

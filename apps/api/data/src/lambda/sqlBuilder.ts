@@ -1,5 +1,3 @@
-import { S3_BUCKET } from '../../../../core/aws/s3'
-// types
 import type { DatasetEntity } from '../../../graphql/src/plugins/scaffolds/datasets/types'
 import type { ApiDataQueryEntity } from '../../../graphql/src/plugins/scaffolds/apiDataQueries/types'
 import type {
@@ -8,7 +6,7 @@ import type {
   JoinQuery
 } from '../../../../admin/src/components/QueryBuilder/types'
 import knex from 'knex'
-import { schemaService } from './schemas'
+import { SchemaService } from '../types/schemaService'
 
 const JOIN_OPERATOR_FUNCTIONS = {
   left: 'leftJoin',
@@ -42,26 +40,35 @@ export class SqlBuilder {
   isSubQuery: boolean
   params: { [key: string]: any } = {}
   referencedIds: string[] = []
+  schemaService?: SchemaService;
 
-  constructor(schema: ApiDataQueryEntity, params: { [key: string]: any } = {}, isSubQuery = false) {
+  constructor(
+    schema: ApiDataQueryEntity, 
+    params: { [key: string]: any } = {}, 
+    isSubQuery = false,
+    schemaService: SchemaService
+  ) {
     this.schema = schema
     this.params = params
     this.isSubQuery = isSubQuery
+    this.schemaService = schemaService
   }
   async fetchSourceSchemas() {
     const ids = this.schema.sources?.map(source => source.id)
     if (!ids) return
-    await schemaService.fetchMultipleSchemaEntries(ids, this.params['__fresh__'])
+    if (!this.schemaService) throw new Error('Schema service not defined')
+    await this.schemaService.fetchMultipleSchemaEntries(ids, this.params['__fresh__'])
   }
   // little utils
   get queryString() {
     return this.isSubQuery ? this.query.toString() : this.query.toString() + ';'
   }
   buildS3String(filename: string) {
-    return `s3://${S3_BUCKET}/${filename}`
+    return `s3://${process.env.S3_BUCKET}/${filename}`
   }
   async buildSubQuery(schema: ApiDataQueryEntity) {
-    const subQuery = new SqlBuilder(schema, this.params, true)
+    if (!this.schemaService) throw new Error('Schema service not defined')
+    const subQuery = new SqlBuilder(schema, this.params, true, this.schemaService)
     await subQuery.buildStatement()
     return subQuery.queryString
   }
@@ -99,7 +106,8 @@ export class SqlBuilder {
   }
   async buildSourceText(source: Source) {
     const id = source.id
-    const schemaResponse = await schemaService.getSchema(id)
+    if (!this.schemaService) return
+    const schemaResponse = await this.schemaService.getSchema(id)
     if (!schemaResponse.ok) return
     const sourceSpec = schemaResponse.result
     // double double quotes regex

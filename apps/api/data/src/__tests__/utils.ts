@@ -1,4 +1,4 @@
-import { CACHED_SCHEMAS } from '../lambda/schemas'
+import { CACHED_SCHEMAS } from '../lambda/schemas/serverSchemaService'
 
 // config
 const testIdentity = {

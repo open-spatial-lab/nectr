@@ -1,12 +1,12 @@
 // @ts-ignore
 import DuckDB from 'duckdb'
 import { QueryResponse } from '../types/types'
-import SchemaService from './schemas'
-import { BucketManager } from './bucketManager'
+import { serverSchemaService } from './schemas/serverSchemaService'
 import { SqlBuilder } from './sqlBuilder'
+import { logger } from '..'
+// import { BucketManager } from './bucketManager'
 
-const schemaService = new SchemaService()
-const bucket = new BucketManager(process.env['DATA_BUCKET']!, process.env['AWS_REGION']!)
+// const bucket = new BucketManager(process.env['DATA_BUCKET']!, process.env['AWS_REGION']!)
 
 export default class Connection {
   duckDB?: DuckDB.Database
@@ -16,6 +16,7 @@ export default class Connection {
   constructor() {}
 
   async initialize() {
+    // this.withLogs(text => this.logs.push(text))()
     if (this.isInitialized) {
       return
     }
@@ -41,63 +42,44 @@ export default class Connection {
 
   async query(query: string): Promise<QueryResponse<any, string>> {
     return new Promise((resolve, reject) => {
-      try {
-        this.connection!.all(query, (err: any, res: any) => {
-          if (err) {
-            reject({
-              error: err,
-              ok: false
-            })
-          }
-          resolve({
-            result: res,
-            ok: true
+      this.connection!.all(query, (err: any, res: any) => {
+        if (err) {
+          reject({
+            error: err,
+            ok: false
           })
+        }
+        resolve({
+          result: res,
+          ok: true
         })
-      } catch (err) {
-        reject({
-          error: err,
-          ok: false
-        })
-      }
+      })
     })
   }
 
-  // async handleRawQuery(body: string): Promise<QueryResponse<any, string>> {
-  //     try {
-  //         const json = JSON.parse(body);
-  //         const query = json.query;
-  //         console.log('RAW QUERY', query)
-  //         const data = await this.query(query);
-  //         return data
-  //     } catch (error) {
-  //         const errorText = JSON.stringify(error);
-  //         return {
-  //             error: `Error at handle raw query: ${errorText}`,
-  //             ok: false
-  //         };
-  //     }
-  // }
-
   async handleIdQuery(id: string, params: any): Promise<QueryResponse<any, string>> {
-    const schema = await schemaService.getSchema(id)
-
+    const schema = await serverSchemaService.getSchema(id)
     if (!schema.ok) {
       return schema
     }
+    // @ts-ignore
+    return await this.handleQuery(schema.result, params)
+  }
+  async handleQuery(schema: DataView, params: any): Promise<QueryResponse<any, string>> {
     const sqlBuilder = new SqlBuilder(
       // @ts-ignore
-      schema.result,
-      params
+      schema,
+      params,
+      false,
+      serverSchemaService
     )
     await sqlBuilder.buildStatement()
     const query = sqlBuilder.queryString
+    logger.info(`Handling query: ${JSON.stringify(query, null, 2)}`)
     try {
       const data = await this.query(query)
       return data
     } catch (err) {
-      console.log(err)
-      console.log(JSON.stringify(schema, null, 2))
       return {
         error: `Error at handle id query: ${JSON.stringify(err)}; \n Schema: \n ${JSON.stringify(
           schema

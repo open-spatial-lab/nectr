@@ -1,13 +1,14 @@
-import table from '../../../../core/aws/table'
-// types
-import type { DatasetEntity } from '../../../graphql/src/plugins/scaffolds/datasets/types'
-import type { ApiDataQueryEntity } from '../../../graphql/src/plugins/scaffolds/apiDataQueries/types'
-import type { ErrorResponse, QueryResponse } from '../../../../core/types/queryApi'
+import type { ErrorResponse, QueryResponse } from '../../../../../core/types/queryApi'
+import type { DataView } from '../../types/types'
+import { SchemaService } from '../../types/schemaService'
 
-type DataView = ApiDataQueryEntity | DatasetEntity
-export const CACHED_SCHEMAS = new Map<string, DataView>()
+export default class BaseSchemaService implements SchemaService {
+  cachedSchemas = new Map<string, DataView>()
 
-export default class SchemaService {
+  constructor(schemas?: DataView[]) {
+    schemas && schemas.forEach(schema => this.cachedSchemas.set(schema.id, schema))
+  }
+
   async getSchema(id: string): Promise<QueryResponse<DataView, string>> {
     const schema = await this.fetchSchemaEntry(id)
     if (!schema.ok) {
@@ -18,8 +19,9 @@ export default class SchemaService {
       result: schema.result
     }
   }
+
   getSchemaSync(id: string): QueryResponse<DataView, string> {
-    const schema = CACHED_SCHEMAS.get(id)
+    const schema = this.cachedSchemas.get(id)
     if (!schema) {
       return {
         ok: false,
@@ -31,26 +33,9 @@ export default class SchemaService {
       result: schema
     }
   }
-  generateBatchGetInput = (ids: string[]) => {
-    let queries = new Array(ids.length * 2)
-    for (let i = 0; i < ids.length; i += 2) {
-      queries[i] = { Table: table, Key: { PK: `L#en-US#ApiDataQuery`, SK: ids[i] } }
-      queries[i + 1] = { Table: table, Key: { PK: `L#en-US#Dataset`, SK: ids[i] } }
-    }
-    return queries
-  }
 
   async fetchSchemaEntry(id: string): Promise<QueryResponse<DataView, string>> {
-    if (!CACHED_SCHEMAS.has(id)) {
-      const tableQuery = await table.batchGet(this.generateBatchGetInput([id]))
-      const entities = tableQuery?.Responses?.[table.name]
-      if (entities?.length) {
-        entities.forEach((element: DataView) => {
-          CACHED_SCHEMAS.set(element.id, element)
-        })
-      }
-    }
-    const schema = CACHED_SCHEMAS.get(id)
+    const schema = this.cachedSchemas.get(id)
 
     if (!schema) {
       return {
@@ -68,18 +53,15 @@ export default class SchemaService {
     ids: string[],
     fresh: boolean = false
   ): Promise<QueryResponse<DataView[], string>> {
-    const missingIds = fresh ? ids : ids.filter(id => !CACHED_SCHEMAS.has(id))
+    const missingIds = fresh ? ids : ids.filter(id => !this.cachedSchemas.has(id))
 
     if (missingIds.length) {
-      const tableQuery = await table.batchGet(this.generateBatchGetInput(missingIds))
-      const entities = tableQuery?.Responses?.[table.name]
-      if (entities?.length) {
-        entities.forEach((element: DataView) => {
-          CACHED_SCHEMAS.set(element.id, element)
-        })
+      return {
+        ok: false,
+        error: `Data schema with ID "${missingIds.join(',')}" not found.`
       }
     }
-    const schemas = ids.map(id => CACHED_SCHEMAS.get(id)).filter(Boolean)
+    const schemas = ids.map(id => this.cachedSchemas.get(id)).filter(Boolean)
 
     if (!schemas?.length) {
       return {
@@ -94,7 +76,7 @@ export default class SchemaService {
   }
 
   validateSchema(id: string): QueryResponse<boolean, string> {
-    const schema = CACHED_SCHEMAS.get(id)
+    const schema = this.cachedSchemas.get(id)
     if (!schema) {
       return {
         ok: false,
@@ -134,5 +116,3 @@ export default class SchemaService {
     }
   }
 }
-
-export const schemaService = new SchemaService()

@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url'
 export class BucketManager {
   s3: s3.S3
   bucket: string = 'data-api-dev'
-  region: string = 'us-east-2'
+  region: string = process.env['AWS_REGION']!
 
   constructor(bucket: string, region: string) {
     this.bucket = bucket
