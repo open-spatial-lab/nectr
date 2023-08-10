@@ -13,8 +13,9 @@ export type FormProps = HookQueryProperties & {
   currentSources: SourceMeta[]
   dataQueryLink: string | null
   datasetsAndDataviews: any[]
+  dataViewTemplate?: string
 }
 
-export type useDataViewHook = (dataViewTemplate?: string) => FormProps & {
-  FormComponent: React.FC<FormProps> 
+export type useDataViewHook = (templateName?: string) => FormProps & {
+  FormComponent: React.FC<FormProps>,
 }

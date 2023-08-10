@@ -8,10 +8,8 @@ import {
   SimpleForm,
   SimpleFormFooter,
   SimpleFormContent
-  // SimpleFormHeader
 } from '@webiny/app-admin/components/SimpleForm'
 import { Switch } from '@webiny/ui/Switch'
-// import { QueryBuilder } from "../../../../components/QueryBuilder/QueryBuilder";
 import {
   GroupByQuery,
   JoinQuery,
@@ -25,6 +23,7 @@ import { JoinBuilder } from '../../../../../../components/JoinBuilder/JoinBuilde
 import { WhereBuilder } from '../../../../../../components/WhereBuilder'
 import { GroupByBuilder } from '../../../../../../components/GroupByBuilder/GroupByBuilder'
 import { FormProps } from '../../hooks/useDataView/types'
+import { QuerySchema } from '../../../../../../components/QueryBuilder/types'
 
 export type FullFormProps = FormProps & {
   showFull?: boolean
@@ -53,40 +52,42 @@ export const FullForm: React.FC<FullFormProps> = props => {
     showSimpleColumns,
     showJoins,
     showWheres,
-    showGroupBy
+    showGroupBy,
+    dataViewTemplate
   } = props
+  
   return (
-    <Form data={apiDataQuery} onSubmit={onSubmit}>
+    <Form<QuerySchema> data={apiDataQuery} onSubmit={onSubmit}>
       {({ data, submit, Bind, form }) => {
-        const formSourceIds = data?.sources?.map((source: SourceMeta) => source?.id)
-        const joinIds: String[] =
+        const formSourceIds = data?.sources?.map((source) => source?.id)
+        const joinIds =
           data?.joins?.map((join: JoinQuery) => [join.leftSourceId, join.rightSourceId]).flat() ||
           []
 
         useEffect(() => {
-          if (joinIds?.length) {
+          if (joinIds?.length && !!formSourceIds) {
             let shouldUpdate = false
             let newSources = [...sources]
-            const missingSources = joinIds.filter((id: String) => !formSourceIds.includes(id))
+            const missingSources = joinIds.filter((id) => !formSourceIds.includes(id))
             const excessSources = formSourceIds
               .slice(1)
-              .filter((id: String) => !joinIds.includes(id))
+              .filter((id) => !joinIds.includes(id))
 
             if (missingSources.length) {
               const missingSourceSchemas = datasetsAndDataviews
-                .filter((source: SourceMeta) => missingSources.includes(source.id))
-                .map((source: SourceMeta) => ({
+                .filter((source) => missingSources.includes(source.id))
+                .map((source) => ({
                   id: source.id,
                   title: source.title,
                   type: source.__typename
-                }))
+                })) as SourceMeta[]
               shouldUpdate = true
-              newSources = [...data.sources, ...missingSourceSchemas]
+              newSources = [...(data?.sources||[]) as SourceMeta[], ...missingSourceSchemas]
             }
             if (excessSources.length) {
               shouldUpdate = true
               newSources = newSources.filter(
-                (source: SourceMeta) => !excessSources.includes(source.id)
+                (source) => !excessSources.includes(source.id)
               )
             }
             if (shouldUpdate) {
@@ -95,7 +96,14 @@ export const FullForm: React.FC<FullFormProps> = props => {
             }
           }
         }, [JSON.stringify(formSourceIds), JSON.stringify(joinIds), datasetsAndDataviews?.length])
-
+        useEffect(() => {
+          const today = new Date()
+          const date = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
+          form.setValue('dataViewTemplate', dataViewTemplate)
+          form.setValue('isPublic', true)
+          form.setValue('title', `New ${dataViewTemplate} Data View - ${date}`)
+        }, [dataViewTemplate])
+   
         return (
           <SimpleForm>
             <SimpleFormContent>
@@ -105,6 +113,8 @@ export const FullForm: React.FC<FullFormProps> = props => {
                     <Input label={'Title'} className="test test" />
                   </Bind>
                 </Cell>
+                {/* form freaks out when this is not explicit... */}
+                <Bind name="dataViewTemplate" validators={validation.create('required')} />
                 <Cell span={4}>
                   <Bind name="isPublic">
                     <Switch
@@ -121,7 +131,7 @@ export const FullForm: React.FC<FullFormProps> = props => {
                         const sources = (value || []) as SourceMeta[]
                         const availableSources = datasetsAndDataviews.filter(
                           source => source.id !== apiDataQuery?.id
-                        )
+                          )
                         const handleChange = (source: SourceMeta) => {
                           const { id, title, __typename } = source
                           const newSources = [
@@ -233,9 +243,7 @@ export const FullForm: React.FC<FullFormProps> = props => {
                     {!!(showGroupBy || showFull) && (
                       <Cell span={12}>
                         <Bind name="groupbys">
-                          {({ onChange, value }) => {
-                            const groupbys = value as GroupByQuery[]
-                            console.log(groupbys)
+                          {({ onChange, value: groupBys }) => {
                             return (
                               <>
                                 <br />
@@ -245,7 +253,7 @@ export const FullForm: React.FC<FullFormProps> = props => {
                                 <br />
                                 <GroupByBuilder
                                   sources={currentSources}
-                                  groupbys={groupbys || []}
+                                  groupbys={(groupBys as GroupByQuery[]) || []}
                                   onChange={onChange}
                                 />
                               </>
@@ -261,10 +269,7 @@ export const FullForm: React.FC<FullFormProps> = props => {
             <SimpleFormFooter>
               <ButtonDefault onClick={cancelEditing}>Cancel</ButtonDefault>
               <ButtonPrimary
-                onClick={ev => {
-                  console.log(ev)
-                  submit(ev)
-                }}
+                onClick={submit}
                 style={{
                   textTransform: 'none'
                 }}

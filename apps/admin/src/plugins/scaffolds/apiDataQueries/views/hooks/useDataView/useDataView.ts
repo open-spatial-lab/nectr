@@ -3,13 +3,11 @@ import { getApiUrl } from 'theme/pageElements/utils/dataApiUrl'
 import { useApiDataQueriesDataList } from '../useApiDataQueriesDataList'
 import { useApiDataQueriesForm } from '../useApiDataQueriesForm'
 
-import {
-  SourceMeta,
-} from '../../../../../../components/QueryBuilder/types'
+import { SourceMeta } from '../../../../../../components/QueryBuilder/types'
 import { useDataViewHook } from './types'
 import { getFormComponent } from './utils'
 
-export const useDataView: useDataViewHook = (dataViewTemplate) => {
+export const useDataView: useDataViewHook = templateName => {
   const {
     loading,
     emptyViewIsShown,
@@ -19,7 +17,7 @@ export const useDataView: useDataViewHook = (dataViewTemplate) => {
     onSubmit,
     datasets
   } = useApiDataQueriesForm()
-  
+
   const [sources, setSources] = React.useState<SourceMeta[]>([])
   const { apiDataQueries } = useApiDataQueriesDataList()
   const currentIds = sources?.map(source => source.id) || []
@@ -52,8 +50,10 @@ export const useDataView: useDataViewHook = (dataViewTemplate) => {
 
   const dataQueryLink = apiDataQuery?.id ? getApiUrl(apiDataQuery.id) : null
   // TODO fix circular reference
-  // this is React.FC<FormProps> from apps/admin/src/plugins/scaffolds/apiDataQueries/views/components/types.ts 
-  const FormComponent = getFormComponent(dataViewTemplate || apiDataQuery?.dataViewTemplate || 'verbose')
+  // this is React.FC<FormProps> from apps/admin/src/plugins/scaffolds/apiDataQueries/views/components/types.ts
+  const FormComponent = getFormComponent(
+    templateName || apiDataQuery?.dataViewTemplate || 'verbose'
+  )
 
   return {
     loading,
