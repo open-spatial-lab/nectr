@@ -1,6 +1,6 @@
 import React from 'react'
 import { DeleteIcon } from '@webiny/ui/List/DataList/icons'
-import { ButtonIcon, ButtonSecondary } from '@webiny/ui/Button'
+import { ButtonIcon, ButtonPrimary, ButtonSecondary } from '@webiny/ui/Button'
 import { ReactComponent as AddIcon } from '@webiny/app-admin/assets/icons/add-18px.svg'
 import {
   DataList,
@@ -11,7 +11,13 @@ import {
   ListActions
 } from '@webiny/ui/List'
 import { useApiDataQueriesDataList } from './hooks/useApiDataQueriesDataList'
+import { Stack } from '@mui/material'
+import styled from '@emotion/styled'
 
+const HeavyText = styled('span')`
+  font-weight: bold;
+  font-size:1.5rem;
+`
 /**
  * Renders a list of all ApiDataQuery entries. Includes basic deletion, pagination, and sorting capabilities.
  * The data querying functionality is located in the `useApiDataQueriesDataList` React hook.
@@ -30,7 +36,7 @@ const sorters = [
   }
 ]
 
-const ApiDataQueriesDataList: React.FC = () => {
+const ApiDataQueriesDataList: React.FC<{ onHide: () => void }> = ({ onHide }) => {
   const {
     apiDataQueries,
     loading,
@@ -53,17 +59,31 @@ const ApiDataQueriesDataList: React.FC = () => {
       sorters={sorters}
       setSorters={setSort}
       actions={
-        <ButtonSecondary onClick={newApiDataQuery}>
-          <ButtonIcon icon={<AddIcon />} />
-          New Data View
-        </ButtonSecondary>
+        <Stack direction="row" spacing={1}>
+          <ButtonPrimary
+            onClick={() => {
+              newApiDataQuery()
+              onHide()
+            }}
+          >
+            <ButtonIcon icon={<AddIcon />} />
+            New Data View
+          </ButtonPrimary>
+          <ButtonSecondary onClick={onHide} aria-label="Hide List">
+            <HeavyText>&times;</HeavyText>
+          </ButtonSecondary>
+        </Stack>
       }
     >
       {({ data }: { data: any[] }) => (
         <ScrollList>
           {data.map(item => (
-            <ListItem key={item.id} selected={item.id === currentApiDataQueryId}>
-              <ListItemText onClick={() => editApiDataQuery(item.id)}>{item.title}</ListItemText>
+            <ListItem
+              onClick={() => editApiDataQuery(item.id)}
+              key={item.id}
+              selected={item.id === currentApiDataQueryId}
+            >
+              <ListItemText>{item.title}</ListItemText>
 
               <ListItemMeta>
                 <ListActions>

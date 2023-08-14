@@ -24,6 +24,10 @@ import { WhereBuilder } from '../../../../../../components/WhereBuilder'
 import { GroupByBuilder } from '../../../../../../components/GroupByBuilder/GroupByBuilder'
 import { FormProps } from '../../hooks/useDataView/types'
 import { QuerySchema } from '../../../../../../components/QueryBuilder/types'
+import { FormAPI, GenericFormData } from '@webiny/form/types'
+import styled from '@emotion/styled'
+import { Stack } from '@mui/material'
+import { Checkbox} from '@webiny/ui/Checkbox'
 
 export type FullFormProps = FormProps & {
   showFull?: boolean
@@ -35,6 +39,11 @@ export type FullFormProps = FormProps & {
   showGroupBy?: boolean
 }
 
+const NoPaddingForm = styled(SimpleForm)`
+  /* padding: 0 1rem; */
+  @media (min-width: 840px) {
+  margin: 0 0 0 1.5rem;
+`
 export const FullForm: React.FC<FullFormProps> = props => {
   const {
     cancelEditing,
@@ -42,9 +51,9 @@ export const FullForm: React.FC<FullFormProps> = props => {
     onSubmit,
     sources,
     setSources,
+    setSchema,
     availableSources,
     currentSources,
-    dataQueryLink,
     datasetsAndDataviews,
     showFull,
     showSources,
@@ -53,49 +62,46 @@ export const FullForm: React.FC<FullFormProps> = props => {
     showJoins,
     showWheres,
     showGroupBy,
-    dataViewTemplate
+    dataViewTemplate,
+    showPreview,
+    togglePreview
   } = props
-  
+
+  const handleUpdate = <T extends GenericFormData>(data: QuerySchema, form: FormAPI<T>) => {
+    const formSourceIds = data?.sources?.map(source => source?.id) || []
+    const joinIds =
+      data?.joins?.map((join: JoinQuery) => [join.leftSourceId, join.rightSourceId]).flat() || []
+    let shouldUpdate = false
+    let newSources = [...sources]
+    const missingSources = joinIds.filter(id => !formSourceIds.includes(id))
+    const excessSources = formSourceIds.slice(1).filter(id => !joinIds.includes(id))
+
+    if (missingSources.length) {
+      const missingSourceSchemas = datasetsAndDataviews
+        .filter(source => missingSources.includes(source.id))
+        .map(source => ({
+          id: source.id,
+          title: source.title,
+          type: source.__typename
+        })) as SourceMeta[]
+      shouldUpdate = true
+      newSources = [...((data?.sources || []) as SourceMeta[]), ...missingSourceSchemas]
+    }
+    if (excessSources.length) {
+      shouldUpdate = true
+      newSources = newSources.filter(source => !excessSources.includes(source.id))
+    }
+    if (shouldUpdate) {
+      setSources(newSources)
+      form.setValue('sources', newSources)
+    } else {
+      setSchema(data)
+    }
+  }
+
   return (
-    <Form<QuerySchema> data={apiDataQuery} onSubmit={onSubmit}>
-      {({ data, submit, Bind, form }) => {
-        const formSourceIds = data?.sources?.map((source) => source?.id)
-        const joinIds =
-          data?.joins?.map((join: JoinQuery) => [join.leftSourceId, join.rightSourceId]).flat() ||
-          []
-
-        useEffect(() => {
-          if (joinIds?.length && !!formSourceIds) {
-            let shouldUpdate = false
-            let newSources = [...sources]
-            const missingSources = joinIds.filter((id) => !formSourceIds.includes(id))
-            const excessSources = formSourceIds
-              .slice(1)
-              .filter((id) => !joinIds.includes(id))
-
-            if (missingSources.length) {
-              const missingSourceSchemas = datasetsAndDataviews
-                .filter((source) => missingSources.includes(source.id))
-                .map((source) => ({
-                  id: source.id,
-                  title: source.title,
-                  type: source.__typename
-                })) as SourceMeta[]
-              shouldUpdate = true
-              newSources = [...(data?.sources||[]) as SourceMeta[], ...missingSourceSchemas]
-            }
-            if (excessSources.length) {
-              shouldUpdate = true
-              newSources = newSources.filter(
-                (source) => !excessSources.includes(source.id)
-              )
-            }
-            if (shouldUpdate) {
-              setSources(newSources)
-              form.setValue('sources', newSources)
-            }
-          }
-        }, [JSON.stringify(formSourceIds), JSON.stringify(joinIds), datasetsAndDataviews?.length])
+    <Form<QuerySchema> data={apiDataQuery} onSubmit={onSubmit} onChange={handleUpdate}>
+      {({ submit, Bind, form }) => {
         useEffect(() => {
           const today = new Date()
           const date = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
@@ -103,9 +109,9 @@ export const FullForm: React.FC<FullFormProps> = props => {
           form.setValue('isPublic', true)
           form.setValue('title', `New ${dataViewTemplate} Data View - ${date}`)
         }, [dataViewTemplate])
-   
+
         return (
-          <SimpleForm>
+          <NoPaddingForm>
             <SimpleFormContent>
               <Grid>
                 <Cell span={8}>
@@ -115,13 +121,23 @@ export const FullForm: React.FC<FullFormProps> = props => {
                 </Cell>
                 {/* form freaks out when this is not explicit... */}
                 <Bind name="dataViewTemplate" validators={validation.create('required')} />
-                <Cell span={4}>
-                  <Bind name="isPublic">
-                    <Switch
-                      label={'Make this data public'}
-                      description={'Allow anyone to use this data'}
+                <Cell span={4} phone={12} tablet={12}>
+                  <Stack spacing={2} alignItems="flex-start">
+                    <div>
+                      <Bind name="isPublic">
+                        <Switch
+                          label={'Make this data public'}
+                          description={'Allow anyone to use this data'}
+                        />
+                      </Bind>
+                    </div>
+                    <Checkbox
+                    // <Switch
+                      label={'Show Preview Table'}
+                      value={showPreview}
+                      onChange={togglePreview}
                     />
-                  </Bind>
+                  </Stack>
                 </Cell>
 
                 {!!(showSources || showFull) && (
@@ -131,7 +147,7 @@ export const FullForm: React.FC<FullFormProps> = props => {
                         const sources = (value || []) as SourceMeta[]
                         const availableSources = datasetsAndDataviews.filter(
                           source => source.id !== apiDataQuery?.id
-                          )
+                        )
                         const handleChange = (source: SourceMeta) => {
                           const { id, title, __typename } = source
                           const newSources = [
@@ -150,11 +166,6 @@ export const FullForm: React.FC<FullFormProps> = props => {
                           <>
                             <br />
                             <h3 style={{ fontSize: '2rem' }}>Data Source</h3>
-                            {dataQueryLink && (
-                              <a href={dataQueryLink} target="_blank" rel="noopener noreferrer">
-                                Data link
-                              </a>
-                            )}
                             <br />
                             <SourceSelector
                               sources={availableSources}
@@ -277,7 +288,7 @@ export const FullForm: React.FC<FullFormProps> = props => {
                 Save Data View
               </ButtonPrimary>
             </SimpleFormFooter>
-          </SimpleForm>
+          </NoPaddingForm>
         )
       }}
     </Form>

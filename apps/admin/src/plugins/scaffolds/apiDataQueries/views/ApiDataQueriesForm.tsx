@@ -3,25 +3,19 @@ import { useDataView } from './hooks/useDataView/useDataView'
 import { CircularProgress } from '@mui/material'
 import DataViewTemplates from './components/DataViewTemplates'
 import { ButtonDefault as Button } from '@webiny/ui/Button'
-import { useSecurity } from '@webiny/app-security/hooks/useSecurity'
+import { NoPaddingGrid } from '../../../../components/SplitView/NoPaddingGrid'
+import { Cell } from '@webiny/ui/Grid'
+import { useDataViewSchema } from './hooks/useGlobalFormData'
+import { useQueryBuilderPreview } from './hooks/useQueryBuilderPreview'
+import { PreviewTable } from './components/PreviewTable'
+import styled from '@emotion/styled'
 
-const findCurrentTokenWithId = (id?: string) => {
-  if (!id || typeof localStorage === 'undefined') {
-    return
+const ScrollableCell = styled(Cell)`
+  overflow: auto;
+  @media (min-width: 840px)  {
+    max-height: calc(100vh - 64px - 67px);
   }
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i)
-    if (key && key.startsWith('CognitoIdentityServiceProvider') && key.endsWith('userData')) {
-      const text = localStorage.getItem(key) || ''
-      const token = JSON.parse(text)
-      if (token?.UserAttributes?.find((attr: any) => attr.Name === 'sub')?.Value === id) {
-        const accessToken = localStorage.getItem(key.replace('userData', 'accessToken'))
-        return accessToken || ''
-      }
-    }
-  }
-  return ''
-}
+`
 /**
  * Renders a form which enables creating new or editing existing Api Data Query entries.
  * Includes two basic fields - title (required) and template.
@@ -29,30 +23,39 @@ const findCurrentTokenWithId = (id?: string) => {
  */
 const ApiDataQueriesForm: React.FC = () => {
   const [dataViewTemplate, setDataViewTemplate] = React.useState<string | undefined>(undefined)
+  const [showPreview, setShowPreview] = React.useState(true)
   const { FormComponent, ...hookProps } = useDataView(dataViewTemplate)
   const { emptyViewIsShown, loading, currentApiDataQuery, apiDataQuery } = hookProps
-  const security = useSecurity()
-  const { identity } = security
-
-  const currentAccessKey = findCurrentTokenWithId(identity?.id)
-  console.log(currentAccessKey)
-
+  const { schema } = useDataViewSchema();
+  const previewProps = useQueryBuilderPreview(schema);
   if (!apiDataQuery && !dataViewTemplate) {
     return <DataViewTemplates setDataViewTemplate={setDataViewTemplate} />
   }
-  console.log(apiDataQuery)
 
   emptyViewIsShown && currentApiDataQuery()
 
   if (loading) {
     return <CircularProgress />
   }
-  console.log('apiDataQuery', apiDataQuery)
+
   return (
-    <div>
-      <Button onClick={() => setDataViewTemplate(undefined)}>&larr; Back to View Templates</Button>
-      <FormComponent {...hookProps} />
-    </div>
+    <>
+      {!apiDataQuery && (
+        <Button onClick={() => setDataViewTemplate(undefined)}>
+          &larr; Back to View Templates
+        </Button>
+      )}
+      <NoPaddingGrid>
+        <ScrollableCell span={showPreview ? 8 : 12}>
+          <FormComponent {...hookProps} showPreview={showPreview} togglePreview={() => setShowPreview(p => !p)} />
+        </ScrollableCell>
+        {showPreview && (
+          <Cell span={4}>
+            <PreviewTable {...previewProps} />
+          </Cell>
+        )}
+      </NoPaddingGrid>
+    </>
   )
 }
 

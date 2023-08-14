@@ -15,6 +15,20 @@ export const logger = getLogger()
 export const handler = metricScope(
   metrics =>
     async (event: APIGatewayEvent, context: Context, callback: APIGatewayProxyCallback) => {
+      // if options return 200
+      if (event.httpMethod === 'OPTIONS') {
+        logger.info({ event, context })
+        return {
+          statusCode: 200,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Api-Key, X-Authorization',
+            'Access-Control-Expose-Headers': 'Content-Type, Authorization, X-Api-Key, X-Authorization'
+          },
+          body: ''
+        }
+      }
       const requestLogger = logger.child({ requestId: context.awsRequestId })
       requestLogger.debug({ event, context })
       metrics.putDimensions({ Service: 'QueryService' })
@@ -62,8 +76,11 @@ export const handler = metricScope(
         }
       }
 
-      const isAdminTestQuery = params['__adminQuery__']
-      if (isAdminTestQuery && event.body) {
+      const isAdminTestQuery = params['__adminQuery__'] == 'true'
+      logger.info({ isAdminTestQuery, event })
+      if (isAdminTestQuery) {
+        logger.info({ doingAdminQuery: true})
+        // @ts-ignore
         const schema = JSON.parse(event.body) as DataView
         const token = event.headers['X-Authorization']
         if (!token) {
@@ -121,7 +138,7 @@ export const handler = metricScope(
       }
 
       const data = await connection.handleIdQuery(id, params)
-      requestLogger.debug({ data })
+      requestLogger.info({ data, params })
       metrics.putMetric(
         'QueryDuration',
         new Date().getTime() - queryStartTimestamp,

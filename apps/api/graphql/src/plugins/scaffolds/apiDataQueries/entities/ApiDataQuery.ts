@@ -35,6 +35,9 @@ export default new Entity<ApiDataQueryEntity>({
       default: '{}'
     },
     dataViewTemplate: { type: 'string' },
+    combinedOperator: { type: 'string' },
+    limit: { type: 'number' },
+    offset: { type: 'number' },
     // Will store current version of Webiny, for example "5.9.1".
     // Might be useful in the future or while performing upgrades.
     webinyVersion: { type: 'string' }

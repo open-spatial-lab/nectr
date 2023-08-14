@@ -14,7 +14,7 @@ export default createApiApp({
     graphQLModule.addRoute({
       name: 'data-api',
       path: '/data-api/{id}',
-      method: ['GET', 'POST']
+      method: "ANY"
     })
     // console.log('################## graphQLModule.policy.config.policy: ')
     // console.log(graphQLModule.policy.config.policy)

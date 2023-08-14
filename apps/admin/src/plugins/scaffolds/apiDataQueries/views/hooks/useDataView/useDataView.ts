@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { getApiUrl } from 'theme/pageElements/utils/dataApiUrl'
 import { useApiDataQueriesDataList } from '../useApiDataQueriesDataList'
 import { useApiDataQueriesForm } from '../useApiDataQueriesForm'
@@ -6,6 +6,7 @@ import { useApiDataQueriesForm } from '../useApiDataQueriesForm'
 import { SourceMeta } from '../../../../../../components/QueryBuilder/types'
 import { useDataViewHook } from './types'
 import { getFormComponent } from './utils'
+import { useDataViewSchema } from '../useGlobalFormData'
 
 export const useDataView: useDataViewHook = templateName => {
   const {
@@ -18,7 +19,9 @@ export const useDataView: useDataViewHook = templateName => {
     datasets
   } = useApiDataQueriesForm()
 
-  const [sources, setSources] = React.useState<SourceMeta[]>([])
+  const { setSchema, setSources, schema } = useDataViewSchema()
+  const sources = schema?.sources || []
+
   const { apiDataQueries } = useApiDataQueriesDataList()
   const currentIds = sources?.map(source => source.id) || []
   const datasetsAndDataviews = useMemo(
@@ -69,6 +72,7 @@ export const useDataView: useDataViewHook = templateName => {
     currentSources,
     dataQueryLink,
     datasetsAndDataviews,
-    FormComponent
+    FormComponent,
+    setSchema
   }
 }
