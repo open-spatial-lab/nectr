@@ -36,7 +36,8 @@
     "theme": "^0.1.0",
     "tslib": "^2.4.0",
     "type-analyzer": "^0.4.0",
-    "wasm-brotli": "^2.0.2"
+    "wasm-brotli": "^2.0.2",
+    "zustand": "^4.4.1"
   },
   "devDependencies": {
     "cross-env": "^5.0.2",

@@ -1,4 +1,4 @@
-import typeDefs from "../typeDefs";
+import typeDefs from '../typeDefs'
 
 /**
  * An example of a unit test. You can use these to test a unit in your code, for example
@@ -7,8 +7,8 @@ import typeDefs from "../typeDefs";
  * https://www.webiny.com/docs/how-to-guides/scaffolding/extend-graphql-api#typedefsunittestts
  */
 
-describe("GraphQL type definitions test", () => {
-    test("ensure type definitions include DataUpload type", async () => {
-        expect(typeDefs.includes("type DataUpload")).toBe(true);
-    });
-});
+describe('GraphQL type definitions test', () => {
+  test('ensure type definitions include DataUpload type', async () => {
+    expect(typeDefs.includes('type DataUpload')).toBe(true)
+  })
+})

@@ -1,3 +1,1 @@
-export {
-    FlexRow
-} from './FlexRow';
+export { FlexRow } from './FlexRow'

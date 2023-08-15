@@ -1,5 +1,5 @@
-import { ColumnSchema } from "../../plugins/scaffolds/datasets/types"
-import { JoinQuery, QueryBuilderProps, SelectQuery } from "../QueryBuilder"
+import { ColumnSchema } from '../../plugins/scaffolds/datasets/types'
+import { JoinQuery, QueryBuilderProps, SelectQuery } from '../QueryBuilder'
 
 export type JoinBuilderProps = {
   template: SelectQuery

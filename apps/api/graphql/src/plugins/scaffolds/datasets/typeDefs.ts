@@ -1,83 +1,90 @@
 export default /* GraphQL */ `
-    type Dataset {
-        id: ID!
-        title: String!
-        description: String
-        createdOn: DateTime!
-        savedOn: DateTime!
-        createdBy: DatasetCreatedBy
-        isPublic: Boolean!
-        columns: String!
-        filename: String!
-    }
+  type Dataset {
+    id: ID!
+    title: String!
+    description: String
+    createdOn: DateTime!
+    savedOn: DateTime!
+    createdBy: DatasetCreatedBy
+    isPublic: Boolean!
+    columns: [DatasetColumn]
+    filename: String!
+  }
 
-    type DatasetCreatedBy {
-        id: String!
-        type: String!
-        displayName: String!
-    }
+  type DatasetCreatedBy {
+    id: String!
+    type: String!
+    displayName: String!
+  }
 
-    input DatasetCreateInput {
-        title: String!
-        description: String
-        isPublic: Boolean!
-        columns: String!
-        filename: String!
-    }
+  type DatasetColumn {
+    name: String!
+    type: String!
+    description: String
+  }
 
-    input DatasetUpdateInput {
-        title: String
-        description: String
-        isPublic: Boolean!
-        columns: String!
-        filename: String!
-    }
+  input DatasetColumnInput {
+    name: String!
+    type: String!
+    description: String
+  }
 
-    type DatasetsListMeta {
-        limit: Number
-        before: String
-        after: String
-    }
+  input DatasetCreateInput {
+    title: String!
+    description: String
+    isPublic: Boolean!
+    columns: [DatasetColumnInput]
+    filename: String!
+  }
 
-    enum DatasetsListSort {
-        createdOn_ASC
-        createdOn_DESC
-    }
+  input DatasetUpdateInput {
+    title: String
+    description: String
+    isPublic: Boolean!
+    columns: [DatasetColumnInput]
+    filename: String!
+  }
 
-    type DatasetsList {
-        data: [Dataset]
-        meta: DatasetsListMeta
-    }
+  type DatasetsListMeta {
+    limit: Number
+    before: String
+    after: String
+  }
 
-    type DatasetQuery {
-        # Returns a single Dataset entry.
-        getDataset(id: ID!): Dataset
+  enum DatasetsListSort {
+    createdOn_ASC
+    createdOn_DESC
+  }
 
-        # Lists one or more Dataset entries.
-        listDatasets(
-            limit: Int
-            before: String
-            after: String
-            sort: DatasetsListSort
-        ): DatasetsList!
-    }
+  type DatasetsList {
+    data: [Dataset]
+    meta: DatasetsListMeta
+  }
 
-    type DatasetMutation {
-        # Creates and returns a new Dataset entry.
-        createDataset(data: DatasetCreateInput!): Dataset!
+  type DatasetQuery {
+    # Returns a single Dataset entry.
+    getDataset(id: ID!): Dataset
 
-        # Updates and returns an existing Dataset entry.
-        updateDataset(id: ID!, data: DatasetUpdateInput!): Dataset!
+    # Lists one or more Dataset entries.
+    listDatasets(limit: Int, before: String, after: String, sort: DatasetsListSort): DatasetsList!
+  }
 
-        # Deletes and returns an existing Dataset entry.
-        deleteDataset(id: ID!): Dataset!
-    }
+  type DatasetMutation {
+    # Creates and returns a new Dataset entry.
+    createDataset(data: DatasetCreateInput!): Dataset!
 
-    extend type Query {
-        datasets: DatasetQuery
-    }
+    # Updates and returns an existing Dataset entry.
+    updateDataset(id: ID!, data: DatasetUpdateInput!): Dataset!
 
-    extend type Mutation {
-        datasets: DatasetMutation
-    }
-`;
+    # Deletes and returns an existing Dataset entry.
+    deleteDataset(id: ID!): Dataset!
+  }
+
+  extend type Query {
+    datasets: DatasetQuery
+  }
+
+  extend type Mutation {
+    datasets: DatasetMutation
+  }
+`

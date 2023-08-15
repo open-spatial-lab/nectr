@@ -1,7 +1,5 @@
-import formatSqlTest from './formatSql.test';
+import formatSqlTest from './formatSql.test'
 
-export const tests = [
-  formatSqlTest
-]
+export const tests = [formatSqlTest]
 
 tests.forEach(test => test())

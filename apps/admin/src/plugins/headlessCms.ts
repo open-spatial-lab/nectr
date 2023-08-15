@@ -1,3 +1,3 @@
-import richTextEditor from "./headlessCMS/richTextEditor";
+import richTextEditor from './headlessCMS/richTextEditor'
 
-export default [richTextEditor];
+export default [richTextEditor]

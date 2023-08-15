@@ -1,246 +1,256 @@
-import React, { useEffect } from "react";
-import { Grid, Cell } from "@webiny/ui/Grid";
+import React, { useEffect } from 'react'
+import { Cell } from '@webiny/ui/Grid'
 import {
-    SelectQuery,
-    MetaColumnSchema,
-    ColumnSchema,
-    AGGREGATE_FUNCTION_TYPES
-} from "../QueryBuilder/types";
-import { getColName } from "../../utils/getColName";
-import { Checkbox } from "@webiny/ui/Checkbox";
-import { Chip } from "@webiny/ui/Chips";
-import { Tooltip } from "@webiny/ui/Tooltip";
-import { AggregateSelector } from "./AggregateSelector";
+  MetaColumnSchema,
+  ColumnSchema,
+  SourceMeta,
+  AGGREGATE_FUNCTION_TYPES,
+  AGGREGATE_FUNCTIONS
+} from '../QueryBuilder/types'
 import {
-    List,
-    ListItem,
-    ListItemText,
-    ListItemTextSecondary,
-    ListItemGraphic,
-    ListItemMeta
-} from "@webiny/ui/List";
-import { NoPaddingGrid } from "../SplitView";
-import { Icon } from "@webiny/ui/Icon";
-import { ReactComponent as AddIcon } from "../../assets/noun-add-1154708.svg";
+  List,
+  ListItem,
+  ListItemText,
+  ListItemTextSecondary,
+  ListItemGraphic,
+  ListItemMeta
+} from '@webiny/ui/List'
+import { NoPaddingGrid } from '../SplitView'
+import { IconButton } from '@webiny/ui/Button'
+import { ReactComponent as SettingsIcon } from '@webiny/app-admin/assets/icons/round-settings-24px.svg'
+import { ReactComponent as AddIcon } from '../../assets/add.svg'
+import { ReactComponent as TrashIcon } from '../../assets/trash.svg'
+import { TextField } from '@mui/material'
+import { Select } from '@webiny/ui/Select'
 
 export const ColumnSelector: React.FC<{
-    template: SelectQuery;
-    handleTemplateChange: (key: keyof SelectQuery, value: SelectQuery[keyof SelectQuery]) => void;
-    columns: Array<MetaColumnSchema>;
-}> = ({ template, handleTemplateChange, columns }) => {
-    const handleToggleColumn = (column: MetaColumnSchema) => {
-        const findColumn = (c: Partial<MetaColumnSchema>) =>
-            c.name === column.name && c.sourceId === column.sourceId;
-        if (template.columns?.find(c => findColumn(c))) {
-            handleTemplateChange(
-                "columns",
-                (template.columns || []).filter(c => !findColumn(c))
-            );
-        } else {
-            handleTemplateChange("columns", [
-                ...(template.columns || []),
-                {
-                    name: column.name,
-                    type: column.type,
-                    sourceId: column.sourceId,
-                    sourceTitle: column.sourceTitle
-                }
-            ]);
-        }
-    };
-    const handleColumnAggregate = (
-        column: ColumnSchema,
-        aggregate: AGGREGATE_FUNCTION_TYPES | undefined
-    ) => {
-        const colName = getColName(column);
-        const newColumns = (template.columns || []).map(templateCol => {
-            if (templateCol.name === colName) {
-                return {
-                    ...templateCol,
-                    aggregate
-                };
-            }
-            return templateCol;
-        });
-        handleTemplateChange("columns", newColumns);
-    };
+  sources: SourceMeta[]
+  onChange: (columns: Array<MetaColumnSchema>) => void
+  currentColumns: Array<MetaColumnSchema>
+  simple?: boolean
+}> = ({ sources, onChange, currentColumns, simple }) => {
+  const [currentSource, setCurrentSource] = React.useState<SourceMeta | null>(sources?.[0] || null)
+  const currentSourceColumns = currentSource?.columns || []
+  const sourceIds = sources?.map(source => source.id) || []
+  const columnWidth = simple ? 6 : 4
+  const handleRemoveColumnAtIndex = (index: number) => {
+    const newColumns = currentColumns.filter((col, idx) => idx !== index)
+    onChange(newColumns)
+  }
 
-    const templateColumns = template.columns || [];
-
-    const datasets = [template.from, ...(template.join?.map(join => join.joinTo.from) || [])];
-    const [activeDataset, setActiveDataset] = React.useState(datasets?.[0]);
-
-    const filteredColumns = columns.filter(
-        col =>
-            col.sourceId === activeDataset?.id &&
-            !templateColumns.find(
-                templateCol =>
-                    templateCol.name === col.name && templateCol.sourceId === col.sourceId
-            )
-    );
-
-    useEffect(() => {
-        if (datasets.length === 1) {
-            setActiveDataset(datasets[0]);
-        }
-    }, [datasets.length]);
-
-    if (!datasets.length) {
-        return null;
+  const handleFilterColumns = () => {
+    if (!currentColumns) {
+      return
     }
-    return (
-        <NoPaddingGrid>
-            <Cell span={4}>
-                <List>
-                    <ListItem style={{ fontWeight: "bold", pointerEvents: "none" }}>
-                        <ListItemText>Data Sources</ListItemText>
-                    </ListItem>
-                    {datasets.map((dataset, idx) => (
-                        <ListItem
-                            key={`${dataset?.id}${idx}`}
-                            style={{
-                                borderBottom: "1px solid rgba(0,0,0,0.5)",
-                                backgroundColor:
-                                    activeDataset?.id === dataset?.id
-                                        ? "var(--highlighted)"
-                                        : "transparent"
-                            }}
-                            onClick={() => setActiveDataset(dataset)}
-                        >
-                            <ListItemText>{dataset.title}</ListItemText>
-                        </ListItem>
-                    ))}
-                </List>
-            </Cell>
-            <Cell span={4}>
-                <List>
-                    <ListItem style={{ fontWeight: "bold", pointerEvents: "none" }}>
-                        <ListItemText>{activeDataset.title} Columns</ListItemText>
-                    </ListItem>
-                    <div style={{ height: "30vh", overflowY: "auto" }}>
-                        {filteredColumns.map((column, idx) => (
-                            <ListItem
-                                key={`${column?.name}${idx}`}
-                                onClick={() => handleToggleColumn(column)}
-                                style={{paddingTop: '.5rem', paddingBottom: '.5rem'}}
-                            >
-                                {/* <ListItemGraphic>
-                                    <Icon icon={<AddIcon />} />
-                                </ListItemGraphic> */}
-                                <ListItemText>
-                                    {column.name}
-                                    <ListItemTextSecondary>
-                                        {column.description}
-                                    </ListItemTextSecondary>
-                                </ListItemText>
-                            </ListItem>
-                        ))}
-                    </div>
-                </List>
-            </Cell>
-            <Cell span={4}>
-                {templateColumns.length === 0 ? (
-                    <p
-                        style={{
-                            padding: "1rem",
-                            background: "rgba(0,0,0,0.1)",
-                            marginTop: "1rem"
-                        }}
-                    >
-                        <i>
-                            Choose a dataset on the left column, then choose a column to add to your
-                            data view.
-                        </i>
-                    </p>
-                ) : (
-                    <List>
-                        <ListItem style={{ fontWeight: "bold", pointerEvents: "none" }}>
-                            <ListItemText>Data View Columns</ListItemText>
-                        </ListItem>
-                        <div style={{ height: "30vh", overflowY: "auto" }}>
-                            {templateColumns.map((column, idx) => (
-                                <ListItem key={`${column?.name}${idx}`}>
-                                    <ListItemText>{column?.name}</ListItemText>
-                                </ListItem>
-                            ))}
-                        </div>
-                    </List>
-                )}
-            </Cell>
-        </NoPaddingGrid>
-    );
-};
-// return (
-//     <div>
-//         <Grid style={{ padding: "1rem 0" }}>
-//             <Cell span={12}>
-//                 <table className="align-cells">
-//                     <thead>
-//                         <tr>
-//                             <th></th>
-//                             <th>
-//                                 <strong>Column</strong>
-//                             </th>
-//                             <th>
-//                                 <strong>Type</strong>
-//                             </th>
-//                             <th>
-//                                 <strong>Description (hover for more)</strong>
-//                             </th>
-//                             <th>
-//                                 <strong>Aggregate</strong>
-//                             </th>
-//                         </tr>
-//                     </thead>
-//                     <tbody>
-//                         {columns.map(col => (
-//                             <tr key={`${col.datasetId}-${col.name}`} style={{}}>
-//                                 <td>
-//                                     {/* <div style={{padding: "0.5rem 0"}}> */}
-//                                     <Checkbox
-//                                         value={currentColumnNames.includes(getColName(col))}
-//                                         onChange={() => handleToggleColumn(col)}
-//                                     />
-//                                     {/* <Switch value={currentColumnNames.includes(col.name)}
-//                                         onChange={() => handleToggleColumn(col)}
-//                                     /> */}
-//                                     {/* </div> */}
-//                                 </td>
-//                                 <td>
-//                                     {col.dataset ? (
-//                                         <span
-//                                             style={{
-//                                                 pointerEvents: "none",
-//                                                 marginRight: "0.5rem"
-//                                             }}
-//                                         >
-//                                             <Chip>{col.dataset}</Chip>
-//                                         </span>
-//                                     ) : null}
-//                                     {col.name}
-//                                 </td>
-//                                 <td>{col.type}</td>
-//                                 <td>
-//                                     <Tooltip content={<span>{col.description}</span>}>
-//                                         <span>
-//                                             {col.description.slice(0, 30)}
-//                                             {col.description.length > 30 && "..."}
-//                                         </span>
-//                                     </Tooltip>
-//                                 </td>
-//                                 <td>
-//                                     {col.aggregate}
-//                                     <AggregateSelector
-//                                         column={col}
-//                                         template={template}
-//                                         handleColumnAggregate={handleColumnAggregate}
-//                                     />
-//                                 </td>
-//                             </tr>
-//                         ))}
-//                     </tbody>
-//                 </table>
-//             </Cell>
-//         </Grid>
-//     </div>
-// );
+    const filteredColumns = currentColumns.filter(col => sourceIds.includes(col.sourceId))
+    onChange(filteredColumns)
+  }
+
+  const handleColumnPropertyAtIndex = <T extends keyof MetaColumnSchema>(
+    index: number,
+    property: T,
+    value: MetaColumnSchema[T]
+  ) => {
+    currentColumns[index][property] = value
+    onChange(currentColumns)
+  }
+
+  useEffect(() => {
+    if (sources.length === 1) {
+      setCurrentSource(sources[0])
+    }
+    handleFilterColumns()
+  }, [JSON.stringify(sourceIds)])
+
+  if (!currentSource) {
+    return null
+  }
+
+  const handleAddColumn = (column: ColumnSchema) => {
+    // @ts-ignore
+    const metaSchema: MetaColumnSchema = {
+      name: column.name,
+      sourceId: currentSource.id,
+      sourceTitle: currentSource.title
+    }
+    const duplicateColumns = currentColumns.filter(
+      col => col.name === metaSchema.name && col.sourceId === metaSchema.sourceId
+    )
+    if (duplicateColumns.length > 0) {
+      let counter = 1
+      while (!metaSchema.alias) {
+        const aliasExists = currentColumns.find(col => col.alias === `${column.name}_${counter}`)
+        if (!aliasExists) {
+          metaSchema.alias = `${column.name}_${counter}`
+        }
+        counter++
+      }
+    }
+    onChange([...currentColumns, metaSchema])
+  }
+
+  return (
+    <NoPaddingGrid>
+      {!simple && (
+        <Cell span={columnWidth}>
+          <List>
+            <ListItem style={{ fontWeight: 'bold', pointerEvents: 'none' }}>
+              <ListItemText>Data Sources</ListItemText>
+            </ListItem>
+            {sources.map((source, idx) => (
+              <ListItem
+                key={`${source?.id}${idx}`}
+                style={{
+                  borderBottom: '1px solid rgba(0,0,0,0.5)',
+                  backgroundColor:
+                    currentSource?.id === source?.id ? 'var(--highlighted)' : 'transparent'
+                }}
+                onClick={() => setCurrentSource(source)}
+              >
+                <ListItemText>{source.title}</ListItemText>
+              </ListItem>
+            ))}
+          </List>
+        </Cell>
+      )}
+      <Cell span={columnWidth}>
+        <List>
+          <ListItem style={{ fontWeight: 'bold', pointerEvents: 'none' }}>
+            <ListItemText>{currentSource.title} Columns</ListItemText>
+          </ListItem>
+          <div style={{ height: '30vh', overflowY: 'auto' }}>
+            {currentSourceColumns.map((column, idx) => (
+              <ListItem
+                key={`${column?.name}${idx}`}
+                style={{ paddingTop: '.5rem', paddingBottom: '.5rem' }}
+              >
+                <ListItemText>
+                  {column.name}
+                  <ListItemTextSecondary>{column.description}</ListItemTextSecondary>
+                </ListItemText>
+                <ListItemMeta>
+                  <IconButton
+                    icon={<AddIcon />}
+                    label={`Add ${column.name} to data view`}
+                    onClick={() => handleAddColumn(column)}
+                  />
+                </ListItemMeta>
+              </ListItem>
+            ))}
+          </div>
+        </List>
+      </Cell>
+      <Cell span={columnWidth}>
+        {currentColumns.length === 0 ? (
+          <p
+            style={{
+              padding: '1rem',
+              background: 'rgba(0,0,0,0.1)',
+              marginTop: '1rem'
+            }}
+          >
+            <i>
+              Choose a dataset on the left column, then choose a column to add to your data view.
+            </i>
+          </p>
+        ) : (
+          <List>
+            <ListItem style={{ fontWeight: 'bold', pointerEvents: 'none' }}>
+              <ListItemText>Data View Columns</ListItemText>
+            </ListItem>
+            <div style={{ height: '30vh', overflowY: 'auto' }}>
+              {currentColumns.map((column, idx) => (
+                <ColumnRow
+                  key={`${column?.name}${idx}`}
+                  column={column}
+                  idx={idx}
+                  onRemove={handleRemoveColumnAtIndex}
+                  onChange={handleColumnPropertyAtIndex}
+                  simple={simple}
+                />
+              ))}
+            </div>
+          </List>
+        )}
+      </Cell>
+    </NoPaddingGrid>
+  )
+}
+
+const ColumnRow = ({
+  column,
+  idx,
+  onRemove,
+  onChange,
+  simple
+}: {
+  column: MetaColumnSchema
+  idx: number
+  onRemove: (idx: number) => void
+  onChange: <T extends keyof MetaColumnSchema>(
+    index: number,
+    property: T,
+    value: MetaColumnSchema[T]
+  ) => void
+  simple?: boolean
+}) => {
+  const [showSettings, setShowSettings] = React.useState(false)
+  return (
+    <ListItem
+      style={{
+        paddingTop: showSettings ? '1rem' : '.25rem',
+        paddingBottom: showSettings ? '1rem' : '0',
+        transition: 'height .2s ease-in-out',
+        height: 'auto',
+        border: showSettings ? '1px solid rgba(0,0,0,0.5)' : 'none'
+      }}
+    >
+      {!simple && (
+        <ListItemGraphic>
+          <IconButton
+            icon={<SettingsIcon />}
+            label="Show/Hide Settings"
+            onClick={() => setShowSettings(s => !s)}
+          />
+        </ListItemGraphic>
+      )}
+      <ListItemText>
+        {column?.name}{' '}
+        {!!column?.alias && (
+          <span style={{ color: 'gray', fontStyle: 'italic' }}>({column?.alias})</span>
+        )}
+        {showSettings && (
+          <ListItemTextSecondary>
+            <NoPaddingGrid>
+              <Cell span={6}>
+                <TextField
+                  label="Column Alias"
+                  value={column?.alias}
+                  onChange={e => onChange(idx, 'alias', e.currentTarget.value)}
+                />
+              </Cell>
+              <Cell span={6}>
+                <Select
+                  onChange={val => onChange(idx, 'aggregate', val as AGGREGATE_FUNCTION_TYPES)}
+                  label="Aggregate Function"
+                  value={column.aggregate || 'None'}
+                >
+                  {[{ label: 'None', value: undefined }, ...AGGREGATE_FUNCTIONS].map(
+                    ({ label, value }) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    )
+                  )}
+                </Select>
+              </Cell>
+            </NoPaddingGrid>
+          </ListItemTextSecondary>
+        )}
+      </ListItemText>
+      <ListItemMeta>
+        <IconButton icon={<TrashIcon />} label="Delete Column" onClick={() => onRemove(idx)} />
+      </ListItemMeta>
+    </ListItem>
+  )
+}

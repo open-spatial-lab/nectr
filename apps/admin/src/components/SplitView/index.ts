@@ -1,4 +1,4 @@
-import { NoPaddingGrid } from "./NoPaddingGrid";
-import { SurfaceCell } from "./SurfaceCell";
+import { NoPaddingGrid } from './NoPaddingGrid'
+import { SurfaceCell } from './SurfaceCell'
 
-export { NoPaddingGrid, SurfaceCell };
+export { NoPaddingGrid, SurfaceCell }

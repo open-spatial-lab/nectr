@@ -4,28 +4,28 @@
  */
 
 export const GET_API_DATA_QUERY = /* GraphQL */ `
-    query GetApiDataQuery($id: ID!) {
-        apiDataQueries {
-            getApiDataQuery(id: $id) {
-                id
-                title
-                template
-            }
-        }
+  query GetApiDataQuery($id: ID!) {
+    apiDataQueries {
+      getApiDataQuery(id: $id) {
+        id
+        title
+        template
+      }
     }
-`;
+  }
+`
 
 export const CREATE_API_DATA_QUERY = /* GraphQL */ `
-    mutation CreateApiDataQuery($data: ApiDataQueryCreateInput!) {
-        apiDataQueries {
-            createApiDataQuery(data: $data) {
-                id
-                title
-                template
-            }
-        }
+  mutation CreateApiDataQuery($data: ApiDataQueryCreateInput!) {
+    apiDataQueries {
+      createApiDataQuery(data: $data) {
+        id
+        title
+        template
+      }
     }
-`;
+  }
+`
 
 export const UPDATE_API_DATA_QUERY = /* GraphQL*/ `
     mutation UpdateApiDataQuery($id: ID!, $data: ApiDataQueryUpdateInput!) {
@@ -37,35 +37,35 @@ export const UPDATE_API_DATA_QUERY = /* GraphQL*/ `
             }
         }
     }
-`;
+`
 
 export const DELETE_API_DATA_QUERY = /* GraphQL */ `
-    mutation DeleteApiDataQuery($id: ID!) {
-        apiDataQueries {
-            deleteApiDataQuery(id: $id) {
-                id
-                title
-                template
-            }
-        }
+  mutation DeleteApiDataQuery($id: ID!) {
+    apiDataQueries {
+      deleteApiDataQuery(id: $id) {
+        id
+        title
+        template
+      }
     }
-`;
+  }
+`
 
 export const LIST_API_DATA_QUERIES = /* GraphQL */ `
-    query ListApiDataQueries($sort: ApiDataQueriesListSort, $limit: Int, $after: String) {
-        apiDataQueries {
-            listApiDataQueries(sort: $sort, limit: $limit, after: $after) {
-                data {
-                    id
-                    title
-                    template
-                }
-                meta {
-                    limit
-                    after
-                    before
-                }
-            }
+  query ListApiDataQueries($sort: ApiDataQueriesListSort, $limit: Int, $after: String) {
+    apiDataQueries {
+      listApiDataQueries(sort: $sort, limit: $limit, after: $after) {
+        data {
+          id
+          title
+          template
         }
+        meta {
+          limit
+          after
+          before
+        }
+      }
     }
-`;
+  }
+`

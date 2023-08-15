@@ -1,4 +1,4 @@
-import menus from "./menus";
-import routes from "./routes";
+import menus from './menus'
+import routes from './routes'
 
-export default [menus, routes];
+export default [menus, routes]

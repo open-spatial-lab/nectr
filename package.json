@@ -2,7 +2,7 @@
   "name": "nectr",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "yarn@3.4.1",
+  "packageManager": "yarn@3.6.1",
   "dependencies": {
     "@webiny/aws-layers": "^5.34.6",
     "@webiny/cli": "5.34.5",
