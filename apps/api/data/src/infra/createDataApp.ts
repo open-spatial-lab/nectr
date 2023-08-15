@@ -6,28 +6,30 @@ import { createAppModule, PulumiApp, PulumiAppModule } from '@webiny/pulumi'
 import { CoreOutput } from '@webiny/pulumi-aws/apps/common'
 import { createLambdaRole, getCommonLambdaEnvVariables } from '@webiny/pulumi-aws/apps/lambdaUtils'
 import { getAwsAccountId, getAwsRegion } from '@webiny/pulumi-aws/apps/awsUtils'
-import { ApiGateway } from '@webiny/pulumi-aws'
+import { ApiGateway, ApiCloudfront } from '@webiny/pulumi-aws'
 import { DataApiGateway } from './createDataGateway'
 import { DataApiCloudfront } from './createDataCloudfront'
+import { DataBucket } from '../../../webiny.application'
 
 interface DataApiParams {
   env: Record<string, any>
 }
 
-export type DataFunction = PulumiAppModule<typeof DataFunction>
+export type DataFunction = PulumiAppModule<ReturnType<typeof DataFunction>>
 
-export const DataFunction = createAppModule({
-  name: 'PublicDataApi',
-  config(app: PulumiApp, params: DataApiParams) {
-    const core = app.getModule(CoreOutput)
-    const dataResources = createDataResources(app, params)
-    return {
-      data: dataResources
+export const DataFunction = (dataBucket: DataBucket) =>
+  createAppModule({
+    name: 'PublicDataApi',
+    config(app: PulumiApp, params: DataApiParams) {
+      const core = app.getModule(CoreOutput)
+      const dataResources = createDataResources(app, params, dataBucket)
+      return {
+        data: dataResources
+      }
     }
-  }
-})
+  })
 
-function createDataResources(app: PulumiApp, params: DataApiParams) {
+function createDataResources(app: PulumiApp, params: DataApiParams, dataBucket: DataBucket) {
   if (!params.env['S3_BUCKET']) {
     throw new Error(
       'Missing S3_BUCKET environment variable. This is required for the data API to work.'
@@ -35,15 +37,42 @@ function createDataResources(app: PulumiApp, params: DataApiParams) {
   }
 
   const core = app.getModule(CoreOutput)
+  const cloudfront = app.getModule(ApiCloudfront)
   const apiGateway = app.getModule(ApiGateway)
-  const policy = createReadOnlyLambdaPolicy(app, params)
+  const outputUrl = cloudfront.output
+
+  // add dynamodb table
+  const cacheTable = app.addResource(aws.dynamodb.Table, {
+    name: 'data-api-cache',
+    config: {
+      attributes: [
+        { name: 'PK', type: 'S' },
+        { name: 'SK', type: 'S' },
+        { name: 'fileid', type: 'S' },
+        { name: 'timestamp', type: 'N' }
+      ],
+      hashKey: 'PK',
+      rangeKey: 'SK',
+      billingMode: 'PAY_PER_REQUEST',
+      globalSecondaryIndexes: [
+        {
+          name: 'timestamp-index',
+          hashKey: 'fileid',
+          rangeKey: 'timestamp',
+          projectionType: 'ALL'
+        }
+      ]
+    }
+  })
+
+  const cloudfrontUrl = pulumi.interpolate`${outputUrl}`.apply(v => `${v}`)
+  // @ts-ignore
+  const policy = createReadOnlyLambdaPolicy(app, params, cacheTable.output.arn)
   const role = createLambdaRole(app, {
     name: 'data-api-lambda-role',
     policy: policy.output
   })
-  // create an S#
 
-  const awsRegion = getAwsRegion(app)
   const dataQuery = app.addResource(aws.lambda.Function, {
     name: 'data-api-runner',
     config: {
@@ -67,11 +96,14 @@ function createDataResources(app: PulumiApp, params: DataApiParams) {
           EXTENSION_BUCKET: '',
           DATA_BUCKET: pulumi.interpolate`${params.env['S3_BUCKET'].id}`,
           COGNITO_USER_POOL_ID: core.cognitoUserPoolId,
+          CLOUDFRONT_URL: cloudfrontUrl.apply(v => `${v}`),
+          CACHE_TABLE: cacheTable.output.name
         }))
       }
     }
   })
   const dataQueryArn = dataQuery.output.arn
+
   const dataGateway = app.addModule(DataApiGateway, {
     'api-data-query': {
       path: '/data-query/{id}',
@@ -79,7 +111,9 @@ function createDataResources(app: PulumiApp, params: DataApiParams) {
       function: dataQueryArn
     }
   })
-  const dataCloudfront = app.addModule(DataApiCloudfront)
+  const { 
+
+  } = app.addModule(DataApiCloudfront(dataBucket))
 
   return {
     role,
@@ -90,7 +124,7 @@ function createDataResources(app: PulumiApp, params: DataApiParams) {
   }
 }
 
-function createReadOnlyLambdaPolicy(app: PulumiApp, params: DataApiParams) {
+function createReadOnlyLambdaPolicy(app: PulumiApp, params: DataApiParams, cacheTableArn: string) {
   const core = app.getModule(CoreOutput)
   const awsAccountId = getAwsAccountId(app)
   const awsRegion = getAwsRegion(app)
@@ -126,24 +160,31 @@ function createReadOnlyLambdaPolicy(app: PulumiApp, params: DataApiParams) {
               's3:PutObject',
               's3:PutObjectAcl',
               's3:DeleteObject',
-              "cognito-idp:DescribeUserPoolClient",
-              "cognito-idp:DescribeUserPoolDomain",
-              "cognito-idp:DescribeUserPool",
-              "cognito-idp:ListUserPoolClients",
-              "cognito-idp:ListUserPoolDomains",
-              "cognito-idp:ListUserPools",
-              "cognito-idp:AdminGetUser",
-              "cognito-idp:AdminInitiateAuth",
-              "cognito-idp:AdminRespondToAuthChallenge",
-              "cognito-idp:AssociateSoftwareToken"
+              'cognito-idp:DescribeUserPoolClient',
+              'cognito-idp:DescribeUserPoolDomain',
+              'cognito-idp:DescribeUserPool',
+              'cognito-idp:ListUserPoolClients',
+              'cognito-idp:ListUserPoolDomains',
+              'cognito-idp:ListUserPools',
+              'cognito-idp:AdminGetUser',
+              'cognito-idp:AdminInitiateAuth',
+              'cognito-idp:AdminRespondToAuthChallenge',
+              'cognito-idp:AssociateSoftwareToken',
+              // read and write dynamodb
+              'dynamodb:BatchGetItem',
+              'dynamodb:GetItem',
+              'dynamodb:Query',
+              'dynamodb:PutItem',
+              'dynamodb:UpdateItem',
+              'dynamodb:DeleteItem'
             ],
             Resource: [
               pulumi.interpolate`${params.env['S3_BUCKET'].arn}/*`,
-              // We need to explicitly add bucket ARN to "Resource" list for "s3:ListBucket" action.
               pulumi.interpolate`${params.env['S3_BUCKET'].arn}`,
               pulumi.interpolate`arn:aws:s3:::${core.fileManagerBucketId}/*`,
               pulumi.interpolate`arn:aws:s3:::${core.fileManagerBucketId}`,
               pulumi.interpolate`${core.cognitoUserPoolArn}/*`,
+              pulumi.interpolate`${cacheTableArn}`.apply(arn => `${arn}`)
             ]
             // Principal: "*"
           },

@@ -1,6 +1,6 @@
 import * as aws from '@pulumi/aws'
 import * as pulumi from '@pulumi/pulumi'
-import { createAppModule, PulumiApp, PulumiAppModule } from '@webiny/pulumi'
+import { createAppModule, PulumiApp, PulumiAppModule, PulumiAppResource } from '@webiny/pulumi'
 
 export interface ApiRouteParams {
   path: pulumi.Input<string>
@@ -8,7 +8,7 @@ export interface ApiRouteParams {
   function: pulumi.Input<string>
 }
 
-export type ApiGateway = PulumiAppModule<typeof DataApiGateway>
+export type DataGateway = PulumiAppResource<typeof aws.apigatewayv2.Api>
 
 export const DataApiGateway = createAppModule({
   name: 'DataApiGateway',

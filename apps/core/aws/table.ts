@@ -8,10 +8,10 @@ import { documentClient } from './documentClient'
  * during a previous deployment).
  * https://www.webiny.com/docs/how-to-guides/scaffolding/extend-graphql-api#essential-files
  */
-const name = process.env['TESTING'] == 'true' ? 'test' : (process.env.DB_TABLE as string)
+const cmsName = process.env['TESTING'] == 'true' ? 'test' : (process.env.DB_TABLE as string)
 
-export default new Table({
-  name,
+export const cmsTable = new Table({
+  name: cmsName,
   partitionKey: 'PK',
   sortKey: 'SK',
   entityField: 'TYPE',

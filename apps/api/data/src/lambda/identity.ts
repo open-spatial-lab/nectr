@@ -1,4 +1,3 @@
-import * as AWS from '@aws-sdk/client-cognito-identity-provider'
 import jwkToPem from 'jwk-to-pem'
 import * as jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
