@@ -1,54 +1,14 @@
 import * as aws from '@pulumi/aws'
 import { createAppModule, PulumiApp, PulumiAppModule } from '@webiny/pulumi'
 import { DataApiGateway } from './createDataGateway'
-import { DataBucket } from '../../../webiny.application'
+import { DataBucket } from './createDataBucket'
 
 export type DataApiCloudfront = PulumiAppModule<ReturnType<typeof DataApiCloudfront>>
 
-export const DataApiCloudfront = (dataBucket: DataBucket) =>
+export const DataApiCloudfront = (dataBucket: DataBucket, gateway: any) =>
   createAppModule({
     name: 'DataApiCloudfront',
     config(app: PulumiApp) {
-      const gateway = app.getModule(DataApiGateway)
-      const name = 'data-api-cache'
-
-      const originIdentity = app.addResource(aws.cloudfront.OriginAccessIdentity, {
-        name: `${name}-origin-identity`,
-        config: {}
-      })
-
-      const bucketPolicy = app.addResource(aws.s3.BucketPolicy, {
-        name: `${name}-bucket-policy`,
-        config: {
-          bucket: dataBucket.output.bucket,
-          policy: {
-            Version: '2012-10-17',
-            Statement: dataBucket.output.arn.apply(arn => {
-              const statements: aws.iam.PolicyStatement[] = [
-                {
-                  Effect: 'Allow',
-                  Principal: { AWS: originIdentity.output.iamArn },
-                  Action: ['s3:ListBucket', 's3:GetObject'],
-                  Resource: [`${arn}`, `${arn}/*`]
-                }
-              ]
-
-              return statements
-            })
-          }
-        }
-      })
-
-      const bucketPublicAccessBlock = app.addResource(aws.s3.BucketPublicAccessBlock, {
-        name: `${name}-bucket-block-access`,
-        config: {
-          bucket: dataBucket.output.id,
-          blockPublicAcls: true,
-          blockPublicPolicy: true,
-          ignorePublicAcls: true,
-          restrictPublicBuckets: true
-        }
-      })
       const cloudfront = app.addResource(aws.cloudfront.Distribution, {
         name: 'data-api-cloudfront',
         config: {
@@ -124,9 +84,9 @@ export const DataApiCloudfront = (dataBucket: DataBucket) =>
             {
               domainName: dataBucket.output.bucketRegionalDomainName,
               originId: dataBucket.output.id,
-              s3OriginConfig: {
-                originAccessIdentity: originIdentity.output.cloudfrontAccessIdentityPath
-              }
+              // s3OriginConfig: {
+              //   originAccessIdentity: originIdentity.output.cloudfrontAccessIdentityPath
+              // }
             }
           ],
           restrictions: {
@@ -140,10 +100,7 @@ export const DataApiCloudfront = (dataBucket: DataBucket) =>
         }
       })
       return {
-        cloudfront,
-        bucketPolicy,
-        bucketPublicAccessBlock,
-        originIdentity
+        cloudfront
       }
     }
   })

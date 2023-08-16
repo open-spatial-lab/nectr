@@ -91,11 +91,11 @@ export default class CacheService {
   }
 
   redirectToCacheFile(cacheFileId: string) {
-    // redirect to `https://d3uldu0bz6pkei.cloudfront.net/cache/${cacheFileId}.json`
+
     return {
       statusCode: 302,
       headers: {
-        Location: `https://d3uldu0bz6pkei.cloudfront.net/cache/${cacheFileId}.json`
+        Location: `https://${process.env['API_URL']}/cache/${cacheFileId}.json`
       }
     }
   }

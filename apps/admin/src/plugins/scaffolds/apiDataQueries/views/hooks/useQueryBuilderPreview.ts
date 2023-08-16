@@ -1,15 +1,16 @@
-import { getApiUrl } from "../../../../../../../theme/pageElements/utils/dataApiUrl"
-import { useCurrentAccessKey } from "./useCurrentAccessKey"
-import React from "react"
-import { QuerySchema } from "../../../../../../../admin/src/components/QueryBuilder/types"
-import { QueryResponse } from "../../../../../../../api/data/src/types/types"
-const endpoint = `${getApiUrl('__')}?__adminQuery__=true`
+import { getApiUrl } from '../../../../../../../theme/pageElements/utils/dataApiUrl'
+import { useCurrentAccessKey } from './useCurrentAccessKey'
+import React from 'react'
+import { QuerySchema } from '../../../../../../../admin/src/components/QueryBuilder/types'
+import { QueryResponse } from '../../../../../../../api/data/src/types/types'
+import { config as appConfig } from '@webiny/app/config'
+const apiUrl = `${appConfig.getKey('API_URL', process.env.REACT_APP_API_URL)}?__adminQuery__=true`
 
 export const useQueryBuilderPreview = (schema: QuerySchema) => {
   const currentToken = useCurrentAccessKey()
   const [data, setData] = React.useState<QueryResponse<Array<Record<string, unknown>>, string>>({
     ok: false,
-    error: "No data",
+    error: 'No data'
   })
 
   const [page, setPage] = React.useState(0)
@@ -21,10 +22,10 @@ export const useQueryBuilderPreview = (schema: QuerySchema) => {
       return
     }
     isQuerying.current = true
-    const response = await fetch(endpoint, {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'Authorization': currentToken,
+        Authorization: currentToken,
         'X-Authorization': currentToken,
         'X-Api-Key': currentToken,
         'Content-Type': 'application/json'
@@ -39,7 +40,7 @@ export const useQueryBuilderPreview = (schema: QuerySchema) => {
       const error = await response.json()
       setData({
         ok: false,
-        error: error.message 
+        error: error.message
       })
       isQuerying.current = false
     } else {
@@ -66,6 +67,6 @@ export const useQueryBuilderPreview = (schema: QuerySchema) => {
   return {
     data,
     page,
-    setPage,
+    setPage
   }
 }

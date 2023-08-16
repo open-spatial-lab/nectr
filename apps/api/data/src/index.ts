@@ -25,6 +25,7 @@ export const handler = metricScope(
 
       const id = event.pathParameters?.['id']!
       const params = event?.queryStringParameters || {}
+      logger.info({ event, context })
       const isMetaDataQuery = Boolean(params['__metadata__'])
       const isAdminTestQuery = params['__adminQuery__'] == 'true'
       const metadataFile = params['__metadata__']

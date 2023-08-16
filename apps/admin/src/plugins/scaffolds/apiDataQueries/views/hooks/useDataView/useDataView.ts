@@ -52,6 +52,7 @@ export const useDataView: useDataViewHook = templateName => {
   }, [datasetsAndDataviews?.length, JSON.stringify(currentIds)])
 
   const dataQueryLink = apiDataQuery?.id ? getApiUrl(apiDataQuery.id) : null
+  console.log('dataQueryLink', dataQueryLink)
   // TODO fix circular reference
   // this is React.FC<FormProps> from apps/admin/src/plugins/scaffolds/apiDataQueries/views/components/types.ts
   const FormComponent = getFormComponent(
