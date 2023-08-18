@@ -6,7 +6,7 @@ import { AdminLayout } from '@webiny/app-admin/components/AdminLayout'
 import { RoutePlugin } from '@webiny/app/plugins/RoutePlugin'
 
 /**
- * Registers new "/api-data-queries" route.
+ * Registers new "data-views" route.
  */
 
 const Loader: React.FC = ({ children, ...props }) => (
@@ -20,7 +20,7 @@ const ApiDataQueries = lazy(() => import('./views'))
 export default new RoutePlugin({
   route: (
     <Route
-      path={'/api-data-queries'}
+      path={'/data-views'}
       exact
       render={() => (
         <AdminLayout>

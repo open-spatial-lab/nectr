@@ -11,7 +11,7 @@ export default new MenuPlugin({
     return (
       <Menu name="menu-datasets" label={'Datasets'} icon={<Icon />}>
         <Item label={'Datasets'} path={'/datasets'} />
-        <Item label={'Data Views'} path={'/api-data-queries'} />
+        <Item label={'Data Views'} path={'/data-views'} />
       </Menu>
     )
   }

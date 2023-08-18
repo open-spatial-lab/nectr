@@ -12,7 +12,7 @@ import { AccordionItem } from '@webiny/ui/Accordion'
 import { ReactComponent as DefaultIcon } from './assets/round-ballot-24px.svg'
 import { PermissionInfo } from '@webiny/app-admin/components/Permissions'
 
-const PERMISSION_NAME = 'api-data-queries'
+const PERMISSION_NAME = 'data-views'
 
 export default new PermissionRendererPlugin({
   render(props) {

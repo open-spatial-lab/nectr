@@ -83,9 +83,9 @@ export const useApiDataQueriesDataList: useApiDataQueriesDataListHook = () => {
   const loading = [listQuery, deleteMutation].some(item => item.loading)
 
   // Base CRUD actions - new, edit, and delete.
-  const newApiDataQuery = useCallback(() => history.push('/api-data-queries?new'), [])
+  const newApiDataQuery = useCallback(() => history.push('/data-views?new'), [])
   const editApiDataQuery = useCallback(id => {
-    history.push(`/api-data-queries?id=${id}`)
+    history.push(`/data-views?id=${id}`)
   }, [])
 
   const deleteApiDataQuery = useCallback(
@@ -98,7 +98,7 @@ export const useApiDataQueriesDataList: useApiDataQueriesDataListHook = () => {
 
           showSnackbar(`Api Data Query "${item.title}" deleted.`)
           if (currentApiDataQueryId === item.id) {
-            history.push(`/api-data-queries`)
+            history.push(`/data-views`)
           }
         } catch (e) {
           showSnackbar(e.message)

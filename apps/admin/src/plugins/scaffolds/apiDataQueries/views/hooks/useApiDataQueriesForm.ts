@@ -35,7 +35,7 @@ export const useApiDataQueriesForm = () => {
     variables: { id: currentApiDataQueryId },
     skip: !currentApiDataQueryId,
     onError: error => {
-      history.push('/api-data-queries')
+      history.push('/data-views')
       showSnackbar(error.message)
     }
   })
@@ -66,7 +66,7 @@ export const useApiDataQueriesForm = () => {
         const result = await operation(options)
         if (!id) {
           const { id } = result.data.apiDataQueries.createApiDataQuery
-          history.push(`/api-data-queries?id=${id}`)
+          history.push(`/data-views?id=${id}`)
         }
 
         showSnackbar('Api Data Query saved successfully.')
@@ -79,8 +79,8 @@ export const useApiDataQueriesForm = () => {
 
   const apiDataQuery = getQuery?.data?.apiDataQueries?.getApiDataQuery as QuerySchema
   const emptyViewIsShown = !searchParams.has('new') && !loading && !apiDataQuery
-  const currentApiDataQuery = useCallback(() => history.push('/api-data-queries?new'), [])
-  const cancelEditing = useCallback(() => history.push('/api-data-queries'), [])
+  const currentApiDataQuery = useCallback(() => history.push('/data-views?new'), [])
+  const cancelEditing = useCallback(() => history.push('/data-views'), [])
 
   return {
     loading,

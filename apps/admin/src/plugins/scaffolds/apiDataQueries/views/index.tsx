@@ -39,7 +39,7 @@ const QueryListContainer = styled(DrawerContent)`
 
 const OpenCloseDrawerButton = styled(ButtonPrimary)<{drawerOpen: boolean}>`
   position: absolute;
-  z-index: ${props => props.drawerOpen ? 9 : 20};
+  z-index: ${props => props.drawerOpen ? 9 : 10};
   top: 1rem;
   left: 0rem;
   background: white;
@@ -63,7 +63,7 @@ const Spacer = styled('div')<{h: string}>`
  */
 
 const ApiDataQueriesView: React.FC = () => {
-  const [showDrawer, setShowDrawer] = React.useState(true)
+  const [showDrawer, setShowDrawer] = React.useState(false)
 
   return (
     <DrawerFormContainer>

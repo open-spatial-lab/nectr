@@ -38,7 +38,7 @@ const DataUploadsMenu: React.FC<{ Menu: any; Item: any }> = ({ Menu, Item }) => 
   return (
     <Menu name="menu-data-uploads" label={'Data'} icon={<Icon />}>
       <Item label={'Data Uploads'} path={'/data-uploads'} />
-      <Item label={'Data Views'} path={'/api-data-queries'} />
+      <Item label={'Data Views'} path={'/adata-views'} />
     </Menu>
   )
 }
