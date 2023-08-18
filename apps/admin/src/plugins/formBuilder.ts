@@ -1,8 +1,6 @@
 /* Core Form Builder app */
 import formBuilderApp from '@webiny/app-form-builder/admin/plugins'
 
-/* Welcome screen widget rendered on admin home screen */
-import welcomeScreenWidget from '@webiny/app-form-builder/admin/plugins/welcomeScreenWidget'
 
 /* Form Editor fields */
 import editorFieldHidden from '@webiny/app-form-builder/admin/plugins/editor/formFields/hidden'
@@ -67,7 +65,6 @@ import richTextEditor from './formBuilder/richTextEditor'
 export default [
   formBuilderApp(),
   pageBuilderPlugins(),
-  welcomeScreenWidget,
   editorFieldHidden,
   editorFieldSelect,
   editorFieldText,

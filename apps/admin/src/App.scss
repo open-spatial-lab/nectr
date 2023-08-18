@@ -30,3 +30,9 @@ $webiny-theme-typography-font-family: "Source Sans Pro";
 .align-cells tr td:nth-child(n+2) {
   padding-right:1rem;
 }
+
+// this plugin won't unregsiter. We don't want it. So here we are ¯\_(ツ)_/¯
+// select div with data-testid="admin-welcome-screen-widget-headless-cms" and hide it
+[data-testid="admin-welcome-screen-widget-headless-cms"] {
+  display: none;
+}
