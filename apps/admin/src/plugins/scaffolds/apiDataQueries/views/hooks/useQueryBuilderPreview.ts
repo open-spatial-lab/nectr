@@ -1,4 +1,3 @@
-import { getApiUrl } from '../../../../../../../theme/pageElements/utils/dataApiUrl'
 import { useCurrentAccessKey } from './useCurrentAccessKey'
 import React from 'react'
 import { QuerySchema } from '../../../../../../../admin/src/components/QueryBuilder/types'

@@ -7,7 +7,7 @@ export const createDataBucket = <T extends PulumiApp>(app: T, name: string) => {
   const dataBucket = app.addResource(aws.s3.Bucket, {
     name,
     config: {
-      acl: aws.s3.CannedAcl.PublicRead,
+      acl: aws.s3.CannedAcl.Private,
       forceDestroy: false,
       corsRules: [
         {
@@ -54,10 +54,10 @@ export const createDataBucket = <T extends PulumiApp>(app: T, name: string) => {
     name: `${name}-bucket-block-access`,
     config: {
       bucket: dataBucket.output.id,
-      blockPublicAcls: false,
-      blockPublicPolicy: false,
-      ignorePublicAcls: false,
-      restrictPublicBuckets: false
+      blockPublicAcls: true,
+      blockPublicPolicy: true,
+      ignorePublicAcls: true,
+      restrictPublicBuckets: true
     }
   })
 

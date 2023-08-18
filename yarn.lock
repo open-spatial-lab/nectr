@@ -4276,6 +4276,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.22.6":
+  version: 7.22.10
+  resolution: "@babel/runtime@npm:7.22.10"
+  dependencies:
+    regenerator-runtime: ^0.14.0
+  checksum: 524d41517e68953dbc73a4f3616b8475e5813f64e28ba89ff5fca2c044d535c2ea1a3f310df1e5bb06162e1f0b401b5c4af73fe6e2519ca2450d9d8c44cf268d
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.18.10, @babel/template@npm:^7.20.7, @babel/template@npm:^7.3.3":
   version: 7.20.7
   resolution: "@babel/template@npm:7.20.7"
@@ -6828,6 +6837,32 @@ __metadata:
     "@octokit/webhooks-types": 5.8.0
     aggregate-error: ^3.1.0
   checksum: 97da13d2464095d68068ff2fd7d2aa42d1c88e6271eb929ae50890396d16862debfa2078e650823bacf42c4a1c606137d3715a5f970bfcbc2bbdf66bca38760e
+  languageName: node
+  linkType: hard
+
+"@open-spatial-lab/api-file-manager@npm:5.34.5, @open-spatial-lab/api-file-manager@npm:^5.34.5":
+  version: 5.34.5
+  resolution: "@open-spatial-lab/api-file-manager@npm:5.34.5"
+  dependencies:
+    "@babel/runtime": ^7.22.6
+    "@commodo/fields": 1.1.2-beta.20
+    "@webiny/api": 5.34.5
+    "@webiny/api-headless-cms": 5.34.5
+    "@webiny/api-security": 5.34.5
+    "@webiny/api-tenancy": 5.34.5
+    "@webiny/error": 5.34.5
+    "@webiny/handler": 5.34.5
+    "@webiny/handler-aws": 5.34.5
+    "@webiny/handler-client": 5.34.5
+    "@webiny/handler-graphql": 5.34.5
+    "@webiny/plugins": 5.34.5
+    "@webiny/project-utils": 5.34.5
+    "@webiny/pubsub": 5.34.5
+    "@webiny/validation": 5.34.5
+    aws-sdk: ^2.971.0
+    lodash: ^4.17.11
+    object-hash: ^2.1.1
+  checksum: 81eac8d9ce6531b21ec0dcbcb220ddd4725402997912dc84d49b4fb8594c9d736e74f441341827140e8ed4e95b8521b6d2b3f17641115da64f3d937720522b64
   languageName: node
   linkType: hard
 
@@ -12675,6 +12710,7 @@ __metadata:
     "@aws-sdk/client-cognito-identity-provider": ^3.386.0
     "@aws-sdk/client-s3": ^3.292.0
     "@aws-sdk/s3-request-presigner": ^3.363.0
+    "@open-spatial-lab/api-file-manager": 5.34.5
     "@types/bunyan": ^1.8.8
     "@types/mustache": ^4.2.2
     "@types/papaparse": ^5.3.7
@@ -12684,7 +12720,6 @@ __metadata:
     "@webiny/api-admin-users-cognito-so-ddb": 5.34.5
     "@webiny/api-apw": 5.34.5
     "@webiny/api-apw-scheduler-so-ddb": 5.34.5
-    "@webiny/api-file-manager": 5.34.5
     "@webiny/api-file-manager-ddb": 5.34.5
     "@webiny/api-file-manager-s3": 5.34.5
     "@webiny/api-form-builder": 5.34.5
@@ -12736,6 +12771,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "api-graphql@workspace:apps/api/graphql"
   dependencies:
+    "@open-spatial-lab/api-file-manager": ^5.34.5
     "@types/mustache": ^4.2.2
     "@webiny/api-aco": 5.34.5
     "@webiny/api-admin-users-cognito": 5.34.5
@@ -13364,6 +13400,24 @@ __metadata:
     uuid: 8.0.0
     xml2js: 0.4.19
   checksum: 88af4020a8b3eeb49d3b1eaf3a3895b781cd8820f293dabd8365bdc602dee26a250c6a6c4807926f5fe9dac40be30ba3046474cbfa52171b8b141b96b03f00b2
+  languageName: node
+  linkType: hard
+
+"aws-sdk@npm:^2.971.0":
+  version: 2.1439.0
+  resolution: "aws-sdk@npm:2.1439.0"
+  dependencies:
+    buffer: 4.9.2
+    events: 1.1.1
+    ieee754: 1.1.13
+    jmespath: 0.16.0
+    querystring: 0.2.0
+    sax: 1.2.1
+    url: 0.10.3
+    util: ^0.12.4
+    uuid: 8.0.0
+    xml2js: 0.5.0
+  checksum: e2b90eea8b1465d1e91f5b4473fc1e033056f5581256d3f52605beed99ac9d4645fa585a3624fdc65771826782cba13a438ad1824601eca710ffd550a131b5b4
   languageName: node
   linkType: hard
 
@@ -22796,7 +22850,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"object-hash@npm:2.2.0":
+"object-hash@npm:2.2.0, object-hash@npm:^2.1.1":
   version: 2.2.0
   resolution: "object-hash@npm:2.2.0"
   checksum: 55ba841e3adce9c4f1b9b46b41983eda40f854e0d01af2802d3ae18a7085a17168d6b81731d43fdf1d6bcbb3c9f9c56d22c8fea992203ad90a38d7d919bc28f1
@@ -25747,6 +25801,13 @@ __metadata:
   version: 0.13.11
   resolution: "regenerator-runtime@npm:0.13.11"
   checksum: 27481628d22a1c4e3ff551096a683b424242a216fee44685467307f14d58020af1e19660bf2e26064de946bad7eff28950eae9f8209d55723e2d9351e632bbb4
+  languageName: node
+  linkType: hard
+
+"regenerator-runtime@npm:^0.14.0":
+  version: 0.14.0
+  resolution: "regenerator-runtime@npm:0.14.0"
+  checksum: 1c977ad82a82a4412e4f639d65d22be376d3ebdd30da2c003eeafdaaacd03fc00c2320f18120007ee700900979284fc78a9f00da7fb593f6e6eeebc673fba9a3
   languageName: node
   linkType: hard
 
@@ -29282,6 +29343,16 @@ __metadata:
     sax: ">=0.6.0"
     xmlbuilder: ~9.0.1
   checksum: ca8b2fee430d450a18947786bfd7cd1a353ee00fc6fd550acbc8a8e65f1b4df5e9786fcb2990c1a5514ecd554d445fb74e1d716b3a4fcfffc10554aeb5db482b
+  languageName: node
+  linkType: hard
+
+"xml2js@npm:0.5.0":
+  version: 0.5.0
+  resolution: "xml2js@npm:0.5.0"
+  dependencies:
+    sax: ">=0.6.0"
+    xmlbuilder: ~11.0.0
+  checksum: 1aa71d62e5bc2d89138e3929b9ea46459157727759cbc62ef99484b778641c0cd21fb637696c052d901a22f82d092a3e740a16b4ce218e81ac59b933535124ea
   languageName: node
   linkType: hard
 

@@ -4,7 +4,9 @@ import * as aws from '@pulumi/aws'
 import { PulumiApp } from '@webiny/pulumi'
 import { CoreOutput } from '@webiny/pulumi-aws/apps/common'
 import { getAwsAccountId, getAwsRegion } from '@webiny/pulumi-aws/apps/awsUtils'
-import { type DataApiParams} from './createDataApp'
+export interface DataApiParams {
+  env: Record<string, any>
+}
 
 export function createDataLambdaPolicy(app: PulumiApp, params: DataApiParams, cacheTableArn: pulumi.Output<string>) {
   const core = app.getModule(CoreOutput)
