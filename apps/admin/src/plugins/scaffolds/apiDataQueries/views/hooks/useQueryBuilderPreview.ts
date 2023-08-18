@@ -17,7 +17,7 @@ export const useQueryBuilderPreview = (schema: QuerySchema) => {
   const isQuerying = React.useRef(false)
 
   const query = async () => {
-    if (!currentToken || isQuerying.current || !schema.id.length) {
+    if (!currentToken || isQuerying.current || !schema?.id?.length) {
       return
     }
     isQuerying.current = true

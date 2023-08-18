@@ -2,10 +2,11 @@
 // import dataUploads from "./dataUploads";
 import apiDataQueries from './apiDataQueries'
 import datasets from './datasets'
+import home from './home'
 
 // @ts-ignore
 export default () => [
-  // dataUploads,
+  home,
   apiDataQueries,
   datasets
 ]

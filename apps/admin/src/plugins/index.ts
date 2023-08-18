@@ -3,11 +3,12 @@ import pageBuilderPlugins from './pageBuilder'
 import formBuilderPlugins from './formBuilder'
 import headlessCmsPlugins from './headlessCms'
 import theme from 'theme'
-
+import welcomeScreenWidgets from './welcomeScreenWidgets'
 // Imports plugins created via scaffolding utilities.
 import scaffoldsPlugins from './scaffolds'
 
 plugins.register([
+  welcomeScreenWidgets,
   /**
    * Page Builder app plugins.
    */
@@ -27,5 +28,6 @@ plugins.register([
   /**
    * Plugins created via scaffolding utilities.
    */
-  scaffoldsPlugins()
+  scaffoldsPlugins(),
+
 ])
