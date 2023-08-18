@@ -1,71 +1,102 @@
+import { deflate } from 'zlib'
+import CacheEntity, { CacheTableEntity, cacheTable } from '../../../../core/aws/cache'
+import { QueryResponse } from '../types/types'
+import * as s3 from '@aws-sdk/client-s3'
+import { nanoid } from 'nanoid'
+import { logger } from '..'
 export default class CacheService {
-  //   getCacheKey(params: APIGatewayProxyEventQueryStringParameters) {
-  //     const sortedParams = Object.keys(params)
-  //         .sort()
-  //         .reduce((acc, key) => {
-  //             acc[key] = params[key];
-  //             return acc;
-  //         }, {} as APIGatewayProxyEventQueryStringParameters);
-  //     const cacheKey = JSON.stringify(sortedParams);
-  //     return cacheKey;
-  // }
-  // async checkCache(
-  //     id: string,
-  //     params: APIGatewayProxyEventQueryStringParameters // : Promise<QueryResponse<{CACHED_FILE: string}, string>>
-  // ) {
-  //     const cacheKey = this.getCacheKey(params);
-  //     const options = {
-  //         filters: [{ attr: "content", eq: cacheKey }]
-  //     };
-  //     const cachedEntry = await table.query(`CACHE#${id}`, options);
-  // }
-  // async cacheResult(
-  //     id: string,
-  //     params: APIGatewayProxyEventQueryStringParameters,
-  //     result: string | Object
-  // ) {
-  //     const timeStamp = +new Date();
-  //     const fileSuffix = params["format"] === "csv" ? ".csv" : ".json";
-  //     const fileId = `${id}-${timeStamp}${fileSuffix}`;
-  //     const cacheKey = this.getCacheKey(params);
-  //     const entry = {
-  //         PK: `CACHE#${id}`,
-  //         SK: timeStamp,
-  //         id: fileId,
-  //         content: cacheKey
-  //     };
-  //     try {
-  //         const id = uuid();
-  //         const stringifiedResult =
-  //             params["format"] === "csv" ? Papa.unparse(result) : JSON.stringify(result);
-  //         const putResult = await s3
-  //             .putObject({
-  //                 Bucket: DATA_S3_BUCKET,
-  //                 Key: id,
-  //                 Body: stringifiedResult,
-  //                 ContentType: params["format"] === "csv" ? "text/csv" : "application/json",
-  //                 ACL: "public-read"
-  //             })
-  //             .promise();
-  //     } catch (err) {
-  //         console.log("s3 put err", JSON.stringify(err));
-  //     }
-  //     try {
-  //         const entryResult = await ResultCacheEntity.put(entry);
-  //     } catch (err) {
-  //         console.log("ddb put err", JSON.stringify(err));
-  //     }
-  //     // const [putResult, entryResult] = await Promise.all([
-  //     //     s3
-  //     //         .putObject({
-  //     //             Bucket: S3_BUCKET,
-  //     //             Key: fileId,
-  //     //             Body: typeof result === "string" ? result : JSON.stringify(result),
-  //     //             ContentType: params["format"] === "csv" ? "text/csv" : "application/json",
-  //     //             ACL: "public-read"
-  //     //         })
-  //     //         .promise(),
-  //     //     ResultCacheEntity.put(entry)
-  //     // ]);
-  //     // console.log(putResult, entryResult);
+  s3: s3.S3
+  bucket: string = process.env['DATA_BUCKET']!
+  region: string = process.env['AWS_REGION']!
+  PK: string = ''
+  SK: string = ''
+  params: Record<string, unknown> = {}
+
+  constructor(id: string, params: Record<string, unknown>) {
+    this.PK = id
+    this.params = params
+    this.s3 = new s3.S3({ region: this.region })
+  }
+
+  compressParams(params: Record<string, unknown>) {
+    if (Object.keys(params).length === 0) {
+      return 'noparams'
+    }
+    return new Promise((resolve, reject) => {
+      deflate(JSON.stringify(params), (e, result) => {
+        if (e) {
+          reject(e)
+        }
+        const stringifiedResult = result.toString('base64')
+        resolve(stringifiedResult)
+      })
+    })
+  }
+  // @ts-ignore
+  async checkCache(): Promise<QueryResponse<{ Item?: Partial<CacheTableEntity> }, string>> {
+    const SK = (await this.compressParams(this.params)) as string
+    if (!SK) {
+      return {
+        ok: false,
+        error: 'No params'
+      }
+    }
+    this.SK = SK
+    const PK = this.PK
+    const cachedEntry = await CacheEntity.get({ PK, SK })
+    if (cachedEntry?.Item?.id) {
+      return {
+        ok: true,
+        result: cachedEntry
+      }
+    } else {
+      return {
+        ok: false,
+        error: 'No cached entry'
+      }
+    }
+  }
+
+  async putData(key: string, data: string) {
+    await this.s3.putObject({
+      Bucket: this.bucket,
+      Key: `cache/${key}.json`,
+      ContentType: 'application/json',
+      Body: data
+    })
+  }
+
+  async cacheTable(fileId: string) {
+    logger.info({
+      message: 'Caching table',
+      config: {
+        PK: this.PK,
+        SK: this.SK,
+        id: fileId,
+        timestamp: Math.floor(Date.now() / 1000)
+      }
+    })
+    return await CacheEntity.put({
+      PK: this.PK,
+      SK: this.SK,
+      id: fileId,
+      timestamp: Math.floor(Date.now() / 1000)
+    })
+  }
+
+  async cacheResult(data: string) {
+    const fileId = nanoid()
+    await Promise.all([this.cacheTable(fileId), this.putData(fileId, data)])
+    return fileId
+  }
+
+  redirectToCacheFile(cacheFileId: string) {
+
+    return {
+      statusCode: 302,
+      headers: {
+        Location: `https://${process.env['API_URL']}/cache/${cacheFileId}.json`
+      }
+    }
+  }
 }

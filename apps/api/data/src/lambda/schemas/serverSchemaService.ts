@@ -1,4 +1,4 @@
-import table from '../../../../../core/aws/table'
+import {cmsTable as table} from '../../../../../core/aws/table'
 import type { QueryResponse } from '../../../../../core/types/queryApi'
 import type { DataView } from '../../types/types'
 import BaseSchemaService from './baseSchemaService'

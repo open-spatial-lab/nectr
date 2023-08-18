@@ -14,7 +14,7 @@ import { getApiUrl } from '../utils/dataApiUrl'
 
 const INITIAL_ELEMENT_DATA: TableProps = {
   variables: {
-    source: 'https://d3uldu0bz6pkei.cloudfront.net/data-query/64653de73263910008137327'
+    source: ''
   }
 }
 

@@ -30,6 +30,29 @@ import { Switch } from '@webiny/ui/Switch'
 import ColumnBuilder from '../../../../components/ColumnBuilder'
 import { getApiUrl } from '../../../../../../theme/pageElements/utils/dataApiUrl'
 
+const resolveFile = (files: FileItem) => {
+  const file: FileItem = Array.isArray(files) ? files[0] : files
+  const fileParts = file.name.split('.')
+  const revisedFileName = `${fileParts.slice(0, fileParts.length - 1).join('.')}__dataset__.${
+    fileParts[fileParts.length - 1]
+  }`
+  Object.defineProperty(file, 'name', {
+    get: function () {
+      return this._name
+    },
+    set: function (value) {
+      this._name = value
+    }
+  })
+
+  file.name = revisedFileName
+  const filetype = fileParts[fileParts.length - 1] || 'unknown-filetype'
+  return {
+    file,
+    filetype
+  }
+}
+
 /**
  * Renders a form which enables creating new or editing existing Dataset entries.
  * Includes two basic fields - title (required) and description.
@@ -81,8 +104,7 @@ const DatasetsForm: React.FC = () => {
         status: 'uploading',
         filename: files.name
       })
-      const file: FileItem = Array.isArray(files) ? files[0] : files
-      const filetype = file.name.split('.').pop()
+      const { file, filetype } = resolveFile(files)
       const errors: any[] = []
 
       try {
@@ -91,7 +113,10 @@ const DatasetsForm: React.FC = () => {
           variables: {
             data: {
               ...response,
-              tags: ['data upload', filetype || 'uknown filetype']
+              tags: ['dataset', filetype],
+              meta: {
+                private: true
+              }
             }
           }
         })

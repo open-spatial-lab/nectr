@@ -1,160 +1,101 @@
-import * as path from 'path'
-import * as pulumi from '@pulumi/pulumi'
-import * as aws from '@pulumi/aws'
+import { ApiGateway, ApiCloudfront } from '@webiny/pulumi-aws'
+// import { DataApiCloudfront } from './createDataCloudfront'
+import { type ApiPulumiApp } from '@webiny/pulumi-aws'
+import { CoreOutput } from '@webiny/pulumi-aws'
+import { DataFunction } from './createDataFunction'
+import { createDataBucket } from './createDataBucket'
 
-import { createAppModule, PulumiApp, PulumiAppModule } from '@webiny/pulumi'
-import { CoreOutput } from '@webiny/pulumi-aws/apps/common'
-import { createLambdaRole, getCommonLambdaEnvVariables } from '@webiny/pulumi-aws/apps/lambdaUtils'
-import { getAwsAccountId, getAwsRegion } from '@webiny/pulumi-aws/apps/awsUtils'
-import { ApiGateway } from '@webiny/pulumi-aws'
-import { DataApiGateway } from './createDataGateway'
-import { DataApiCloudfront } from './createDataCloudfront'
-
-interface DataApiParams {
+export interface DataApiParams {
   env: Record<string, any>
 }
 
-export type DataFunction = PulumiAppModule<typeof DataFunction>
+export const createDataApp = (app: ApiPulumiApp) => {
+  const { resources, getModule } = app
 
-export const DataFunction = createAppModule({
-  name: 'PublicDataApi',
-  config(app: PulumiApp, params: DataApiParams) {
-    const core = app.getModule(CoreOutput)
-    const dataResources = createDataResources(app, params)
-    return {
-      data: dataResources
+  const { primaryDynamodbTableName, elasticsearchDomainEndpoint, elasticsearchDynamodbTableName } =
+    getModule(CoreOutput)
+  const name = 'api-data-bucket'
+
+  const { dataBucket, originIdentity } = createDataBucket(app, name)
+  const cloudfront = app.getModule(ApiCloudfront)
+
+  const {
+    data: {
+      dataApiGateway
     }
-  }
-})
-
-function createDataResources(app: PulumiApp, params: DataApiParams) {
-  if (!params.env['S3_BUCKET']) {
-    throw new Error(
-      'Missing S3_BUCKET environment variable. This is required for the data API to work.'
-    )
-  }
-
-  const core = app.getModule(CoreOutput)
-  const apiGateway = app.getModule(ApiGateway)
-  const policy = createReadOnlyLambdaPolicy(app, params)
-  const role = createLambdaRole(app, {
-    name: 'data-api-lambda-role',
-    policy: policy.output
+  } = app.addModule(DataFunction(dataBucket), {
+    env: {
+      DB_TABLE: primaryDynamodbTableName,
+      DB_TABLE_ELASTICSEARCH: elasticsearchDynamodbTableName,
+      ELASTIC_SEARCH_ENDPOINT: elasticsearchDomainEndpoint,
+      ELASTIC_SEARCH_INDEX_PREFIX: process.env.ELASTIC_SEARCH_INDEX_PREFIX,
+      S3_BUCKET: dataBucket.output,
+      API_URL: cloudfront.output.domainName
+    }
   })
-  // create an S#
-
-  const awsRegion = getAwsRegion(app)
-  const dataQuery = app.addResource(aws.lambda.Function, {
-    name: 'data-api-runner',
-    config: {
-      role: role.output.arn,
-      runtime: 'nodejs14.x',
-      handler: 'handler.handler',
-      timeout: 60,
-      memorySize: 4096,
-      description: 'Runs data jobs for the Nectr data API',
-      // todo: Path to my bundled code
-      code: new pulumi.asset.AssetArchive({
-        '.': new pulumi.asset.FileArchive(path.join(app.paths.workspace, 'data/build'))
-      }),
-      // layers: ['arn:aws:lambda:us-east-2:041475135427:layer:duckdb-nodejs-extensions-x86:1'],
-      layers: ['arn:aws:lambda:us-east-2:217827289796:layer:duckdb-test:1'],
-      environment: {
-        variables: getCommonLambdaEnvVariables().apply(value => ({
-          ...value,
-          ...params.env,
-          S3_BUCKET: core.fileManagerBucketId,
-          EXTENSION_BUCKET: '',
-          DATA_BUCKET: pulumi.interpolate`${params.env['S3_BUCKET'].id}`,
-          COGNITO_USER_POOL_ID: core.cognitoUserPoolId,
-        }))
+  console.log('resources', resources.fileManager.functions.download.config.code)
+  resources.cloudfront.config.origins(origins => {
+    return [
+      ...origins,
+      {
+        domainName: dataApiGateway.stage.output.invokeUrl.apply(
+          (url: string) => new URL(url).hostname
+        ),
+        originPath: dataApiGateway.stage.output.invokeUrl.apply(
+          (url: string) => new URL(url).pathname
+        ),
+        originId: dataApiGateway.api.output.name,
+        customOriginConfig: {
+          httpPort: 80,
+          httpsPort: 443,
+          originProtocolPolicy: 'https-only',
+          originSslProtocols: ['TLSv1.2']
+        }
+      },
+      {
+        domainName: dataBucket.output.bucketRegionalDomainName,
+        originId: dataBucket.output.id,
+        s3OriginConfig: {
+          originAccessIdentity: originIdentity.output.cloudfrontAccessIdentityPath
+        }
       }
-    }
+    ]
   })
-  const dataQueryArn = dataQuery.output.arn
-  const dataGateway = app.addModule(DataApiGateway, {
-    'api-data-query': {
-      path: '/data-query/{id}',
-      method: 'ANY',
-      function: dataQueryArn
+  resources.cloudfront.config.orderedCacheBehaviors(orderedBehaviors => {
+    if (!orderedBehaviors) {
+      return orderedBehaviors
     }
-  })
-  const dataCloudfront = app.addModule(DataApiCloudfront)
-
-  return {
-    role,
-    policy,
-    functions: {
-      dataQuery
-    }
-  }
-}
-
-function createReadOnlyLambdaPolicy(app: PulumiApp, params: DataApiParams) {
-  const core = app.getModule(CoreOutput)
-  const awsAccountId = getAwsAccountId(app)
-  const awsRegion = getAwsRegion(app)
-
-  return app.addResource(aws.iam.Policy, {
-    name: 'DataApiExportTaskLambdaPolicy',
-    config: {
-      description: 'This policy enables access to Dynamodb',
-      policy: {
-        Version: '2012-10-17',
-        Statement: [
-          {
-            Sid: 'AllowDynamoDBAccess',
-            Effect: 'Allow',
-            Action: [
-              'dynamodb:BatchGetItem',
-              'dynamodb:GetItem',
-              'dynamodb:Query',
-              'dynamodb:PutItem'
-            ],
-            Resource: [
-              pulumi.interpolate`${core.primaryDynamodbTableArn}`,
-              pulumi.interpolate`${core.primaryDynamodbTableArn}/*`
-            ]
-          },
-          {
-            Sid: 'PermissionForS3',
-            Effect: 'Allow',
-            Action: [
-              's3:GetObjectAcl',
-              's3:GetObject',
-              's3:ListBucket',
-              's3:PutObject',
-              's3:PutObjectAcl',
-              's3:DeleteObject',
-              "cognito-idp:DescribeUserPoolClient",
-              "cognito-idp:DescribeUserPoolDomain",
-              "cognito-idp:DescribeUserPool",
-              "cognito-idp:ListUserPoolClients",
-              "cognito-idp:ListUserPoolDomains",
-              "cognito-idp:ListUserPools",
-              "cognito-idp:AdminGetUser",
-              "cognito-idp:AdminInitiateAuth",
-              "cognito-idp:AdminRespondToAuthChallenge",
-              "cognito-idp:AssociateSoftwareToken"
-            ],
-            Resource: [
-              pulumi.interpolate`${params.env['S3_BUCKET'].arn}/*`,
-              // We need to explicitly add bucket ARN to "Resource" list for "s3:ListBucket" action.
-              pulumi.interpolate`${params.env['S3_BUCKET'].arn}`,
-              pulumi.interpolate`arn:aws:s3:::${core.fileManagerBucketId}/*`,
-              pulumi.interpolate`arn:aws:s3:::${core.fileManagerBucketId}`,
-              pulumi.interpolate`${core.cognitoUserPoolArn}/*`,
-            ]
-            // Principal: "*"
-          },
-          {
-            Sid: 'PermissionForLambda',
-            Effect: 'Allow',
-            Action: ['lambda:InvokeFunction'],
-            Resource: pulumi.interpolate`arn:aws:lambda:${awsRegion}:${awsAccountId}:function:*`
-          }
-        ]
-      }
-    }
+    const behaviors = orderedBehaviors.map(behavior => behavior)
+    behaviors.push({
+      compress: true,
+      allowedMethods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'POST', 'PATCH', 'DELETE'],
+      cachedMethods: ['GET', 'HEAD', 'OPTIONS'],
+      forwardedValues: {
+        cookies: {
+          forward: 'none'
+        },
+        headers: ['Accept', 'Accept-Language'],
+        queryString: true
+      },
+      pathPattern: '/data-query*',
+      viewerProtocolPolicy: 'allow-all',
+      targetOriginId: dataApiGateway.api.output.name.apply(v => `${v}`) as unknown as string
+    })
+    behaviors.push({
+      compress: true,
+      allowedMethods: ['GET', 'HEAD', 'OPTIONS'],
+      cachedMethods: ['GET', 'HEAD', 'OPTIONS'],
+      forwardedValues: {
+        cookies: {
+          forward: 'none'
+        },
+        headers: ['Accept', 'Accept-Language'],
+        queryString: false
+      },
+      pathPattern: '/cache*',
+      viewerProtocolPolicy: 'allow-all',
+      targetOriginId: dataBucket.output.id.apply(v => `${v}`) as unknown as string
+    })
+    return behaviors
   })
 }

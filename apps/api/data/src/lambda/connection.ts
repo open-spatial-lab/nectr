@@ -75,7 +75,6 @@ export default class Connection {
     )
     await sqlBuilder.buildStatement()
     const query = sqlBuilder.queryString
-    logger.info(`Handling query: ${JSON.stringify(query, null, 2)}`)
     try {
       const data = await this.query(query)
       return data

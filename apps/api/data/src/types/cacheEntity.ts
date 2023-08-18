@@ -1,5 +1,5 @@
 import { Entity } from 'dynamodb-toolbox'
-import table from '../../../../core/aws/table'
+import {cmsTable as table} from '../../../../core/aws/table'
 
 export interface ResultCacheSchema {
   PK: string

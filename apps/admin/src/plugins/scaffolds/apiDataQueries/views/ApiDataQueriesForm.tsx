@@ -9,6 +9,7 @@ import { useDataViewSchema } from './hooks/useGlobalFormData'
 import { useQueryBuilderPreview } from './hooks/useQueryBuilderPreview'
 import { PreviewTable } from './components/PreviewTable'
 import styled from '@emotion/styled'
+import { config as appConfig } from "@webiny/app/config";
 
 const ScrollableCell = styled(Cell)`
   overflow: auto;
