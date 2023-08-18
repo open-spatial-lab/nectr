@@ -4,6 +4,7 @@ import { QueryResponse } from '../types/types'
 import * as s3 from '@aws-sdk/client-s3'
 import { nanoid } from 'nanoid'
 import { logger } from '..'
+import corsHeaders from '../utils/corsHeaders'
 export default class CacheService {
   s3: s3.S3
   bucket: string = process.env['DATA_BUCKET']!
@@ -95,6 +96,7 @@ export default class CacheService {
     return {
       statusCode: 302,
       headers: {
+        ...corsHeaders,
         Location: `https://${process.env['API_URL']}/cache/${cacheFileId}.json`
       }
     }

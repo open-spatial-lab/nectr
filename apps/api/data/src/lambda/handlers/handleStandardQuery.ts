@@ -2,6 +2,7 @@ import { MetricsLogger, Unit } from 'aws-embedded-metrics'
 import { connection, logger } from '../..'
 import CacheService from '../cache'
 import * as Papa from 'papaparse'
+import corsHeaders from '../../utils/corsHeaders'
 
 export const handleStandardQuery = async (
   id: string,
@@ -26,6 +27,9 @@ export const handleStandardQuery = async (
   } else {
     return {
       statusCode: 400,
+      headers: {
+        ...corsHeaders
+      },
       body: JSON.stringify({ ...data, params })
     }
   }

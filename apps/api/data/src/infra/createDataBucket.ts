@@ -12,7 +12,7 @@ export const createDataBucket = <T extends PulumiApp>(app: T, name: string) => {
       corsRules: [
         {
           allowedHeaders: ['*'],
-          allowedMethods: ['POST'],
+          allowedMethods: ['GET','POST'],
           allowedOrigins: ['*'],
           maxAgeSeconds: 3000
         }

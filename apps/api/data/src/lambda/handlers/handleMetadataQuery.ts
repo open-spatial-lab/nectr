@@ -1,5 +1,6 @@
 import { S3_BUCKET, connection } from '../..'
 import ColumnParser from '../columnParser'
+import corsHeaders from '../../utils/corsHeaders'
 
 export const handleMetadataQuery = async (
   metadataFile: string,
@@ -24,11 +25,17 @@ export const handleMetadataQuery = async (
     })
     return {
       statusCode: 200,
+      headers: {
+        ...corsHeaders
+      },
       body
     }
   } else {
     return {
       statusCode: 500,
+      headers: {
+        ...corsHeaders
+      },
       body: JSON.stringify({ columns: colData, table: previewData, params })
     }
   }

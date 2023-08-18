@@ -1,4 +1,5 @@
 import { connection, logger } from '../..'
+import corsHeaders from '../../utils/corsHeaders'
 import { verifyToken } from '../identity'
 
 export const handleAdminTestQuery = async (
@@ -10,6 +11,9 @@ export const handleAdminTestQuery = async (
   if (!token) {
     return {
       statusCode: 401,
+      headers: {
+        ...corsHeaders
+      },
       body: JSON.stringify({
         message: 'Unauthorized - please provide a token in the X-Authorization header'
       })
@@ -20,6 +24,9 @@ export const handleAdminTestQuery = async (
   if (!auth.ok) {
     return {
       statusCode: 401,
+      headers: {
+        ...corsHeaders
+      },
       body: JSON.stringify({
         message: 'Unauthorized'
       })
@@ -30,6 +37,9 @@ export const handleAdminTestQuery = async (
     if (queryResponse.ok) {
       return {
         statusCode: 200,
+        headers: {
+          ...corsHeaders
+        },
         body: JSON.stringify(queryResponse.result)
       }
     }
@@ -37,6 +47,9 @@ export const handleAdminTestQuery = async (
     logger.error({ error })
     return {
       statusCode: 500,
+      headers: {
+        ...corsHeaders
+      },
       body: JSON.stringify({
         message: 'Internal Server Error',
         error,
@@ -48,6 +61,9 @@ export const handleAdminTestQuery = async (
 
   return {
     statusCode: 500,
+    headers: {
+      ...corsHeaders
+    },
     body: 'Unknown error'
   }
 }
