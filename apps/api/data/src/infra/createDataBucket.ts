@@ -13,7 +13,7 @@ export const createDataBucket = <T extends PulumiApp>(app: T, name: string) => {
         {
           allowedHeaders: ['*'],
           allowedMethods: ['GET', 'PUT', 'POST', 'DELETE', 'HEAD'],
-          allowedOrigins: ['https://*.cloudfront.net'],
+          allowedOrigins: ['*'],
           exposeHeaders: ['ETag'],
           maxAgeSeconds: 3000
         }

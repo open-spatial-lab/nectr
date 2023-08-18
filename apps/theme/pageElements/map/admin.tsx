@@ -25,7 +25,7 @@ const INITIAL_ELEMENT_DATA: MapProps = {
   }
 }
 
-const GQL_API_URL = 'https://d15yl9qyw1y5mg.cloudfront.net/graphql'
+const GQL_API_URL = process.env['REACT_APP_API_URL']!
 
 // These are the necessary GraphQL queries we'll need in order to retrieve data.
 const DATA_VIEWS_QUERY = `{
