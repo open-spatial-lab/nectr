@@ -3,7 +3,7 @@ import React from 'react'
 import { QuerySchema } from '../../../../../../../admin/src/components/QueryBuilder/types'
 import { QueryResponse } from '../../../../../../../api/data/src/types/types'
 import { config as appConfig } from '@webiny/app/config'
-const apiUrl = `${appConfig.getKey('API_URL', process.env.REACT_APP_API_URL)}?__adminQuery__=true`
+const apiUrl = `${appConfig.getKey('API_URL', process.env.REACT_APP_API_URL)}/data-query/?__adminQuery__=true`
 
 export const useQueryBuilderPreview = (schema: QuerySchema) => {
   const currentToken = useCurrentAccessKey()
@@ -24,10 +24,7 @@ export const useQueryBuilderPreview = (schema: QuerySchema) => {
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        Authorization: currentToken,
-        'X-Authorization': currentToken,
-        'X-Api-Key': currentToken,
-        'Content-Type': 'application/json'
+        'X-Authorization': currentToken
       },
       body: JSON.stringify({
         ...schema,

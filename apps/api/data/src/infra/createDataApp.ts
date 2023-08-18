@@ -74,7 +74,7 @@ export const createDataApp = (app: ApiPulumiApp) => {
         cookies: {
           forward: 'none'
         },
-        headers: ['Accept', 'Accept-Language'],
+        headers: ['Accept', 'Accept-Language', 'Authorization', 'X-Authorization', 'X-Api-Key', 'Content-Type'],
         queryString: true
       },
       pathPattern: '/data-query*',
@@ -83,7 +83,7 @@ export const createDataApp = (app: ApiPulumiApp) => {
     })
     behaviors.push({
       compress: true,
-      allowedMethods: ['GET', 'HEAD', 'OPTIONS'],
+      allowedMethods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'POST', 'PATCH', 'DELETE'],
       cachedMethods: ['GET', 'HEAD', 'OPTIONS'],
       forwardedValues: {
         cookies: {

@@ -29,8 +29,8 @@ export const handler = metricScope(
       const isMetaDataQuery = Boolean(params['__metadata__'])
       const isAdminTestQuery = params['__adminQuery__'] == 'true'
       const metadataFile = params['__metadata__']
-      const token = event.headers['X-Authorization']
-      
+      const token = event.headers['X-Authorization'] || event.headers['x-authorization']
+
       const queryDate = new Date()
       const queryStartTimestamp = queryDate.getTime()
       

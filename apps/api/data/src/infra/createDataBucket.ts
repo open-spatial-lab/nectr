@@ -12,8 +12,9 @@ export const createDataBucket = <T extends PulumiApp>(app: T, name: string) => {
       corsRules: [
         {
           allowedHeaders: ['*'],
-          allowedMethods: ['GET','POST'],
-          allowedOrigins: ['*'],
+          allowedMethods: ['GET', 'PUT', 'POST', 'DELETE', 'HEAD'],
+          allowedOrigins: ['https://*.cloudfront.net'],
+          exposeHeaders: ['ETag'],
           maxAgeSeconds: 3000
         }
       ]
@@ -49,7 +50,7 @@ export const createDataBucket = <T extends PulumiApp>(app: T, name: string) => {
       }
     }
   })
-  
+
   const bucketPublicAccessBlock = app.addResource(aws.s3.BucketPublicAccessBlock, {
     name: `${name}-bucket-block-access`,
     config: {
