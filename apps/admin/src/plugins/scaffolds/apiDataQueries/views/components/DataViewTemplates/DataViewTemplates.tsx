@@ -19,7 +19,7 @@ type dataViewPresetInfo = {
 
 export const dataViewTemplates: Array<dataViewPresetInfo> = [
   {
-    name: 'Pubish',
+    name: 'Publish',
     description: `Publish part or all of a data source. \n You can share this view directly, or is it in other data views.`,
     cta: 'Publish Data View',
     icon: PublishIcon,

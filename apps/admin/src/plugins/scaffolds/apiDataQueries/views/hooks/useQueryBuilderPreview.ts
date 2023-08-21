@@ -5,19 +5,22 @@ import { QueryResponse } from '../../../../../../../api/data/src/types/types'
 import { config as appConfig } from '@webiny/app/config'
 const apiUrl = `${appConfig.getKey('API_URL', process.env.REACT_APP_API_URL)}/data-query/?__adminQuery__=true`
 
+const INITIAL_DATA = {
+  ok: false,
+  error: 'No data'
+} as const
+
 export const useQueryBuilderPreview = (schema: QuerySchema) => {
   const currentToken = useCurrentAccessKey()
-  const [data, setData] = React.useState<QueryResponse<Array<Record<string, unknown>>, string>>({
-    ok: false,
-    error: 'No data'
-  })
+  const [data, setData] = React.useState<QueryResponse<Array<Record<string, unknown>>, string>>(INITIAL_DATA)
 
   const [page, setPage] = React.useState(0)
 
   const isQuerying = React.useRef(false)
 
   const query = async () => {
-    if (!currentToken || isQuerying.current || !schema?.sources?.length) {
+    if (!currentToken || isQuerying.current || !schema?.sources?.length || !schema?.title?.length) {
+      setData(INITIAL_DATA)
       return
     }
     isQuerying.current = true
@@ -63,6 +66,7 @@ export const useQueryBuilderPreview = (schema: QuerySchema) => {
   return {
     data,
     page,
-    setPage
+    setPage,
+    id: schema.id
   }
 }

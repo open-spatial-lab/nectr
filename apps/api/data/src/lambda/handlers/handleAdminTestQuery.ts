@@ -32,6 +32,7 @@ export const handleAdminTestQuery = async (
       })
     }
   }
+  let error = ''
   try {
     const queryResponse = await connection.handleQuery(schema, params)
     if (queryResponse.ok) {
@@ -44,7 +45,7 @@ export const handleAdminTestQuery = async (
       }
     }
   } catch (error) {
-    logger.error({ error })
+    error = error.message
     return {
       statusCode: 500,
       headers: {
@@ -64,6 +65,10 @@ export const handleAdminTestQuery = async (
     headers: {
       ...corsHeaders
     },
-    body: 'Unknown error'
+    body: JSON.stringify({
+      message: 'Internal Server Error',
+      error,
+      schema, 
+    })
   }
 }

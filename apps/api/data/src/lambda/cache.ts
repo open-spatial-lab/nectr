@@ -68,15 +68,15 @@ export default class CacheService {
   }
 
   async cacheTable(fileId: string) {
-    logger.info({
-      message: 'Caching table',
-      config: {
-        PK: this.PK,
-        SK: this.SK,
-        id: fileId,
-        timestamp: Math.floor(Date.now() / 1000)
-      }
-    })
+    // logger.info({
+    //   message: 'Caching table',
+    //   config: {
+    //     PK: this.PK,
+    //     SK: this.SK,
+    //     id: fileId,
+    //     timestamp: Math.floor(Date.now() / 1000)
+    //   }
+    // })
     return await CacheEntity.put({
       PK: this.PK,
       SK: this.SK,

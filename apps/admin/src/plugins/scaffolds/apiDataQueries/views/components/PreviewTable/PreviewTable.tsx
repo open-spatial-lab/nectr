@@ -43,10 +43,10 @@ const TruncatedPreviw: React.FC<{ content: string }> = ({ content }) => {
   )
 }
 
-export const PreviewTable: React.FC<PreviewTableProps> = ({ data, page, setPage }) => {
+export const PreviewTable: React.FC<PreviewTableProps> = ({ id, data, page, setPage }) => {
   return (
     <div>
-      <TableView data={data} page={page} setPage={setPage} />
+      <TableView {...{ id, data, page, setPage }} />
       {/* <TableError data={data} /> */}
     </div>
   )
@@ -56,8 +56,10 @@ const ErrorFeedback: React.FC<{ error: string }> = ({ error }) => {
   return <Alert severity="error">{error}</Alert>
 }
 
-const TableView: React.FC<PreviewTableProps> = ({ data, page, setPage }) => {
+const paginatedEntries = 10
+const TableView: React.FC<PreviewTableProps> = ({ data, page, setPage, id }) => {
   const [loading, setLoading] = React.useState(false)
+  const [maxEntries, setMaxEntries] = React.useState(-1)
 
   React.useEffect(() => {
     setLoading(true)
@@ -72,9 +74,18 @@ const TableView: React.FC<PreviewTableProps> = ({ data, page, setPage }) => {
   }
   const rows = data.result
   const columns = rows.length ? Object.keys(rows[0]) : []
+
   if (!columns.length) {
+    if (page > 0) {
+      setPage(p => {
+        setMaxEntries((((p - 1)||1) * paginatedEntries))
+        return p - 1
+      })
+    }
     return <ErrorFeedback error="No data found." />
   }
+  const jsonEndpoint = `${process.env.REACT_APP_API_URL}/data-query/${id}`
+  const csvEndppint = jsonEndpoint + '?format=csv'
   return (
     <TableContainerOuter loading={loading}>
       {loading && <LoadingIcon />}
@@ -103,11 +114,34 @@ const TableView: React.FC<PreviewTableProps> = ({ data, page, setPage }) => {
       <TablePagination
         rowsPerPageOptions={[10]}
         component="div"
-        count={-1}
+        count={maxEntries}
         rowsPerPage={10}
         page={page}
         onPageChange={(_e, page) => setPage(page)}
       />
+      {id && (
+        <ul>
+          <li>
+            <h3>Data Endpoints</h3>
+          </li>
+          <br></br>
+          <li>
+            <strong>
+              <a href={csvEndppint} target="_blank" rel="noreferrer">
+                Comma Separated Values (CSV)
+              </a>
+            </strong>
+          </li>
+          <br></br>
+          <li>
+            <strong>
+              <a href={jsonEndpoint} target="_blank" rel="noreferrer">
+                JSON
+              </a>
+            </strong>
+          </li>
+        </ul>
+      )}
     </TableContainerOuter>
   )
 }

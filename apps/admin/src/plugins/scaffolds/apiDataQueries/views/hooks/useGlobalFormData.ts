@@ -9,8 +9,9 @@ export type DataViewStore = {
 
 const defaultQuerySchema = {
   id: '',
+  title: '',
   name: ''
-} as QuerySchema
+}
 
 export const useDataViewSchema = create<DataViewStore>(set => ({
   schema: defaultQuerySchema,

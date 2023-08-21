@@ -154,6 +154,7 @@ export type SelectQuery = {
 export type QuerySchema = {
   id: string
   name: string
+  title?: string
   columns?: Array<Partial<MetaColumnSchema>>
   sources?: Array<SourceMeta>
   wheres?: Array<WhereQuery>

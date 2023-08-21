@@ -103,6 +103,9 @@ export const FullForm: React.FC<FullFormProps> = props => {
     <Form<QuerySchema> data={apiDataQuery} onSubmit={onSubmit} onChange={handleUpdate}>
       {({ submit, Bind, form }) => {
         useEffect(() => {
+          if (apiDataQuery !== undefined) {
+            return
+          }
           const today = new Date()
           const date = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`
           form.setValue('dataViewTemplate', dataViewTemplate)
