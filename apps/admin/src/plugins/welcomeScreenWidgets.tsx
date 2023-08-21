@@ -36,7 +36,7 @@ const dataViewWelcomeWidget: AdminWelcomeScreenWidgetPlugin = {
     permission: "cms.endpoint.manage",
     widget: {
         cta: (
-            <Link to="/cms/content-models" className={linkStyle}>
+            <Link to="/data-views" className={linkStyle}>
                 <ButtonSecondary className={buttonStyle}>Build New Data View</ButtonSecondary>
             </Link>
         ),
