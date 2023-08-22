@@ -11,6 +11,7 @@ import {
 
 import { Table, TableProps } from './Table'
 import { getApiUrl } from '../utils/dataApiUrl'
+import useDataViews from '../hooks/useDataViews'
 
 const INITIAL_ELEMENT_DATA: TableProps = {
   variables: {
@@ -70,19 +71,30 @@ export default [
     type: 'pb-editor-page-element-advanced-settings',
     elementType: 'table',
     render({ data, Bind, submit }) {
+      const { dataViews, currentDataview } = useDataViews(data)
       // In order to construct the settings form, we're using the
       // `@webiny/form`, `@webiny/ui`, and `@webiny/validation` packages.
       return (
         <>
           <Grid>
             <Cell span={12}>
-              <Bind name={'variables.source'}>
-                <Input
-                  label={'Data Source'}
-                  type="text"
-                  description={'Data source to show in the table'}
-                />
-              </Bind>
+              <h3>Data Source</h3>
+              <br />
+              <p>
+                <b>{currentDataview?.title || ''}</b>
+              </p>
+              <br />
+              {dataViews.length ? (
+                <Bind name={'variables.source'}>
+                  <Select label={'Data Source'} description={'Data source to show in the table'}>
+                    {dataViews?.map((item: any, idx: number) => (
+                      <option key={`${item.id}-view-${idx}`} value={item.id}>
+                        {item.title}
+                      </option>
+                    ))}
+                  </Select>
+                </Bind>
+              ) : null}
             </Cell>
             <Cell span={12}>
               <p>Code Snippets</p>
@@ -99,7 +111,7 @@ export default [
                 }}
               >
                 {`
-<script src="https://www.unpkg.com/@open-spatial-lab/table@0.0.0/dist/table.es.js" async></script>
+<script src="https://www.unpkg.com/@open-spatial-lab/full-bundle@latest/dist/index.js" async></script>
 
 <osl-table data="${getApiUrl(data.variables.source)}"></osl-table>`}
               </pre>

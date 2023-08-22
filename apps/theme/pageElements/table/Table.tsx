@@ -1,33 +1,20 @@
-import React, { useEffect, useState } from 'react'
-import { request } from 'graphql-request'
+import React from 'react'
 import { createRenderer, useRenderer } from '@webiny/app-page-builder-elements'
 import { getApiUrl } from '../utils/dataApiUrl'
+import useFullBundle from '../hooks/useFullBundle'
+import useHtmlElementRerender from '../hooks/useHtmlElementRerender'
 export interface TableProps {
   variables: {
     source: string
   }
 }
-
+// @ts-ignore
 export const Table = createRenderer(() => {
   const { getElement } = useRenderer()
+  useFullBundle()
   const element = getElement<TableProps>()
   const { source } = element.data.variables
-
-  useEffect(() => {
-    const script = document.createElement('script')
-
-    script.src = 'https://www.unpkg.com/@open-spatial-lab/table@0.0.0/dist/table.es.js'
-    script.async = true
-    script.type = 'module'
-
-    document.body.appendChild(script)
-
-    return () => {
-      document.body.removeChild(script)
-    }
-  }, [])
-
-  return <osl-table data={getApiUrl(source)}></osl-table>
+  return useHtmlElementRerender(<osl-table data={getApiUrl(source)}></osl-table>, [source])
 })
 
 // define global html element table
