@@ -1,6 +1,4 @@
 import React from 'react'
-import { validation } from '@webiny/validation'
-import { Input } from '@webiny/ui/Input'
 import { ButtonPrimary } from '@webiny/ui/Button'
 import { Cell, Grid } from '@webiny/ui/Grid'
 import { Select } from '@webiny/ui/Select'
@@ -8,14 +6,15 @@ import {
   PbEditorPageElementAdvancedSettingsPlugin,
   PbEditorPageElementPlugin
 } from '@webiny/app-page-builder/types'
-
+import { CheckboxGroup, Checkbox } from '@webiny/ui/Checkbox'
 import { Table, TableProps } from './Table'
 import { getApiUrl } from '../utils/dataApiUrl'
 import useDataViews from '../hooks/useDataViews'
 
 const INITIAL_ELEMENT_DATA: TableProps = {
   variables: {
-    source: ''
+    source: '',
+    columns: undefined
   }
 }
 
@@ -72,6 +71,8 @@ export default [
     elementType: 'table',
     render({ data, Bind, submit }) {
       const { dataViews, currentDataview } = useDataViews(data)
+      const columns = currentDataview?.columns || []
+      console.log('columns', columns)
       // In order to construct the settings form, we're using the
       // `@webiny/form`, `@webiny/ui`, and `@webiny/validation` packages.
       return (
@@ -96,6 +97,31 @@ export default [
                 </Bind>
               ) : null}
             </Cell>
+            {!!columns?.length && (
+              <Cell span={12}>
+                <Bind name={'variables.columns'}>
+                  <CheckboxGroup
+                    label="Fruits selection"
+                    description={'Choose only fruits you like.'}
+                  >
+                    {({ onChange, getValue }) => (
+                      <React.Fragment>
+                        {/* @ts-ignore */}
+                        {(columns as string[]).map((column, idx) => (
+                          <Checkbox
+                            key={column}
+                            label={column}
+                            value={getValue(column)}
+                            onChange={onChange(column)}
+                          />
+                        ))}
+                      </React.Fragment>
+                    )}
+                  </CheckboxGroup>
+                </Bind>
+              </Cell>
+            )}
+
             <Cell span={12}>
               <p>Code Snippets</p>
               <p>

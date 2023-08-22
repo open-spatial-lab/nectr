@@ -6,6 +6,7 @@ import useHtmlElementRerender from '../hooks/useHtmlElementRerender'
 export interface TableProps {
   variables: {
     source: string
+    columns?: Array<string>
   }
 }
 // @ts-ignore
@@ -13,8 +14,14 @@ export const Table = createRenderer(() => {
   const { getElement } = useRenderer()
   useFullBundle()
   const element = getElement<TableProps>()
-  const { source } = element.data.variables
-  return useHtmlElementRerender(<osl-table data={getApiUrl(source)}></osl-table>, [source])
+  const { source, columns } = element.data.variables
+  return useHtmlElementRerender(
+    <osl-table
+      data={getApiUrl(source)}
+      columns={`${columns ? JSON.stringify(columns) : ''}`}
+    ></osl-table>,
+    [source, JSON.stringify(columns || {})]
+  )
 })
 
 // define global html element table
