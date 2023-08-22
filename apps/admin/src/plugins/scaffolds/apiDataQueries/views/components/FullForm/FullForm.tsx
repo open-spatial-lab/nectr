@@ -66,7 +66,7 @@ export const FullForm: React.FC<FullFormProps> = props => {
     showPreview,
     togglePreview
   } = props
-
+  console.log(currentSources, datasetsAndDataviews)
   const handleUpdate = <T extends GenericFormData>(data: QuerySchema, form: FormAPI<T>) => {
     const formSourceIds = data?.sources?.map(source => source?.id) || []
     const joinIds =
