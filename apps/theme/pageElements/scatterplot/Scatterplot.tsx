@@ -20,17 +20,27 @@ export const Scatterplot = createRenderer(() => {
   const { getElement } = useRenderer()
   useFullBundle()
   const element = getElement<DotProps>()
-  const { source,x,y,fill,fx,fy,r } = element.data.variables
+  const { source, x, y, fill, fx, fy, r } = element.data.variables
 
   return useHtmlElementRerender(
-    <osl-plot
+    <span
+      dangerouslySetInnerHTML={{
+        __html: `<osl-plot
       colorLegend="true"
-      xAxisAnchor="null"
-      data={getApiUrl(source)}
+      data="${getApiUrl(source)}"
     >
-      <osl-dot-plot {...{x,y,fill,fx,fy,r}}></osl-dot-plot>
-    </osl-plot>,
-    [source,x,y,r,fill,fx,fy]
+      <osl-dot-plot
+        x="${x}"
+        y="${y}"
+        ${fill && `fill="${fill}"`}
+        ${fx && `fx="${fx}"`}
+        ${fy && `fy="${fy}"`}
+        ${r && `r="${r}"`}
+      ></osl-dot-plot>
+    </osl-plot>`
+      }}
+    />,
+    [source, x, y, r, fill, fx, fy]
   )
 })
 

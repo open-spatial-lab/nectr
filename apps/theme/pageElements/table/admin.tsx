@@ -72,7 +72,7 @@ export default [
     render({ data, Bind, submit }) {
       const { dataViews, currentDataview } = useDataViews(data)
       const columns = currentDataview?.columns || []
-      console.log('columns', columns)
+      
       // In order to construct the settings form, we're using the
       // `@webiny/form`, `@webiny/ui`, and `@webiny/validation` packages.
       return (
@@ -101,8 +101,8 @@ export default [
               <Cell span={12}>
                 <Bind name={'variables.columns'}>
                   <CheckboxGroup
-                    label="Fruits selection"
-                    description={'Choose only fruits you like.'}
+                    label="Column Selection"
+                    description={'Choose columns that you want to display. By default, all columns will display.'}
                   >
                     {({ onChange, getValue }) => (
                       <React.Fragment>
@@ -139,7 +139,10 @@ export default [
                 {`
 <script src="https://www.unpkg.com/@open-spatial-lab/full-bundle@latest/dist/index.js" async></script>
 
-<osl-table data="${getApiUrl(data.variables.source)}"></osl-table>`}
+<osl-table 
+  data="${getApiUrl(data.variables.source)}"
+  columns='${JSON.stringify(data.variables.columns)}'
+  ></osl-table>`}
               </pre>
             </Cell>
             <Cell span={12}>

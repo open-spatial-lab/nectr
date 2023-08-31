@@ -189,7 +189,7 @@ ${fullBundleScriptText}
 
 <osl-select
 data="${getApiUrl(data.variables.source)}"    
-options="${JSON.stringify(data.variables.options)}"
+options='${JSON.stringify(data.variables.options)}'
 option="${data.variables.option}"
 defaultOption="${data.variables.defaultOption}"
 >

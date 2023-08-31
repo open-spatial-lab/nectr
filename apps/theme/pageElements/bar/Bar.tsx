@@ -24,12 +24,18 @@ export const Bar = createRenderer(() => {
   const { source,x,y,direction,fill,fx,fy } = element.data.variables
 
   return useHtmlElementRerender(
-    <osl-plot
+
+    <span
+      dangerouslySetInnerHTML={{
+        __html: `<osl-plot
       colorLegend="true"
-      data={getApiUrl(source)}
+      data="${getApiUrl(source)}"
     >
-      <osl-bar {...{x,y,direction,fill,fx,fy}}></osl-bar>
-    </osl-plot>,
+      <osl-bar 
+        x="${x}"
+        y="${y}"
+      ></osl-bar>
+    </osl-plot>`}} >asdf</span>,
     [source,x,y,direction,fill,fx,fy]
   )
 })

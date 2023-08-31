@@ -6,9 +6,9 @@ import useHtmlElementRerender from '../hooks/useHtmlElementRerender'
 
 export interface SelectProps {
   variables: {
-    source: string,
-    option: string,
-    options: string[],
+    source: string
+    option: string
+    options: string[]
     defaultOption: string
   }
 }
@@ -19,14 +19,17 @@ export const Dropdown = createRenderer(() => {
   useFullBundle()
   const element = getElement<SelectProps>()
   const { source, options, defaultOption, option } = element.data.variables
-
   return useHtmlElementRerender(
-    <osl-select 
-    data={getApiUrl(source)}
-    options={JSON.stringify(options)}
-    option={option}
-    defaultOption={defaultOption}
-    ></osl-select>,
+    <span
+      dangerouslySetInnerHTML={{
+        __html: `<osl-select 
+    data="${getApiUrl(source)}"
+    options='${JSON.stringify(options)}'
+    option="${option}"
+    defaultOption="${defaultOption}"
+    ></osl-select>`
+      }}
+    ></span>,
     [source, JSON.stringify(options), option, defaultOption]
   )
 })
