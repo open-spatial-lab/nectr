@@ -86,6 +86,9 @@ export const useApiDataQueriesDataList: useApiDataQueriesDataListHook = () => {
   const newApiDataQuery = useCallback(() => history.push('/data-views?new'), [])
   const editApiDataQuery = useCallback(id => {
     history.push(`/data-views?id=${id}`)
+    if (currentApiDataQueryId !== id) {
+      window.location.reload()
+    }
   }, [])
 
   const deleteApiDataQuery = useCallback(

@@ -14,15 +14,15 @@ export default class ServerSchemaService extends BaseSchemaService{
   }
 
   override async fetchSchemaEntry(id: string): Promise<QueryResponse<DataView, string>> {
-    if (!this.cachedSchemas.has(id)) {
-      const tableQuery = await table.batchGet(this.generateBatchGetInput([id]))
-      const entities = tableQuery?.Responses?.[table.name]
-      if (entities?.length) {
-        entities.forEach((element: DataView) => {
-          this.cachedSchemas.set(element.id, element)
-        })
-      }
+    // if (!this.cachedSchemas.has(id)) {
+    const tableQuery = await table.batchGet(this.generateBatchGetInput([id]))
+    const entities = tableQuery?.Responses?.[table.name]
+    if (entities?.length) {
+      entities.forEach((element: DataView) => {
+        this.cachedSchemas.set(element.id, element)
+      })
     }
+    // }
     return super.fetchSchemaEntry(id)
   }
 
@@ -30,7 +30,7 @@ export default class ServerSchemaService extends BaseSchemaService{
     ids: string[],
     fresh: boolean = false
   ): Promise<QueryResponse<DataView[], string>> {
-    const missingIds = fresh ? ids : ids.filter(id => !this.cachedSchemas.has(id))
+    const missingIds = ids //fresh ? ids : ids.filter(id => !this.cachedSchemas.has(id))
 
     if (missingIds.length) {
       const tableQuery = await table.batchGet(this.generateBatchGetInput(missingIds))

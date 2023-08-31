@@ -1,6 +1,4 @@
 import React from 'react'
-import { validation } from '@webiny/validation'
-import { Input } from '@webiny/ui/Input'
 import { ButtonPrimary } from '@webiny/ui/Button'
 import { Cell, Grid } from '@webiny/ui/Grid'
 import { Select } from '@webiny/ui/Select'
@@ -8,13 +6,15 @@ import {
   PbEditorPageElementAdvancedSettingsPlugin,
   PbEditorPageElementPlugin
 } from '@webiny/app-page-builder/types'
-
+import { CheckboxGroup, Checkbox } from '@webiny/ui/Checkbox'
 import { Table, TableProps } from './Table'
 import { getApiUrl } from '../utils/dataApiUrl'
+import useDataViews from '../hooks/useDataViews'
 
 const INITIAL_ELEMENT_DATA: TableProps = {
   variables: {
-    source: ''
+    source: '',
+    columns: undefined
   }
 }
 
@@ -70,20 +70,58 @@ export default [
     type: 'pb-editor-page-element-advanced-settings',
     elementType: 'table',
     render({ data, Bind, submit }) {
+      const { dataViews, currentDataview } = useDataViews(data)
+      const columns = currentDataview?.columns || []
+      
       // In order to construct the settings form, we're using the
       // `@webiny/form`, `@webiny/ui`, and `@webiny/validation` packages.
       return (
         <>
           <Grid>
             <Cell span={12}>
-              <Bind name={'variables.source'}>
-                <Input
-                  label={'Data Source'}
-                  type="text"
-                  description={'Data source to show in the table'}
-                />
-              </Bind>
+              <h3>Data Source</h3>
+              <br />
+              <p>
+                <b>{currentDataview?.title || ''}</b>
+              </p>
+              <br />
+              {dataViews.length ? (
+                <Bind name={'variables.source'}>
+                  <Select label={'Data Source'} description={'Data source to show in the table'}>
+                    {dataViews?.map((item: any, idx: number) => (
+                      <option key={`${item.id}-view-${idx}`} value={item.id}>
+                        {item.title}
+                      </option>
+                    ))}
+                  </Select>
+                </Bind>
+              ) : null}
             </Cell>
+            {!!columns?.length && (
+              <Cell span={12}>
+                <Bind name={'variables.columns'}>
+                  <CheckboxGroup
+                    label="Column Selection"
+                    description={'Choose columns that you want to display. By default, all columns will display.'}
+                  >
+                    {({ onChange, getValue }) => (
+                      <React.Fragment>
+                        {/* @ts-ignore */}
+                        {(columns as string[]).map((column, idx) => (
+                          <Checkbox
+                            key={column}
+                            label={column}
+                            value={getValue(column)}
+                            onChange={onChange(column)}
+                          />
+                        ))}
+                      </React.Fragment>
+                    )}
+                  </CheckboxGroup>
+                </Bind>
+              </Cell>
+            )}
+
             <Cell span={12}>
               <p>Code Snippets</p>
               <p>
@@ -99,9 +137,12 @@ export default [
                 }}
               >
                 {`
-<script src="https://www.unpkg.com/@open-spatial-lab/table@0.0.0/dist/table.es.js" async></script>
+<script src="https://www.unpkg.com/@open-spatial-lab/full-bundle@latest/dist/index.js" async></script>
 
-<osl-table data="${getApiUrl(data.variables.source)}"></osl-table>`}
+<osl-table 
+  data="${getApiUrl(data.variables.source)}"
+  columns='${JSON.stringify(data.variables.columns)}'
+  ></osl-table>`}
               </pre>
             </Cell>
             <Cell span={12}>

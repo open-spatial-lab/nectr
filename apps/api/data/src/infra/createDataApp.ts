@@ -33,7 +33,7 @@ export const createDataApp = (app: ApiPulumiApp) => {
       API_URL: cloudfront.output.domainName
     }
   })
-  console.log('resources', resources.fileManager.functions.download.config.code)
+
   resources.cloudfront.config.origins(origins => {
     return [
       ...origins,
@@ -70,6 +70,8 @@ export const createDataApp = (app: ApiPulumiApp) => {
       compress: true,
       allowedMethods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'POST', 'PATCH', 'DELETE'],
       cachedMethods: ['GET', 'HEAD', 'OPTIONS'],
+      maxTtl: 0,
+      minTtl: 0,
       forwardedValues: {
         cookies: {
           forward: 'none'
@@ -85,6 +87,8 @@ export const createDataApp = (app: ApiPulumiApp) => {
       compress: true,
       allowedMethods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'POST', 'PATCH', 'DELETE'],
       cachedMethods: ['GET', 'HEAD', 'OPTIONS'],
+      maxTtl: 0,
+      minTtl: 0,
       forwardedValues: {
         cookies: {
           forward: 'none'

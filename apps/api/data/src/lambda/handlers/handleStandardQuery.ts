@@ -11,10 +11,10 @@ export const handleStandardQuery = async (
   queryStartTimestamp: number
 ) => {
   const cacheService = new CacheService(id, params)
-  const cachedResult = await cacheService.checkCache()
-  if (cachedResult.ok && cachedResult?.result?.Item?.id) {
-    return cacheService.redirectToCacheFile(cachedResult.result.Item.id)
-  }
+  // const cachedResult = await cacheService.checkCache()
+  // if (cachedResult.ok && cachedResult?.result?.Item?.id) {
+  //   return cacheService.redirectToCacheFile(cachedResult.result.Item.id)
+  // }
 
   const data = await connection.handleIdQuery(id, params)
   metrics.putMetric('QueryDuration', new Date().getTime() - queryStartTimestamp, Unit.Milliseconds)
