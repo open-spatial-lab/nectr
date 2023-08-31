@@ -36,8 +36,7 @@ import textSetting from '@webiny/app-page-builder/render/plugins/elementSettings
 import property from '@webiny/app-page-builder/render/plugins/elementSettings/property'
 // Responsive mode
 import responsiveMode from '@webiny/app-page-builder/render/plugins/responsiveMode'
-import table from 'theme/pageElements/table/website'
-import map from 'theme/pageElements/map/website'
+import renderPlugins from 'theme/pageElements/render'
 
 export default [
   // Elements
@@ -64,8 +63,7 @@ export default [
   // Page settings
   pageSettings(),
   // Element settings
-  table,
-  map,
+  renderPlugins,
   align,
   animation,
   background,

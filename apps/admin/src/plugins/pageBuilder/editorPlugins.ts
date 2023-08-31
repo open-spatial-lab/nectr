@@ -59,8 +59,7 @@ import responsiveEditorMode from '@webiny/app-page-builder/editor/plugins/respon
 import pageSettingsPlugins from '@webiny/app-page-builder/editor/plugins/pageSettings'
 // default presets for grid
 import { gridPresets } from '@webiny/app-page-builder/editor/plugins/gridPresets'
-import table from 'theme/pageElements/table/admin'
-import map from 'theme/pageElements/map/admin'
+import adminPlugins from 'theme/pageElements/admin'
 
 export default [
   // Elements
@@ -103,8 +102,7 @@ export default [
   undo,
   redo,
   // Element settings
-  table,
-  map,
+  ...adminPlugins,
   animation,
   background,
   border,

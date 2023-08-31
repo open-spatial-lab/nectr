@@ -16,7 +16,9 @@ import Dialog from '@mui/material/Dialog'
 import { ColumnExplorer } from '../ColumnSelector'
 import { NoPaddingGrid } from '../SplitView'
 import { Cell } from '@webiny/ui/Grid'
+import { IconButton } from '@webiny/ui/Button'
 import { operatorConfig } from './operatorConfig'
+import { ReactComponent as CloseIcon } from '../../assets/close.svg'
 export const WhereBuilder: React.FC<{
   currentSources: SourceMeta[]
   wheres: WhereQuery[]
@@ -85,7 +87,19 @@ export const WhereDialog: React.FC<{
 }> = ({ where, currentSources, onChange, onClose }) => {
   return (
     <Dialog onClose={onClose} open={true} fullWidth maxWidth="lg">
-      <DialogTitle>Configure Data Filter</DialogTitle>
+      <DialogTitle>Configure Data Filter
+
+      <div
+              style={{
+                position: 'absolute',
+                top: '0',
+                right: '0'
+              }}
+            >
+              <IconButton icon={<CloseIcon />} onClick={onClose} />
+            </div>
+
+      </DialogTitle>
       {/* column */}
       <NoPaddingGrid style={{ padding: '1rem', width: '100%' }}>
         <Cell span={8}>

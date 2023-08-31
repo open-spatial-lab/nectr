@@ -9,14 +9,14 @@ import {
   PbEditorPageElementAdvancedSettingsPlugin,
   PbEditorPageElementPlugin
 } from '@webiny/app-page-builder/types'
-import { request } from 'graphql-request'
 
 import { Map, MapProps } from './Map'
 import { getApiUrl } from '../utils/dataApiUrl'
+import useDataViews from '../hooks/useDataViews'
 
 const INITIAL_ELEMENT_DATA: MapProps = {
   variables: {
-    source: '6466e8ee505b900008f2c80d',
+    source: '',
     center: [0, 0],
     zoom: 0,
     layerType: 'polygon',
@@ -25,25 +25,6 @@ const INITIAL_ELEMENT_DATA: MapProps = {
   }
 }
 
-const GQL_API_URL = process.env['REACT_APP_API_URL']!
-
-// These are the necessary GraphQL queries we'll need in order to retrieve data.
-const DATA_VIEWS_QUERY = `{
-    apiDataQueries {
-      listApiDataQueries {
-        data {
-          id
-          title
-          template
-        }
-      }
-    }
-  }`
-
-const cleanColumnName = (columnName: string) => {
-  // replace to followed by a number followed by a period with nothing, if it exists in the string
-  return columnName.split('.')[1] || columnName
-}
 export default [
   // The `PbEditorPageElementPlugin` plugin.
   {
@@ -96,9 +77,9 @@ export default [
     type: 'pb-editor-page-element-advanced-settings',
     elementType: 'map',
     render({ data, Bind, submit }) {
-      const [dataViews, setDataViews] = useState<{ id: string; title: string; template: string }[]>(
-        []
-      )
+      const { dataViews, currentDataview } = useDataViews(data)
+      const cleanColumnList = currentDataview?.columns || []
+
       const [timeoutId, setTimeoutId] = useState<null | ReturnType<typeof setTimeout>>(null)
       useEffect(() => {
         // Clear the previous timeout when the prop changes
@@ -118,29 +99,6 @@ export default [
           clearTimeout(newTimeoutId)
         }
       }, [JSON.stringify(data.variables)])
-
-      useEffect(() => {
-        // @ts-ignore
-        request(GQL_API_URL, DATA_VIEWS_QUERY).then(({ apiDataQueries }) => {
-          const mappedDatasets: any = apiDataQueries?.listApiDataQueries?.data?.map(
-            (entry: any) => ({
-              id: entry.id,
-              title: entry.title,
-              template: entry.template
-            })
-          )
-          setDataViews(mappedDatasets)
-        })
-      }, [])
-      const currentDataview = dataViews?.find((item: any) => item.id === data.variables.source)
-      const currentColumns = currentDataview ? JSON.parse(currentDataview?.template)?.columns : []
-
-      const cleanColumnList = currentColumns?.map((item: any) => ({
-        name: cleanColumnName(item.name),
-        type: item.type,
-        id: item.name
-      }))
-
       return (
         <>
           <Grid>
@@ -151,7 +109,7 @@ export default [
                 <b>{currentDataview?.title || ''}</b>
               </p>
               <br />
-              {data.variables.source && dataViews.length ? (
+              {dataViews.length ? (
                 <Bind name={'variables.source'}>
                   <Select label={'Data Source'} description={'Data source to show in the map'}>
                     {dataViews?.map((item: any, idx: number) => (
@@ -207,8 +165,8 @@ export default [
                     description={'Name of the data column that contains geometry.'}
                   >
                     {cleanColumnList?.map((item: any, idx: number) => (
-                      <option key={`${item.id}-geomcol-${idx}`} value={item.name}>
-                        {item.name}
+                      <option key={`${item}-datacol-${idx}`} value={item}>
+                        {item}
                       </option>
                     ))}
                   </Select>
@@ -223,8 +181,8 @@ export default [
                     description={'Name of the column to generate map colors from.'}
                   >
                     {cleanColumnList?.map((item: any, idx: number) => (
-                      <option key={`${item.id}-datacol-${idx}`} value={item.name}>
-                        {item.name}
+                      <option key={`${item}-datacol-${idx}`} value={item}>
+                        {item}
                       </option>
                     ))}
                   </Select>

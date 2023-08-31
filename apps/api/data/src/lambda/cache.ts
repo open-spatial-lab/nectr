@@ -77,12 +77,12 @@ export default class CacheService {
     //     timestamp: Math.floor(Date.now() / 1000)
     //   }
     // })
-    return await CacheEntity.put({
-      PK: this.PK,
-      SK: this.SK,
-      id: fileId,
-      timestamp: Math.floor(Date.now() / 1000)
-    })
+    // return await CacheEntity.put({
+    //   PK: this.PK,
+    //   SK: this.SK,
+    //   id: fileId,
+    //   timestamp: Math.floor(Date.now() / 1000)
+    // })
   }
 
   async cacheResult(data: string) {
