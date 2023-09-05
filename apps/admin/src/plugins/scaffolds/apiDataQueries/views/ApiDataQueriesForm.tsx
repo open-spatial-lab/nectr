@@ -27,7 +27,7 @@ const ApiDataQueriesForm: React.FC = () => {
   const { FormComponent, ...hookProps } = useDataView(dataViewTemplate)
   const { emptyViewIsShown, loading, currentApiDataQuery, apiDataQuery } = hookProps
   const { schema } = useDataViewSchema();
-  const previewProps = useQueryBuilderPreview(schema);
+  const previewProps = useQueryBuilderPreview({schema});
   
   if (!apiDataQuery && !dataViewTemplate) {
     return <DataViewTemplates setDataViewTemplate={setDataViewTemplate} />

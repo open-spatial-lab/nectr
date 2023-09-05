@@ -1,12 +1,8 @@
-// @ts-ignore
 import DuckDB from 'duckdb'
 import { QueryResponse } from '../types/types'
 import { serverSchemaService } from './schemas/serverSchemaService'
 import { SqlBuilder } from './sqlBuilder'
 import { logger } from '..'
-// import { BucketManager } from './bucketManager'
-
-// const bucket = new BucketManager(process.env['DATA_BUCKET']!, process.env['AWS_REGION']!)
 
 export default class Connection {
   duckDB?: DuckDB.Database
@@ -16,7 +12,6 @@ export default class Connection {
   constructor() {}
 
   async initialize() {
-    // this.withLogs(text => this.logs.push(text))()
     if (this.isInitialized) {
       return
     }
@@ -41,9 +36,11 @@ export default class Connection {
   }
 
   async query(query: string): Promise<QueryResponse<any, string>> {
+    logger.info({query})
     return new Promise((resolve, reject) => {
       this.connection!.all(query, (err: any, res: any) => {
         if (err) {
+          logger.error({err, query})
           reject({
             error: err,
             ok: false

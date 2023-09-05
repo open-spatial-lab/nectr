@@ -19,13 +19,15 @@ export const handler = metricScope(
 
       const requestLogger = logger.child({ requestId: context.awsRequestId })
       requestLogger.debug({ event, context })
-      
+      logger.info({
+        test: true
+      })
       metrics.putDimensions({ Service: 'QueryService' })
       metrics.setProperty('RequestId', context.awsRequestId)
 
       const id = event.pathParameters?.['id']!
       const params = event?.queryStringParameters || {}
-      logger.info({ event, context })
+
       const isMetaDataQuery = Boolean(params['__metadata__'])
       const isAdminTestQuery = params['__adminQuery__'] == 'true'
       const metadataFile = params['__metadata__']
@@ -33,12 +35,6 @@ export const handler = metricScope(
 
       const queryDate = new Date()
       const queryStartTimestamp = queryDate.getTime()
-      
-      logger.info({
-        id,
-        metadataFile,
-        isAdminTestQuery,
-      })
       
       if (!connection.isInitialized) await connection.initialize()
       if (isMetaDataQuery) return await handleMetadataQuery(metadataFile!, params)
@@ -53,4 +49,9 @@ process.on('SIGTERM', async () => {
   logger.debug('[runtime] cleaning up')
   logger.debug('[runtime] exiting')
   process.exit(0)
+})
+
+process.on("uncaughtException", (e) => {
+  logger.error("Uncaught exception", JSON.stringify(e))
+  // process.exit(1)
 })

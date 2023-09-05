@@ -43,10 +43,10 @@ const TruncatedPreviw: React.FC<{ content: string }> = ({ content }) => {
   )
 }
 
-export const PreviewTable: React.FC<PreviewTableProps> = ({ id, data, page, setPage }) => {
+export const PreviewTable: React.FC<PreviewTableProps> = ({ id, data, page, setPage, raw }) => {
   return (
     <div>
-      <TableView {...{ id, data, page, setPage }} />
+      <TableView {...{ id, data, page, setPage, raw }} />
       {/* <TableError data={data} /> */}
     </div>
   )
@@ -57,7 +57,7 @@ const ErrorFeedback: React.FC<{ error: string }> = ({ error }) => {
 }
 
 const paginatedEntries = 10
-const TableView: React.FC<PreviewTableProps> = ({ data, page, setPage, id }) => {
+const TableView: React.FC<PreviewTableProps> = ({ data, page, setPage, id,raw }) => {
   const [loading, setLoading] = React.useState(false)
   const [maxEntries, setMaxEntries] = React.useState(-1)
 
@@ -111,15 +111,15 @@ const TableView: React.FC<PreviewTableProps> = ({ data, page, setPage, id }) => 
           </TableBody>
         </Table>
       </TableContainer>
-      <TablePagination
+      {!raw && <TablePagination
         rowsPerPageOptions={[10]}
         component="div"
         count={maxEntries}
         rowsPerPage={10}
         page={page}
         onPageChange={(_e, page) => setPage(page)}
-      />
-      {id && (
+      />}
+      {Boolean(id && !raw) && (
         <ul>
           <li>
             <h3>Data Endpoints</h3>

@@ -3,10 +3,14 @@
 import apiDataQueries from './apiDataQueries'
 import datasets from './datasets'
 import home from './home'
+import rawsqls from "./rawsqls";
+
+// import adminSqlConsole from "./adminSqlConsole";
 
 // @ts-ignore
 export default () => [
   home,
   apiDataQueries,
-  datasets
+  datasets,
+    rawsqls
 ]
