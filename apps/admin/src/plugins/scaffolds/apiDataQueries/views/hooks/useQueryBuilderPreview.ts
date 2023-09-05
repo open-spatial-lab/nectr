@@ -35,13 +35,21 @@ export const useQueryBuilderPreview = ({ raw, schema }: { raw?: string; schema?:
       return
     }
 
+    // if secondary schema.join references right source id from earlier schema.join, reverse the list
+    // otherwise leave as is
+    const lastJoinIndex = schema?.joins?.length ? schema.joins.length - 1 : 0
+    const shouldReverseJoins = schema?.joins?.[lastJoinIndex]?.leftSourceId !== schema?.sources?.[0]?.id
+    const joins = shouldReverseJoins ? [...schema?.joins||[]].reverse() : schema?.joins
+    console.log(shouldReverseJoins)
     const body = isSchema
       ? JSON.stringify({
           ...schema,
+          joins,
           limit: 10,
           offset: page * 10
         })
       : JSON.stringify({ raw })
+    // console.log('querying...', schema.joins)
 
     isQuerying.current = true
 
