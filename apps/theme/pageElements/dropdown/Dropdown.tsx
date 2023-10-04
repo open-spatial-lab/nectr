@@ -19,21 +19,27 @@ export const Dropdown = createRenderer(() => {
   useFullBundle()
   const element = getElement<SelectProps>()
   const { source, options, defaultOption, option } = element.data.variables
+
   return useHtmlElementRerender(
-    <span
-      dangerouslySetInnerHTML={{
-        __html: `<osl-select 
-    data="${getApiUrl(source)}"
-    options='${JSON.stringify(options)}'
-    option="${option}"
-    defaultOption="${defaultOption}"
-    ></osl-select>`
-      }}
-    ></span>,
-    [source, JSON.stringify(options), option, defaultOption]
+    <div>
+      <osl-select
+        data={getApiUrl(source)}
+        options={JSON.stringify(options)}
+        option={option}
+        defaultOption={defaultOption}
+      ></osl-select>
+    </div>,
+    [JSON.stringify(element.data.variables)]
   )
 })
-
+function stringifyWithQuotes(obj: any): string {
+  return JSON.stringify(obj, (key, value) => {
+    if (typeof value === 'string') {
+      return value.replace(/&quot;/g, '"')
+    }
+    return value
+  })
+}
 declare global {
   namespace JSX {
     interface IntrinsicElements {

@@ -37,7 +37,7 @@ type DataOutput = {
   columns: { name: string; sourceId: string }[]
   wheres: { sourceId: string; customAlias: string; column: string; allowCustom: boolean }[]
 }
-export default function useDataViews(data: any) {
+export default function useDataViews(data: {variables: {source: string}}) {
   const [dataViews, setDataViews] = useState<DataOutput[]>([])
 
   useEffect(() => {

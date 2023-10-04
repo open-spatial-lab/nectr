@@ -1,18 +1,15 @@
 import React from 'react'
 import { Cell } from '@webiny/ui/Grid'
-import { ButtonPrimary, ButtonSecondary, ButtonIcon, IconButton } from '@webiny/ui/Button'
-import { JOIN_OPERATORS, JoinQuery, SourceMeta } from '../QueryBuilder/types'
+import { ButtonPrimary, IconButton } from '@webiny/ui/Button'
+import { JoinQuery, SourceMeta } from '../QueryBuilder/types'
 import { NoPaddingGrid } from '../SplitView'
 import SourceSelector from '../SourceSelector'
 import { ColumnSelect } from '../ColumnSelect'
 import { ColumnSchema } from '../../plugins/scaffolds/dataUploads/types'
 import { ReactComponent as TrashIcon } from '../../assets/trash.svg'
-import { ReactComponent as LeftJoin } from '../../assets/left-join.svg'
-import { ReactComponent as RightJoin } from '../../assets/right-join.svg'
-import { ReactComponent as InnerJoin } from '../../assets/inner-join.svg'
-import { ReactComponent as OuterJoin } from '../../assets/full-join.svg'
 import { ReactComponent as IndentArrow } from '../../assets/indent-arrow.svg'
 import { Stack } from '@mui/material'
+import JoinTypeSelector from '../ JoinTypeSelector'
 
 export type JoinBuilderProps = {
   joins: JoinQuery[]
@@ -21,12 +18,6 @@ export type JoinBuilderProps = {
   onChange: (sources: JoinQuery[]) => void
 }
 
-const ICON_MAPPING = {
-  left: LeftJoin,
-  right: RightJoin,
-  inner: InnerJoin,
-  outer: OuterJoin
-} as const
 
 export const JoinBuilder = ({
   joins,
@@ -104,30 +95,10 @@ export const JoinBuilder = ({
               </Stack>
             </Cell>
             <Cell span={3}>
-              <div style={{ width: '100%' }}>
-                {JOIN_OPERATORS.map(joinOp => {
-                  const Button = join.operator === joinOp ? ButtonPrimary : ButtonSecondary
-                  const Icon = ICON_MAPPING[joinOp as keyof typeof ICON_MAPPING]
-                  return (
-                    <Button
-                      key={joinOp}
-                      onClick={() => updateJoinAtIndex(index, 'operator', joinOp)}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignContent: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        <ButtonIcon icon={<Icon />} />
-                        <div>{joinOp}</div>
-                      </div>
-                    </Button>
-                  )
-                })}
-              </div>
+                <JoinTypeSelector
+                  join={join}
+                  onChange={operator => updateJoinAtIndex(index, 'operator', operator)}
+                  />
             </Cell>
             <Cell span={1}>
               <IconButton

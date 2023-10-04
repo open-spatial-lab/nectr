@@ -5,7 +5,8 @@ import {
   WhereQuery
 } from '../../../../admin/src/components/QueryBuilder/types'
 import { SqlBuilder } from '../lambda/sqlBuilder'
-import { mockSourceSpecs, API_DATA_QUERY_TEST_PROPERTIES } from './utils'
+import { mockSourceSpecs, API_DATA_QUERY_TEST_PROPERTIES, exampleSourceSpecs } from './utils'
+import BaseSchemaService from '../lambda/schemas/baseSchemaService'
 
 type MockSchema = {
   config: {
@@ -31,7 +32,7 @@ const simpleSchema = {
       ]
     }
   },
-  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh"`
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh";`
 } as MockSchema
 
 const columnSchema = {
@@ -57,7 +58,7 @@ const columnSchema = {
       ]
     }
   },
-  result: `select "sdoh"."column1" as "alias1", "sdoh"."column2" as "column2", count(*) as "count_column3" from 's3://test_bucket/sdoh.csv' "sdoh"`
+  result: `select "sdoh"."column1" as "alias1", "sdoh"."column2" as "column2", count(*) as "count_column3" from 's3://test_bucket/sdoh.csv' "sdoh";`
 } as MockSchema
 
 const joinSchema = {
@@ -92,7 +93,7 @@ const joinSchema = {
     params: {},
     isSubQuery: false
   },
-  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" inner join 's3://test_bucket/sdoh-join.csv' "sdoh-join" on "sdoh"."fips" = "sdoh-join"."geoid"`
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" inner join 's3://test_bucket/sdoh-join.csv' "sdoh-join" on "sdoh"."fips" = "sdoh-join"."geoid";`
 } as MockSchema
 
 const chainedJoinSchema = {
@@ -140,7 +141,7 @@ const chainedJoinSchema = {
     params: {},
     isSubQuery: false
   },
-  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" inner join 's3://test_bucket/sdoh-join.csv' "sdoh-join" on "sdoh"."fips" = "sdoh-join"."geoid" left join 's3://test_bucket/other-join.parquet' "other-join" on "sdoh-join"."geoid" = "other-join"."__id__"`
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" inner join 's3://test_bucket/sdoh-join.csv' "sdoh-join" on "sdoh"."fips" = "sdoh-join"."geoid" left join 's3://test_bucket/other-join.parquet' "other-join" on "sdoh-join"."geoid" = "other-join"."__id__";`
 } as MockSchema
 
 const whereSchema = {
@@ -171,7 +172,7 @@ const whereSchema = {
       where2: 2
     }
   },
-  result: `${simpleSchema.result} where "sdoh"."column1" = 1 or "sdoh"."column2" > 2`
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" where "sdoh"."column1" = 1 or "sdoh"."column2" > 2;`
 } as MockSchema
 
 const groupSchema = {
@@ -188,7 +189,7 @@ const groupSchema = {
     },
     params: {}
   },
-  result: `${simpleSchema.result} group by "sdoh"."column1"`
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" group by "sdoh"."column1";`
 } as MockSchema
 
 const compoundSchema = {
@@ -216,7 +217,7 @@ const compoundSchema = {
       title: 'Compound Query'
     }
   },
-  result: `select * from 's3://test_bucket/sdoh-join.csv' "sdoh-join" inner join (select column1 as "column1", column2 as "column2", column3 as "column3" from 's3://test_bucket/sdoh.csv' "sdoh" inner join 's3://test_bucket/other-join.parquet' "other-join" on "sdoh"."column1" = "other-join"."column3" where "sdoh"."column1" > 0) "dataview" on "sdoh-join"."geoid" = "dataview"."geoid"`
+  result: `select * from 's3://test_bucket/sdoh-join.csv' "sdoh-join" inner join (select "sdoh"."column1" as "column1", "sdoh"."column2" as "column2", "other-join"."column3" as "column3" from 's3://test_bucket/sdoh.csv' "sdoh" inner join 's3://test_bucket/other-join.parquet' "other-join" on "sdoh"."column1" = "other-join"."column3" where "sdoh"."column1" > 0) "dataview" on "sdoh-join"."geoid" = "dataview"."geoid";`
 } as MockSchema
 const groupHavingSchema = {
   config: {
@@ -235,7 +236,7 @@ const groupHavingSchema = {
     },
     params: {}
   },
-  result: `${simpleSchema.result} group by "sdoh"."column1", "sdoh"."column2" having "sdoh"."column2" = 1`
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" group by "sdoh"."column1", "sdoh"."column2" having "sdoh"."column2" = 1;`
 } as MockSchema
 
 const testCases = [
@@ -265,8 +266,9 @@ const main = async () => {
     const params = testCase.config.params || {}
     const isSubQuery = testCase.config.isSubQuery || false
     const expectedResult = testCase.result
-
-    const sqlBuilder = new SqlBuilder(schema, params, isSubQuery)
+    // @ts-ignore
+    const schemaService = new BaseSchemaService(Object.values(exampleSourceSpecs))
+    const sqlBuilder = new SqlBuilder(schema, params, isSubQuery, schemaService)
     await sqlBuilder.buildStatement()
     const result = sqlBuilder.queryString
     if (result !== expectedResult) {

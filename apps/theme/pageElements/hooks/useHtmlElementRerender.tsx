@@ -5,6 +5,7 @@ export default function useHtmlElementRerender(
   trigger: Array<any>
 ){
   const [htmlEl, setHtmlEl] = useState<React.ReactNode>(<div></div>)
+  
   useEffect(() => {
     const updateEl = async () => {
       await new Promise(resolve => setTimeout(resolve, 100))

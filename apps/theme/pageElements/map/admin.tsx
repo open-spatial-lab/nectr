@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { validation } from '@webiny/validation'
 import { Input } from '@webiny/ui/Input'
-import { ButtonPrimary } from '@webiny/ui/Button'
+import { ButtonDefault, ButtonPrimary } from '@webiny/ui/Button'
 import { Cell, Grid } from '@webiny/ui/Grid'
 import { Select } from '@webiny/ui/Select'
 import { Slider } from '@webiny/ui/Slider'
@@ -9,19 +9,38 @@ import {
   PbEditorPageElementAdvancedSettingsPlugin,
   PbEditorPageElementPlugin
 } from '@webiny/app-page-builder/types'
-
-import { Map, MapProps } from './Map'
+import { Switch } from '@webiny/ui/Switch'
+import { LayerSpec, Map, MapProps } from './Map'
 import { getApiUrl } from '../utils/dataApiUrl'
 import useDataViews from '../hooks/useDataViews'
+import { MAPSTYLES, BINNING_METHODS } from './utils'
+import { Accordion, AccordionItem } from '@webiny/ui/Accordion'
+import { Tabs, Tab } from '@webiny/ui/Tabs'
+import { ConfirmationDialog } from '@webiny/ui/ConfirmationDialog'
+import debounce from 'lodash/debounce'
+import { colorSchemes, getColorScheme } from '../core/ColorSchemes'
+import { BindComponent } from '@webiny/form'
+import { Stack } from '@mui/material'
+import { generateStringifiedHtml } from '../utils/generateStringifiedHtml'
 
+const DEFAULT_LAYER: LayerSpec = {
+  source: '',
+  legendTitle: '',
+  visible: true,
+  geoType: 'WKB',
+  geoColumn: '',
+  dataColumn: '',
+  type: 'continuous',
+  bins: 5,
+  colorScheme: 'RdYlGn',
+  filled: true
+}
 const INITIAL_ELEMENT_DATA: MapProps = {
   variables: {
-    source: '',
-    center: [0, 0],
-    zoom: 0,
-    layerType: 'polygon',
-    geometryColumn: 'WKT',
-    choroplethColumn: 'AWATER10'
+    mapStyle: MAPSTYLES[0].value,
+    legendPosition: 'top-right',
+    showNavigation: true,
+    layers: [DEFAULT_LAYER]
   }
 }
 
@@ -77,151 +96,194 @@ export default [
     type: 'pb-editor-page-element-advanced-settings',
     elementType: 'map',
     render({ data, Bind, submit }) {
-      const { dataViews, currentDataview } = useDataViews(data)
-      const cleanColumnList = currentDataview?.columns || []
-
-      const [timeoutId, setTimeoutId] = useState<null | ReturnType<typeof setTimeout>>(null)
+      const [timeoutFn, setTimeoutFn] = useState<ReturnType<typeof setTimeout> | null>(null)
       useEffect(() => {
-        // Clear the previous timeout when the prop changes
-        timeoutId && clearTimeout(timeoutId)
-
-        // Set a new timeout to run the function after 1 second (1000 milliseconds)
-        const newTimeoutId = setTimeout(() => {
-          // Your function logic here
-          submit()
-        }, 100)
-
-        // Save the timeout ID for cleanup
-        setTimeoutId(newTimeoutId)
-
-        // Cleanup function to clear the timeout on component unmount or prop change
+        if (timeoutFn) {
+          clearTimeout(timeoutFn)
+        }
+        setTimeoutFn(
+          setTimeout(() => {
+            submit()
+          }, 250)
+        )
         return () => {
-          clearTimeout(newTimeoutId)
+          if (timeoutFn) {
+            clearTimeout(timeoutFn)
+          }
         }
       }, [JSON.stringify(data.variables)])
+
+      const [autoMapView, setAutoMapView] = useState<boolean>(true)
+      let { layers, ...toStringify } = data.variables
+
       return (
         <>
-          <Grid>
+          <Grid className="no-pad">
             <Cell span={12}>
-              <h3>Data Source</h3>
-              <br />
-              <p>
-                <b>{currentDataview?.title || ''}</b>
-              </p>
-              <br />
-              {dataViews.length ? (
-                <Bind name={'variables.source'}>
-                  <Select label={'Data Source'} description={'Data source to show in the map'}>
-                    {dataViews?.map((item: any, idx: number) => (
-                      <option key={`${item.id}-view-${idx}`} value={item.id}>
-                        {item.title}
-                      </option>
-                    ))}
-                  </Select>
-                </Bind>
-              ) : null}
-            </Cell>
-            <Cell span={12}>
-              <h3>Initial Map View</h3>
-            </Cell>
-            <Cell span={6}>
-              <Bind name="variables.center.0">
-                <Input label={'X / Longitude:'} type="number" />
-              </Bind>
-            </Cell>
-            <Cell span={6}>
-              <Bind name="variables.center.1">
-                <Input label={'Y / Longtide:'} type="number" />
-              </Bind>
-            </Cell>
-            <Cell span={12}>
-              <Bind name="variables.zoom">
-                <Input
-                  label={'Map Zoom:'}
-                  description={'Choose the zoom level for the initial map view.'}
-                  type="number"
-                />
-              </Bind>
-            </Cell>
-            <Cell span={12}>
-              <h3>Map Layer</h3>
-            </Cell>
-            <Cell span={12}>
-              <Bind name="variables.layerType">
-                <Select
-                  label={'Map type:'}
-                  description={'Choose the type of map you would like to display.'}
+              <Accordion className="no-pad">
+                <AccordionItem
+                  title="Map Settings"
+                  description="Customize your overall map, view, and style."
                 >
-                  <option value="polygon">Polygon</option>
-                  <option value="scatter">Point</option>
-                </Select>
-              </Bind>
-            </Cell>
-            <Cell span={12}>
-              {cleanColumnList.length ? (
-                <Bind name="variables.geometryColumn">
-                  <Select
-                    label={'Geometry Column:'}
-                    description={'Name of the data column that contains geometry.'}
+                  <Cell span={12}>
+                    <h3>Initial Map View</h3>
+                  </Cell>
+                  <Cell span={12}>
+                    <Bind name="variables">
+                      {({ form, value, onChange }) => {
+                        const handleChange = (autoMapView: boolean) => {
+                          setAutoMapView(autoMapView)
+                          const center = autoMapView ? undefined : [0, 0]
+                          const zoom = autoMapView ? undefined : 0
+                          try {
+                            onChange({
+                              ...value,
+                              center,
+                              zoom
+                            })
+                          } catch (e) {
+                            console.log(e)
+                          }
+                        }
+                        return (
+                          <Switch
+                            label={'Automatic Map View'}
+                            onChange={handleChange}
+                            value={autoMapView}
+                            description={
+                              'When your map loads, set the view to the extent of your data. Alternatively, you can set a manual center and zoom level.'
+                            }
+                          />
+                        )
+                      }}
+                    </Bind>
+                  </Cell>
+                  {!autoMapView && (
+                    <>
+                      <Cell span={6}>
+                        <Bind name="variables.center.0">
+                          <Input label={'X / Longitude:'} type="number" disabled={autoMapView} />
+                        </Bind>
+                      </Cell>
+                      <Cell span={6}>
+                        <Bind name="variables.center.1">
+                          <Input label={'Y / Longtide:'} type="number" disabled={autoMapView} />
+                        </Bind>
+                      </Cell>
+                      <Cell span={12}>
+                        <Bind name="variables.zoom">
+                          <Input
+                            label={'Map Zoom:'}
+                            disabled={autoMapView}
+                            description={'Choose the zoom level for the initial map view.'}
+                            type="number"
+                          />
+                        </Bind>
+                      </Cell>
+                    </>
+                  )}
+                  <Cell span={12}>
+                    <h3>Base Map Style</h3>
+                  </Cell>
+                  <Cell span={12}>
+                    <Bind name="variables.mapStyle">
+                      <Select
+                        label={'Base Map Style:'}
+                        description={'Choose the basemap to show underneath your data.'}
+                      >
+                        {MAPSTYLES.map((item, i) => (
+                          <option key={i} value={item.value}>
+                            {item.label}
+                          </option>
+                        ))}
+                      </Select>
+                    </Bind>
+                  </Cell>
+                </AccordionItem>
+                <AccordionItem
+                  title="Map Layers"
+                  description="Add or customize data layers on your map."
+                >
+                  <Bind name="variables.layers">
+                    {({ form, value: layers, onChange }) => {
+                      // const layers = JSON.parse(_layers)
+                      // const onChange = (layers: Array<LayerSpec>) => {
+                      //   _onChange(JSON.stringify(layers))
+                      // }
+                      const handleAdd = () => {
+                        onChange([...layers, DEFAULT_LAYER])
+                      }
+                      const handleRemove = (idx: number) => {
+                        onChange(layers.filter((_: LayerSpec, i: number) => i !== idx))
+                      }
+
+                      const getHandleChange = (idx: number) => (v: Partial<LayerSpec>) => {
+                        const newLayers = layers.map((l: LayerSpec, i: number) => {
+                          return i === idx
+                            ? {
+                                ...l,
+                                ...v
+                              }
+                            : l
+                        })
+                        onChange(newLayers)
+                      }
+
+                      return (
+                        <>
+                          <ButtonPrimary onClick={handleAdd}>Add New Layer</ButtonPrimary>
+                          <Tabs>
+                            {layers.map((layer: LayerSpec, idx: number) => (
+                              <Tab
+                                label={layer.legendTitle ? layer.legendTitle : `Layer ${idx + 1}`}
+                                key={idx}
+                              >
+                                <LayerConfigurator
+                                  Bind={Bind}
+                                  layer={layer}
+                                  onChange={getHandleChange(idx)}
+                                  index={idx}
+                                  onRemove={() => handleRemove(idx)}
+                                />
+                              </Tab>
+                            ))}
+                          </Tabs>
+                        </>
+                      )
+                    }}
+                  </Bind>
+                </AccordionItem>
+                <AccordionItem title="Code Snippets">
+                  <hr />
+                  <h3>Code Snippets</h3>
+                  <br />
+                  <p>
+                    <i>Copy and paste this code snippet into your page to display the table.</i>
+                  </p>
+                  <pre
+                    style={{
+                      maxWidth: '100%',
+                      background: 'lightgray',
+                      overflow: 'hidden',
+                      textOverflow: '',
+                      padding: '0.5rem'
+                    }}
                   >
-                    {cleanColumnList?.map((item: any, idx: number) => (
-                      <option key={`${item}-datacol-${idx}`} value={item}>
-                        {item}
-                      </option>
-                    ))}
-                  </Select>
-                </Bind>
-              ) : null}
-            </Cell>
-            <Cell span={12}>
-              {cleanColumnList.length ? (
-                <Bind name="variables.choroplethColumn">
-                  <Select
-                    label={'Map Data Column (choropleth):'}
-                    description={'Name of the column to generate map colors from.'}
-                  >
-                    {cleanColumnList?.map((item: any, idx: number) => (
-                      <option key={`${item}-datacol-${idx}`} value={item}>
-                        {item}
-                      </option>
-                    ))}
-                  </Select>
-                </Bind>
-              ) : null}
-            </Cell>
-            {/* TODO CODE SNIPPETS */}
-            <Cell span={12}>
-              <hr />
-              <h3>Code Snippets</h3>
-              <br />
-              <p>
-                <i>Copy and paste this code snippet into your page to display the table.</i>
-              </p>
-              <pre
-                style={{
-                  maxWidth: '100%',
-                  background: 'lightgray',
-                  overflow: 'hidden',
-                  textOverflow: '',
-                  padding: '0.5rem'
-                }}
-              >
-                {`
-<script src="https://www.unpkg.com/@open-spatial-lab/glmap@0.0.5/dist/glmap.es.js" async></script>
-<osl-glmap
-    center='${JSON.stringify(data.variables.center)}'
-    zoom="${data.variables.zoom}"
-    mapStyle="https://demotiles.maplibre.org/style.json"
-    >
-    <osl-map-layer
-    layer="${data.variables.layerType}"
-    data="${getApiUrl(data.variables.source)}"
-    getPolygon="(d) => d['${data.variables.geometryColumn}']"
-    choroplethColumn="${data.variables.choroplethColumn}"
-    >
-    </osl-map-layer>
-</osl-glmap>`}
-              </pre>
+                    {`
+<script src="https://www.unpkg.com/@open-spatial-lab/full-bundle" async type="module"></script>
+${generateStringifiedHtml(
+  'osl-glmap',
+  toStringify,
+  layers
+    .map((l: LayerSpec) =>
+      generateStringifiedHtml('osl-map-layer', { ...l, data: getApiUrl(l.source) })
+    )
+    .join('\n')
+)}
+                    `}
+                  </pre>
+                </AccordionItem>
+              </Accordion>
             </Cell>
             <Cell span={12}>
               <ButtonPrimary onClick={submit}>Save</ButtonPrimary>
@@ -232,3 +294,260 @@ export default [
     }
   } as PbEditorPageElementAdvancedSettingsPlugin
 ]
+
+export const LayerConfigurator = ({
+  onChange,
+  layer,
+  index,
+  onRemove,
+  Bind
+}: {
+  onChange: (v: Partial<LayerSpec>) => void
+  layer: LayerSpec
+  index: number
+  onRemove: () => void
+  Bind: BindComponent
+}) => {
+  const baseMapLayers =
+    typeof document !== 'undefined' //@ts-ignore
+      ? Object.keys(document.getElementsByTagName('osl-glmap')?.[0]?.map?.style?._layers) || {}
+      : []
+  const { dataViews, currentDataview } = useDataViews({ variables: { source: layer?.source } })
+  const cleanColumnList = currentDataview?.columns || []
+  const colorScheme = useMemo(
+    () => getColorScheme(layer.colorScheme, layer.bins),
+    [layer.colorScheme, layer.bins]
+  )
+
+  return (
+    <div>
+      <ConfirmationDialog
+        title="Delete Layer"
+        message="Are you sure you want remove this map layer?"
+      >
+        {({ showConfirmation }) => {
+          return (
+            <ButtonDefault
+              onClick={() => {
+                showConfirmation(onRemove, () => console.log('Cancel'))
+              }}
+            >
+              Delete Layer
+            </ButtonDefault>
+          )
+        }}
+      </ConfirmationDialog>
+      {/* legendTitle / title */}
+      <Cell className="padded-cell" span={12}>
+        <Input
+          label={'Layer Title'}
+          description={'Title to display in the legend.'}
+          value={layer.legendTitle}
+          onChange={legendTitle =>
+            onChange({
+              legendTitle
+            })
+          }
+        />
+      </Cell>
+      {/* data attribution */}
+      <Cell className="padded-cell" span={12}>
+        <Input
+          label={'Data Attribution:'}
+          description={'Attribution to display on the map.'}
+          value={layer.attribution}
+          onChange={attribution =>
+            onChange({
+              attribution
+            })
+          }
+        />
+      </Cell>
+      <Cell className="padded-cell" span={12}>
+        {dataViews.length ? (
+          <Select
+            label={'Data Source'}
+            description={'Data source to show in the map'}
+            value={layer.source}
+            onChange={source =>
+              onChange({
+                source
+              })
+            }
+          >
+            {dataViews?.map((item: any, idx: number) => (
+              <option key={`${item.id}-view-${idx}`} value={item.id}>
+                {item.title}
+              </option>
+            ))}
+          </Select>
+        ) : null}
+      </Cell>
+      <Cell className="padded-cell" span={12}>
+        {cleanColumnList.length ? (
+          <Select
+            label={'Geometry Column:'}
+            description={'Name of the data column that contains geometry.'}
+            value={layer.geoColumn}
+            onChange={geoColumn =>
+              onChange({
+                geoColumn
+              })
+            }
+          >
+            {cleanColumnList?.map((item: any, idx: number) => (
+              <option key={`${item}-datacol-${idx}`} value={item}>
+                {item}
+              </option>
+            ))}
+          </Select>
+        ) : null}
+      </Cell>
+      <Cell className="padded-cell" span={12}>
+        <Bind name={`variables.layers.[${index}].geoType`}>
+          <Select label={'Geometry Type:'} description={'The kind of map geometry in your data.'}>
+            {/* 'WKB' | 'WKT' | 'GeoJSON' */}
+            <option value="WKB">Well-Known-Binary (Default)</option>
+            <option value="WKT">Well-Known-Text (WKT)</option>
+            <option value="GeoJSON">GeoJSON</option>
+          </Select>
+        </Bind>
+      </Cell>
+      <Cell className="padded-cell" span={12}>
+        {cleanColumnList.length ? (
+          <Select
+            label={'Map Data Column (choropleth):'}
+            description={'Name of the column to generate map colors from.'}
+            value={layer.dataColumn}
+            onChange={dataColumn =>
+              onChange({
+                dataColumn
+              })
+            }
+          >
+            {cleanColumnList?.map((item: any, idx: number) => (
+              <option key={`${item}-datacol-${idx}`} value={item}>
+                {item}
+              </option>
+            ))}
+          </Select>
+        ) : null}
+      </Cell>
+      {/* colorScheme */}
+      <Cell className="padded-cell" span={12}>
+        <Select
+          label="Color scheme:"
+          description="Choose a color scheme for your map."
+          value={layer.colorScheme}
+          onChange={colorScheme =>
+            onChange({
+              colorScheme
+            })
+          }
+        >
+          {Object.keys(colorSchemes).map((key: string, index: number) => {
+            return (
+              <option key={index} value={key}>
+                {key}
+              </option>
+            )
+          })}
+        </Select>
+      </Cell>
+      <Cell className="padded-cell" span={12}>
+        <p>Current Color Scheme:</p>
+        <Stack direction="row" width={'100%'}>
+          {colorScheme
+            ? colorScheme?.map((color: string, idx: number) => {
+                return (
+                  <div
+                    key={idx}
+                    style={{
+                      height: '10px',
+                      width: '10px',
+                      flexGrow: 1,
+                      background: color,
+                      margin: 0
+                    }}
+                  ></div>
+                )
+              })
+            : null}
+        </Stack>
+      </Cell>
+      {/* bins 2 - 12 */}
+      <Cell className="padded-cell" span={12}>
+        <Bind name={`variables.layers.[${index}].bins`}>
+          {/* number input */}
+          <Input
+            label={'Bins:'}
+            description={'Number of color bins to use in the map.'}
+            type="number"
+          />
+        </Bind>
+      </Cell>
+      {/* method */}
+      <Cell className="padded-cell" span={12}>
+        <Bind name={`variables.layers.[${index}].method`}>
+          <Select label={'Binning Method:'} description={'Choose a method for binning your data.'}>
+            {BINNING_METHODS.map((item, idx) => (
+              <option key={idx} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </Select>
+        </Bind>
+      </Cell>
+      <Cell className="padded-cell" span={12}>
+        <Bind name={`variables.layers.[${index}].beforeId`}>
+          <Select
+            label={'Data Overlay:'}
+            description={'Choose a base map layer to place your data underneath.'}
+          >
+            {baseMapLayers.map((item, idx) => (
+              <option key={idx} value={item}>
+                {item}
+              </option>
+            ))}
+          </Select>
+        </Bind>
+      </Cell>
+      <Cell className="padded-cell" span={12}>
+        {cleanColumnList.length ? (
+          <Bind name={`variables.layers.[${index}].geoId`}>
+            <Select
+              label={'Id Column (optional):'}
+              description={
+                'A column with an ID code, like a postal code or FIPS code, helpful for faster maps.'
+              }
+            >
+              {cleanColumnList?.map((item: any, idx: number) => (
+                <option key={`${item}-datacol-${idx}`} value={item}>
+                  {item}
+                </option>
+              ))}
+            </Select>
+          </Bind>
+        ) : null}
+      </Cell>
+      {/* visible switch */}
+      <Cell className="padded-cell" span={12}>
+        <Bind name={`variables.layers.[${index}].visible`}>
+          <Switch label={'Visible'} description={'Show or hide this layer on the map.'} />
+        </Bind>
+      </Cell>
+      {/* filled */}
+      <Cell className="padded-cell" span={12}>
+        <Bind name={`variables.layers.[${index}].filled`}>
+          <Switch label={'Filled'} description={'Fill the map geometry with color.'} />
+        </Bind>
+      </Cell>
+      {/* stroked */}
+      <Cell className="padded-cell" span={12}>
+        <Bind name={`variables.layers.[${index}].stroked`}>
+          <Switch label={'Stroked'} description={'Show the map geometry outline.'} />
+        </Bind>
+      </Cell>
+    </div>
+  )
+}

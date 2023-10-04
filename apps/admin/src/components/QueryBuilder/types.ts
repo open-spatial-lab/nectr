@@ -125,12 +125,21 @@ export type SourceMeta = Source & {
   __typename: SourceTypes
 }
 
+export type ColumnOperation = {
+  operation: string
+  args?: string[]
+}
+
+
 export type JoinQuery = {
   leftSourceId: string
   leftOn: string
   rightSourceId: string
   rightOn: string
   operator: JOIN_OPERATOR_TYPES
+  geoPredicate?: string
+  leftOnGeo?: ColumnOperation[]
+  rightOnGeo?: ColumnOperation[]
 }
 
 export type GroupByQuery = {

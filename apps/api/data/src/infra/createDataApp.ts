@@ -49,7 +49,8 @@ export const createDataApp = (app: ApiPulumiApp) => {
           httpPort: 80,
           httpsPort: 443,
           originProtocolPolicy: 'https-only',
-          originSslProtocols: ['TLSv1.2']
+          originSslProtocols: ['TLSv1.2'],
+          originReadTimeout: 30
         }
       },
       {

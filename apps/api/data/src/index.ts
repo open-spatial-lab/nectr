@@ -18,10 +18,10 @@ export const handler = metricScope(
       if (event.httpMethod === 'OPTIONS') return handleOptionsRequest()
 
       const requestLogger = logger.child({ requestId: context.awsRequestId })
-      requestLogger.debug({ event, context })
-      logger.info({
-        test: true
-      })
+      // requestLogger.debug({ event, context })
+      // logger.info({
+      //   test: true
+      // })
       metrics.putDimensions({ Service: 'QueryService' })
       metrics.setProperty('RequestId', context.awsRequestId)
 

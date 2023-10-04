@@ -22,6 +22,9 @@ export default class Connection {
     this.connection = new DuckDB.Connection(this.duckDB)
 
     try {
+      // await this.query(`SET threads TO 6;`)
+      // await this.query(`SET memory_limit='10GB';`)
+      // await this.query(`SET wal_autocheckpoint='1GB';`)
       await this.query("SET home_directory='/tmp';")
       await this.query(`INSTALL httpfs;`)
       await this.query(`LOAD httpfs;`)

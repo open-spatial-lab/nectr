@@ -1,4 +1,4 @@
-import { CACHED_SCHEMAS } from '../lambda/schemas/serverSchemaService'
+const CACHED_SCHEMAS = new Map()
 
 // config
 const testIdentity = {
@@ -34,68 +34,73 @@ export const API_DATA_QUERY_TEST_PROPERTIES = {
   type: 'ApiDataQuery',
   TYPE: 'ApiDataQuery'
 }
-// data mocks
-export const mockSourceSpecs = () => {
-  const exampleSourceSpecs = {
-    sdoh: {
-      ...DATASET_TEST_PROPERTIES,
-      filename: 'sdoh.csv'
-    },
-    'sdoh-join': {
-      ...DATASET_TEST_PROPERTIES,
-      filename: 'sdoh-join.csv'
-    },
-    'other-join': {
-      ...DATASET_TEST_PROPERTIES,
-      filename: 'other-join.parquet'
-    },
-    dataview: {
-      ...API_DATA_QUERY_TEST_PROPERTIES,
-      TYPE: 'dataview',
-      sources: [
-        {
-          id: 'sdoh',
-          type: 'Dataset',
-          TYPE: 'Dataset'
-        },
-        {
-          id: 'other-join',
-          type: 'Dataset'
-        }
-      ],
-      columns: [
-        {
-          sourceId: 'sdoh',
-          name: 'column1'
-        },
-        {
-          sourceId: 'sdoh',
-          name: 'column2'
-        },
-        {
-          sourceId: 'other-join',
-          name: 'column3'
-        }
-      ],
-      joins: [
-        {
-          leftSourceId: 'sdoh',
-          rightSourceId: 'other-join',
-          leftOn: 'column1',
-          rightOn: 'column3',
-          operator: 'inner'
-        }
-      ],
-      wheres: [
-        {
-          sourceId: 'sdoh',
-          column: 'column1',
-          operator: '>',
-          value: 0
-        }
-      ]
-    }
+
+export const exampleSourceSpecs = {
+  sdoh: {
+    ...DATASET_TEST_PROPERTIES,
+    id: 'sdoh',
+    filename: 'sdoh.csv'
+  },
+  'sdoh-join': {
+    ...DATASET_TEST_PROPERTIES,
+    id: 'sdoh-join',
+    filename: 'sdoh-join.csv'
+  },
+  'other-join': {
+    ...DATASET_TEST_PROPERTIES,
+    id: 'other-join',
+    filename: 'other-join.parquet'
+  },
+  dataview: {
+    ...API_DATA_QUERY_TEST_PROPERTIES,
+    id: 'dataview',
+    TYPE: 'dataview',
+    sources: [
+      {
+        id: 'sdoh',
+        type: 'Dataset',
+        TYPE: 'Dataset'
+      },
+      {
+        id: 'other-join',
+        type: 'Dataset'
+      }
+    ],
+    columns: [
+      {
+        sourceId: 'sdoh',
+        name: 'column1'
+      },
+      {
+        sourceId: 'sdoh',
+        name: 'column2'
+      },
+      {
+        sourceId: 'other-join',
+        name: 'column3'
+      }
+    ],
+    joins: [
+      {
+        leftSourceId: 'sdoh',
+        rightSourceId: 'other-join',
+        leftOn: 'column1',
+        rightOn: 'column3',
+        operator: 'inner'
+      }
+    ],
+    wheres: [
+      {
+        sourceId: 'sdoh',
+        column: 'column1',
+        operator: '>',
+        value: 0
+      }
+    ]
   }
+}
+
+export const mockSourceSpecs = () => {
 
   Object.entries(exampleSourceSpecs).forEach(([sourceId, sourceSpec]) => {
     // @ts-ignore

@@ -31,6 +31,15 @@ export const API_DATA_QUERY_FIELDS_FRAGMENT = /* GraphQL */ `
       rightSourceId
       rightOn
       operator
+      geoPredicate
+      leftOnGeo {
+        operation
+        args
+      }
+      rightOnGeo {
+        operation
+        args
+      }
     }
     columns {
       name

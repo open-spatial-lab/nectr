@@ -141,7 +141,7 @@ export const useApiDataQueriesDataList: useApiDataQueriesDataListHook = () => {
   }
 
   return {
-    apiDataQueries,
+    apiDataQueries: apiDataQueries.sort(),
     loading,
     refresh: (): void => {
       listQuery.refetch()

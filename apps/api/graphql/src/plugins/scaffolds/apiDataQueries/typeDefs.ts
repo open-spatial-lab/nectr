@@ -14,14 +14,6 @@ export default /* GraphQL */ `
     customAlias: String
   }
 
-  type JoinQuery {
-    leftSourceId: String!
-    leftOn: String!
-    rightSourceId: String!
-    rightOn: String!
-    operator: String!
-  }
-
   type MetaColumnSchema {
     name: String!
     sourceId: String!
@@ -29,6 +21,22 @@ export default /* GraphQL */ `
     alias: String
     aggregate: String
   }
+
+  type ColumnOperation {
+    operation: String
+    args: [String]
+  }
+  type JoinQuery {
+    leftSourceId: String!
+    leftOn: String!
+    rightSourceId: String!
+    rightOn: String!
+    operator: String!
+    geoPredicate: String
+    leftOnGeo: [ColumnOperation]
+    rightOnGeo: [ColumnOperation]
+  }
+
 
   type GroupByQuery {
     sourceId: String!
@@ -49,12 +57,20 @@ export default /* GraphQL */ `
     customAlias: String
   }
 
+  input ColumnOperationInput {
+    operation: String
+    args: [String]
+  }
+
   input JoinQueryInput {
     leftSourceId: String!
     leftOn: String!
     rightSourceId: String!
     rightOn: String!
     operator: String!
+    geoPredicate: String
+    leftOnGeo: [ColumnOperationInput]
+    rightOnGeo: [ColumnOperationInput]
   }
 
   input MetaColumnSchemaInput {
@@ -64,6 +80,7 @@ export default /* GraphQL */ `
     alias: String
     aggregate: String
   }
+  
 
   input GroupByQueryInput {
     sourceId: String!

@@ -68,7 +68,7 @@ function createDataResources(app: PulumiApp, params: DataApiParams, dataBucket: 
       role: role.output.arn,
       runtime: 'nodejs14.x',
       handler: 'handler.handler',
-      timeout: 60,
+      timeout: 30,
       memorySize: 4096,
       description: 'Runs data jobs for the Nectr data API',
       code: new pulumi.asset.AssetArchive({

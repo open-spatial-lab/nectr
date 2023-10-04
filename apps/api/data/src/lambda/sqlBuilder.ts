@@ -1,9 +1,13 @@
 import type { DatasetEntity } from '../../../graphql/src/plugins/scaffolds/datasets/types'
-import type { ApiDataQueryEntity } from '../../../graphql/src/plugins/scaffolds/apiDataQueries/types'
+import type {
+  ApiDataQueryEntity,
+  MinimalColumnInfo
+} from '../../../graphql/src/plugins/scaffolds/apiDataQueries/types'
 import type {
   Source,
   WhereQuery,
-  JoinQuery
+  JoinQuery,
+  ColumnOperation
 } from '../../../../admin/src/components/QueryBuilder/types'
 import knex from 'knex'
 import { SchemaService } from '../types/schemaService'
@@ -40,11 +44,11 @@ export class SqlBuilder {
   isSubQuery: boolean
   params: { [key: string]: any } = {}
   referencedIds: string[] = []
-  schemaService?: SchemaService;
+  schemaService?: SchemaService
 
   constructor(
-    schema: ApiDataQueryEntity, 
-    params: { [key: string]: any } = {}, 
+    schema: ApiDataQueryEntity,
+    params: { [key: string]: any } = {},
     isSubQuery = false,
     schemaService: SchemaService
   ) {
@@ -72,15 +76,24 @@ export class SqlBuilder {
     await subQuery.buildStatement()
     return subQuery.queryString
   }
+  buildColumn(column: MinimalColumnInfo) {
+    const columnId = `"${column.sourceId}"."${column.name}"`
+    const colName = column.alias || columnId
+    return this.qb.raw(`${columnId} as "${colName}"`)
+  }
+
+  buildColumnOperation(columnOperation: ColumnOperation, column: string) {
+    const { operation, args } = columnOperation
+    const cleanedArgs = args ? `, ${args.join(', ')}` : ''
+    return `${operation}(${column} ${cleanedArgs})`
+  }
 
   // statement builder methods
   buildColumnList(columns: ApiDataQueryEntity['columns'] = this.schema.columns) {
     const columnsList: any = []
     if (!columns) return columnsList
     columns.forEach((column: (typeof columns)[number]) => {
-      const columnId = this.isSubQuery ? column.name : `"${column.sourceId}"."${column.name}"`
-      const colName = column.alias || columnId
-      columnsList.push(this.qb.raw(`${columnId} as "${colName}"`))
+      columnsList.push(this.buildColumn(column))
     })
     return columnsList
   }
@@ -91,7 +104,7 @@ export class SqlBuilder {
       return
     }
     columns.forEach((column: (typeof columns)[number]) => {
-      const columnId = this.isSubQuery ? column.name : `"${column.sourceId}"."${column.name}"`
+      const columnId = `"${column.sourceId}"."${column.name}"`
       if (column.aggregate) {
         const colName = column.alias || `${column.aggregate}_${column.name}`
         const columnFn = column.aggregate.toLowerCase()
@@ -113,13 +126,13 @@ export class SqlBuilder {
     // double double quotes regex
     const dDQRegex = /""/g
     switch (source.TYPE || source.type) {
-      case 'source':
-      case 'Source':
       case 'dataset':
       case 'Dataset':
-        const s3String = this.buildS3String((sourceSpec as DatasetEntity).filename)
-        const fromS3String = `'${s3String}' "${id}"`
-        return fromS3String.replace(dDQRegex, '')
+          const s3String = this.buildS3String((sourceSpec as DatasetEntity).filename)
+          const fromS3String = `'${s3String}' "${id}"`
+          return fromS3String.replace(dDQRegex, '')
+      case 'source':
+      case 'Source':
       case 'ApiDataQuery':
         const subQuery = await this.buildSubQuery(sourceSpec as ApiDataQueryEntity)
         const subQueryString = `(${subQuery}) "${id}"`
@@ -168,6 +181,7 @@ export class SqlBuilder {
     const whereColumn = `"${where.sourceId}"."${where.column}"`
     const paramName = where.customAlias || where.column
     const whereValue = this.params.hasOwnProperty(paramName) ? this.params[paramName] : where.value
+    if (whereValue === undefined || whereValue === '*') return
     const { whereFn, whereArgs } = this.generateWhereArgs(
       whereColumn,
       where.operator,
@@ -201,10 +215,48 @@ export class SqlBuilder {
       return text
     }
   }
+  async buildGeoJoin(join: JoinQuery, rightSourceFrom: string) {
+    const joinFunction = JOIN_OPERATOR_FUNCTIONS[join.operator] as keyof typeof this.query
+    const { geoPredicate, leftOnGeo, rightOnGeo } = join
+
+    let leftOnCol = `"${join.leftSourceId}"."${join.leftOn}"`
+    let rightOnCol = `"${join.rightSourceId}"."${join.rightOn}"`
+
+    for (const operation of leftOnGeo || []) {
+      leftOnCol = this.buildColumnOperation(operation, leftOnCol)
+    }
+
+    for (const operation of rightOnGeo || []) {
+      rightOnCol = this.buildColumnOperation(operation, rightOnCol)
+    }
+    // logger.info({
+    //   leftOnCol,
+    //   rightOnCol,
+    //   joinFunction
+    // })
+    // @ts-ignore
+    this.query[joinFunction](
+      this.qb.raw(rightSourceFrom),
+      this.qb.raw(`${geoPredicate}(
+        ${leftOnCol},
+        ${rightOnCol}
+      )`)
+    )
+  }
+
   async buildJoinClause(join: JoinQuery) {
-    const joinFunction = JOIN_OPERATOR_FUNCTIONS[join.operator]
+    const joinFunction = JOIN_OPERATOR_FUNCTIONS[join.operator] as keyof typeof this.query
     const rightSourceFrom = await this.resolveSourceIdText(join.rightSourceId)
     if (!rightSourceFrom) return
+
+    if (join.leftOnGeo && join.rightOnGeo) {
+      this.buildGeoJoin(join, rightSourceFrom)
+      return
+    }
+
+    // logger.info({
+    //   joinFunction
+    // })
     // @ts-ignore
     this.query[joinFunction](
       this.qb.raw(rightSourceFrom),
@@ -213,6 +265,7 @@ export class SqlBuilder {
       `${join.rightSourceId}.${join.rightOn}`
     )
   }
+
   async buildJoinClauses(joins: ApiDataQueryEntity['joins'] = this.schema.joins) {
     if (!joins) return
     const joinPromises = joins.map((join: JoinQuery) => this.buildJoinClause(join))

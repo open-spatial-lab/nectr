@@ -20,7 +20,7 @@ export const Table = createRenderer(() => {
       data={getApiUrl(source)}
       columns={`${columns ? JSON.stringify(columns) : ''}`}
     ></osl-table>,
-    [source, JSON.stringify(columns || {})]
+    [JSON.stringify(element.data.variables)]
   )
 })
 

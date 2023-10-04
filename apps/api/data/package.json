@@ -9,7 +9,7 @@
     "build": "yarn webiny run build",
     "watch": "yarn webiny run watch",
     "package": "npx serverless package",
-    "test:schema": "TESTING=true && ts-node ./src/__tests__/schema.test.ts"
+    "test:schema": "TESTING=true && S3_BUCKET=test_bucket && ts-node ./src/__tests__/schema.test.ts"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.386.0",

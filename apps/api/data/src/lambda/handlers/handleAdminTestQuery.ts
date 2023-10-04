@@ -1,13 +1,19 @@
-import { connection, logger } from '../..'
+import { S3_BUCKET, connection, logger } from '../..'
 import corsHeaders from '../../utils/corsHeaders'
 import { verifyToken } from '../identity'
+
+// regex to replace "%BUCKET%" with the bucket name
+const bucketRegex = new RegExp('%BUCKET%', 'g')
+// replace new lines with spaces
+const newLineRegex = new RegExp('\n', 'g')
+const handleRawString = (str: string) => str.replace(bucketRegex, S3_BUCKET).replace(newLineRegex, ' ')
 
 export const handleAdminTestQuery = async (
   body: string,
   params: Record<string, unknown>,
   token?: string
 ) => {
-  const schema = JSON.parse(body!) as DataView
+  const schema = JSON.parse(body!) as DataView | { raw: string }
   if (!token) {
     return {
       statusCode: 401,
@@ -34,7 +40,11 @@ export const handleAdminTestQuery = async (
   }
   let error = ''
   try {
-    const queryResponse = await connection.handleQuery(schema, params)
+    const queryResponse =
+      'raw' in schema
+        ? await connection.query(handleRawString(schema.raw))
+        : await connection.handleQuery(schema, params)
+    // logger.info(queryResponse)
     if (queryResponse.ok) {
       return {
         statusCode: 200,
@@ -46,6 +56,12 @@ export const handleAdminTestQuery = async (
     }
   } catch (error) {
     error = error.message
+    logger.error({
+      message: 'Error handling query',
+      error,
+      schema,
+      params
+    })
     return {
       statusCode: 500,
       headers: {
@@ -68,7 +84,7 @@ export const handleAdminTestQuery = async (
     body: JSON.stringify({
       message: 'Internal Server Error',
       error,
-      schema, 
+      schema
     })
   }
 }

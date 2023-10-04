@@ -36,6 +36,18 @@ const CombineComponent = (props: FullFormProps) => (
     dataViewTemplate="combine"
   />
 )
+const SpatialJoinComponent = (props: FullFormProps) => (
+  <FullForm
+    {...props}
+    showJoins={false}
+    showSpatialJoin={true}
+    showColumns={true}
+    showWheres={false}
+    showGroupBy={false}
+    showSources={true}
+    dataViewTemplate="spatialJoin"
+  />
+)
 const PublishComponent = (props: FullFormProps) => (
   <FullForm
     {...props}
@@ -69,6 +81,8 @@ export const getFormComponent = (dataViewTemplate: string) => {
       return PublishComponent
     case 'summarize':
       return SummarizeComponent
+    case 'spatialJoin':
+      return SpatialJoinComponent
     case 'full':
     case 'verbose':
     default:

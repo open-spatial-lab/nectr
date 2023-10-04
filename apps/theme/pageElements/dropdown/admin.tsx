@@ -121,8 +121,12 @@ export default [
                   <Bind name={'variables.options'}>
                     {({ onChange }) => {
                       const currentOptions = data.variables.options
-                      const handleAddOptions = (option: string) => {
-                        onChange([...currentOptions, option])
+                      const handleAddOptions = (option: string | string[]) => {
+                        if (Array.isArray(option)) {
+                        onChange([...currentOptions, ...option])
+                        } else {
+                          onChange([...currentOptions, option])
+                        }
                       }
                       const handleRemoveOptions = (option: string) => {
                         onChange(currentOptions.filter((item: string) => item !== option))
@@ -147,7 +151,14 @@ export default [
                             disabled={false}
                             value={chipText}
                             onEnter={() => {
-                              handleAddOptions(chipText)
+                              if (chipText.includes(',')){
+                                console.log('splitting text')
+                                const splitText = chipText.split(',').map((item: string) => item.trim())
+                                console.log(splitText)
+                                handleAddOptions(splitText)
+                              } else {
+                                handleAddOptions(chipText)
+                              }
                               setChipText('')
                             }}
                           />

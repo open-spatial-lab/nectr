@@ -45,6 +45,13 @@ export const dataViewTemplates: Array<dataViewPresetInfo> = [
     cta: 'Summarize Data',
     icon: SummarizeIcon,
     id: 'summarize'
+  },
+  {
+    name: "Spatial Join",
+    description: `Join data based on a common spatial attribute, like a zip code, neighborhood, or state.`,
+    cta: 'Join Data',
+    icon: CombineIcon,
+    id: 'spatialJoin'
   }
 ]
 

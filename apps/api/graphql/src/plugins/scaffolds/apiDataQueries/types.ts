@@ -12,6 +12,7 @@ import {
   WhereQuery
 } from 'admin/src/components/QueryBuilder/types'
 
+export type MinimalColumnInfo = Pick<MetaColumnSchema, 'name' | 'sourceId' | 'sourceTitle' | 'alias' | 'aggregate'>
 export interface ApiDataQueryEntity {
   PK: string
   SK: string
@@ -32,9 +33,7 @@ export interface ApiDataQueryEntity {
   wheres?: Array<WhereQuery>
   combinedOperator?: (typeof COMBINE_OPERATORS)[number]
   joins?: Array<JoinQuery>
-  columns?: Array<
-    Pick<MetaColumnSchema, 'name' | 'sourceId' | 'sourceTitle' | 'alias' | 'aggregate'>
-  >
+  columns?: Array<MinimalColumnInfo>
   groupbys?: Array<GroupByQuery>
   limit?: number
   offset?: number

@@ -22,12 +22,15 @@ const ScrollableCell = styled(Cell)`
  * The form submission-related functionality is located in the `useApiDataQueriesForm` React hook.
  */
 const ApiDataQueriesForm: React.FC = () => {
+  // For new views, saved views receive template from the server
   const [dataViewTemplate, setDataViewTemplate] = React.useState<string | undefined>(undefined)
+  // show/hide preview table on right
   const [showPreview, setShowPreview] = React.useState(true)
   const { FormComponent, ...hookProps } = useDataView(dataViewTemplate)
   const { emptyViewIsShown, loading, currentApiDataQuery, apiDataQuery } = hookProps
   const { schema } = useDataViewSchema();
   const previewProps = useQueryBuilderPreview({schema});
+  console.log(schema)
   
   if (!apiDataQuery && !dataViewTemplate) {
     return <DataViewTemplates setDataViewTemplate={setDataViewTemplate} />
@@ -38,7 +41,7 @@ const ApiDataQueriesForm: React.FC = () => {
   if (loading) {
     return <CircularProgress />
   }
-
+  
   return (
     <>
       {!apiDataQuery && (

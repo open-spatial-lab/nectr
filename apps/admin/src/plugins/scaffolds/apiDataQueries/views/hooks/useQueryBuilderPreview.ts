@@ -40,7 +40,7 @@ export const useQueryBuilderPreview = ({ raw, schema }: { raw?: string; schema?:
     const lastJoinIndex = schema?.joins?.length ? schema.joins.length - 1 : 0
     const shouldReverseJoins = schema?.joins?.[lastJoinIndex]?.leftSourceId !== schema?.sources?.[0]?.id
     const joins = shouldReverseJoins ? [...schema?.joins||[]].reverse() : schema?.joins
-    console.log(shouldReverseJoins)
+    // console.log('schema', schema)
     const body = isSchema
       ? JSON.stringify({
           ...schema,

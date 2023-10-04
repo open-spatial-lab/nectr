@@ -3,6 +3,9 @@ import React from "react";
 export default function useFullBundle() {
   React.useEffect(() => {
     let alreadyHasScript = false;
+    if (typeof document === 'undefined') {
+      return;
+    }
     for (let i = 0; i < document.scripts.length; i++) {
       if (document.scripts[i].src === 'https://unpkg.com/@open-spatial-lab/full-bundle') {
         alreadyHasScript = true;

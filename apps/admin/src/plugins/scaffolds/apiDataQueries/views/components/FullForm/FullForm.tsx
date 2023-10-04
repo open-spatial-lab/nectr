@@ -27,7 +27,8 @@ import { QuerySchema } from '../../../../../../components/QueryBuilder/types'
 import { FormAPI, GenericFormData } from '@webiny/form/types'
 import styled from '@emotion/styled'
 import { Stack } from '@mui/material'
-import { Checkbox} from '@webiny/ui/Checkbox'
+import { Checkbox } from '@webiny/ui/Checkbox'
+import { SpatialJoinBuilder } from '../../../../../../components/SpatialJoinBuilder'
 
 export type FullFormProps = FormProps & {
   showFull?: boolean
@@ -35,6 +36,7 @@ export type FullFormProps = FormProps & {
   showColumns?: boolean
   showSimpleColumns?: boolean
   showJoins?: boolean
+  showSpatialJoin?: boolean
   showWheres?: boolean
   showGroupBy?: boolean
 }
@@ -44,38 +46,37 @@ const NoPaddingForm = styled(SimpleForm)`
   @media (min-width: 840px) {
   margin: 0 0 0 1.5rem;
 `
-export const FullForm: React.FC<FullFormProps> = props => {
-  const {
-    cancelEditing,
-    apiDataQuery,
-    onSubmit,
-    sources,
-    setSources,
-    setSchema,
-    availableSources,
-    currentSources,
-    datasetsAndDataviews,
-    showFull,
-    showSources,
-    showColumns,
-    showSimpleColumns,
-    showJoins,
-    showWheres,
-    showGroupBy,
-    dataViewTemplate,
-    showPreview,
-    togglePreview
-  } = props
-
+export const FullForm: React.FC<FullFormProps> = ({
+  cancelEditing,
+  apiDataQuery,
+  onSubmit,
+  sources,
+  setSources,
+  setSchema,
+  availableSources,
+  currentSources,
+  datasetsAndDataviews,
+  showFull,
+  showSources,
+  showSpatialJoin,
+  showColumns,
+  showSimpleColumns,
+  showJoins,
+  showWheres,
+  showGroupBy,
+  dataViewTemplate,
+  showPreview,
+  togglePreview
+}) => { 
   const handleUpdate = <T extends GenericFormData>(data: QuerySchema, form: FormAPI<T>) => {
     const formSourceIds = data?.sources?.map(source => source?.id) || []
     const joinIds =
       data?.joins?.map((join: JoinQuery) => [join.leftSourceId, join.rightSourceId]).flat() || []
     let shouldUpdate = false
     let newSources = [...sources]
-    const missingSources = joinIds.filter(id => !formSourceIds.includes(id))
+    const missingSources = joinIds.filter(id => !formSourceIds.includes(id) && Boolean(id))
     const excessSources = formSourceIds.slice(1).filter(id => !joinIds.includes(id))
-
+   
     if (missingSources.length) {
       const missingSourceSchemas = datasetsAndDataviews
         .filter(source => missingSources.includes(source.id))
@@ -135,7 +136,7 @@ export const FullForm: React.FC<FullFormProps> = props => {
                       </Bind>
                     </div>
                     <Checkbox
-                    // <Switch
+                      // <Switch
                       label={'Show Preview Table'}
                       value={showPreview}
                       onChange={togglePreview}
@@ -143,7 +144,7 @@ export const FullForm: React.FC<FullFormProps> = props => {
                   </Stack>
                 </Cell>
 
-                {!!(showSources || showFull) && (
+                {Boolean(showSources || showFull) && (
                   <Cell span={12}>
                     <Bind name="sources">
                       {({ onChange, value }) => {
@@ -153,6 +154,7 @@ export const FullForm: React.FC<FullFormProps> = props => {
                         )
                         const handleChange = (source: SourceMeta) => {
                           const { id, title, __typename } = source
+                          console.log(source)
                           const newSources = [
                             {
                               id,
@@ -183,7 +185,52 @@ export const FullForm: React.FC<FullFormProps> = props => {
                 )}
                 {currentSources?.length > 0 && (
                   <>
-                    {availableSources?.length > 0 && !!(showColumns || showFull) && (
+                    {Boolean(showSpatialJoin || showFull) && (
+                      <Cell span={12}>
+                      <Bind name="joins">
+                        {({ onChange, value }) => {
+                          const joins = value as JoinQuery[]
+                          console.log(currentSources)
+                          return (
+                            <>
+                              <SpatialJoinBuilder
+                                // @ts-ignore
+                                leftSource={currentSources[0]}
+                                rightSource={currentSources[1]}
+                                availableSources={availableSources}
+                                join={joins?.[0] || {}}
+                                onChange={onChange}
+                              />
+                            </>
+                          )
+                        }}
+                      </Bind>
+                    </Cell>
+                    )}
+                    {Boolean(showJoins || showFull) && (
+                      <Cell span={12}>
+                        <Bind name="joins">
+                          {({ onChange, value }) => {
+                            const joins = value as JoinQuery[]
+                            return (
+                              <>
+                                <hr />
+                                <br />
+                                <h3>Join Additional Data</h3>
+                                <br />
+                                <JoinBuilder
+                                  currentSources={currentSources}
+                                  availableSources={availableSources}
+                                  joins={joins || []}
+                                  onChange={onChange}
+                                />
+                              </>
+                            )
+                          }}
+                        </Bind>
+                      </Cell>
+                    )}
+                    {Boolean(availableSources?.length > 0 && (showColumns || showFull)) && (
                       <Cell span={12}>
                         <Bind name="columns">
                           {({ onChange, value }) => {
@@ -207,30 +254,7 @@ export const FullForm: React.FC<FullFormProps> = props => {
                         </Bind>
                       </Cell>
                     )}
-                    {!!(showJoins || showFull) && (
-                      <Cell span={12}>
-                        <Bind name="joins">
-                          {({ onChange, value }) => {
-                            const joins = value as JoinQuery[]
-                            return (
-                              <>
-                                <hr />
-                                <br />
-                                <h3>Join Additional Data</h3>
-                                <br />
-                                <JoinBuilder
-                                  currentSources={currentSources}
-                                  availableSources={availableSources}
-                                  joins={joins || []}
-                                  onChange={onChange}
-                                />
-                              </>
-                            )
-                          }}
-                        </Bind>
-                      </Cell>
-                    )}
-                    {!!(showWheres || showFull) && (
+                    {Boolean(showWheres || showFull) && (
                       <Cell span={12}>
                         <Bind name="wheres">
                           {({ onChange, value }) => {
@@ -254,7 +278,7 @@ export const FullForm: React.FC<FullFormProps> = props => {
                       </Cell>
                     )}
 
-                    {!!(showGroupBy || showFull) && (
+                    {Boolean(showGroupBy || showFull) && (
                       <Cell span={12}>
                         <Bind name="groupbys">
                           {({ onChange, value: groupBys }) => {

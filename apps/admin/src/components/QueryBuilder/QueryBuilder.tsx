@@ -11,9 +11,9 @@ import { ReactComponent as DeleteIcon } from '@webiny/ui/AutoComplete/icons/dele
 import { ReactComponent as SettingsIcon } from '@webiny/app-admin/assets/icons/round-settings-24px.svg'
 import { styled } from '@mui/system'
 import { useColumns } from '../../customHooks/useColumns'
-import { WhereBuilder } from '../WhereBuilder'
+// import { WhereBuilder } from '../WhereBuilder'
 import { getColName } from '../../utils/getColName'
-import { ColumnSelector } from '../ColumnSelector/ColumnSelector'
+// import { ColumnSelector } from '../ColumnSelector/ColumnSelector'
 
 const GroupHeader = styled('div')(() => ({
   position: 'sticky',
@@ -162,12 +162,12 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
     })
   }
 
-  const handleOpenJoinDialog = (idx: number, join: JoinQuery) => () => {
-    const fromName = 'asdf' //sources.find(f => f.filename === join.from)?.title;
+  const handleOpenJoinDialog = (_idx: number, join: JoinQuery) => () => {
+    // const fromName = 'asdf' //sources.find(f => f.filename === join.from)?.title;
     // @ts-ignore
-    const rightOnColumns = [] // availableColumns.filter(col => col.dataset === fromName);
+    // const rightOnColumns = [] // availableColumns.filter(col => col.dataset === fromName);
     // @ts-ignore
-    const leftOnColumns = [] //availableColumns.filter(col => col.dataset !== fromName);
+    // const leftOnColumns = [] //availableColumns.filter(col => col.dataset !== fromName);
     // setJoinDiagOpen({
     //     open: true,
     //     leftOnColumns,

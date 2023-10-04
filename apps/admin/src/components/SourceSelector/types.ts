@@ -5,4 +5,6 @@ export type SourceSelectorProps = {
   onChange: (source: SourceMeta) => void
   value?: SourceMeta
   label?: string
+  showMeta?: boolean
+  disabled?: boolean
 }

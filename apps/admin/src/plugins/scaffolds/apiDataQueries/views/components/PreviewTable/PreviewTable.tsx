@@ -99,7 +99,7 @@ const TableView: React.FC<PreviewTableProps> = ({ data, page, setPage, id,raw })
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row, ri) => (
+            {rows.slice(0,10).map((row, ri) => (
               <TableRow key={`${ri}`}>
                 {columns.map((c, ci) => (
                   <TableCell key={`${c}${ri}${ci}`}>
