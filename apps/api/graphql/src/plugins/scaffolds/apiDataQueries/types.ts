@@ -12,7 +12,7 @@ import {
   WhereQuery
 } from 'admin/src/components/QueryBuilder/types'
 
-export type MinimalColumnInfo = Pick<MetaColumnSchema, 'name' | 'sourceId' | 'sourceTitle' | 'alias' | 'aggregate'>
+export type MinimalColumnInfo = Pick<MetaColumnSchema, 'name' | 'sourceId' | 'sourceTitle' | 'alias' | 'aggregate' | "expression">
 export interface ApiDataQueryEntity {
   PK: string
   SK: string
