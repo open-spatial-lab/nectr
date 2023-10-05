@@ -22,6 +22,25 @@ import { colorSchemes, getColorScheme } from '../core/ColorSchemes'
 import { BindComponent } from '@webiny/form'
 import { Stack } from '@mui/material'
 import { generateStringifiedHtml } from '../utils/generateStringifiedHtml'
+import { create } from 'zustand'
+
+interface MapGroupStore {
+  mapGroups: { [key: string]: string }
+  setMapGroup: (id: string, group: string) => void
+  getMapCounts: () => { [key: string]: number }
+}
+const useMapGroupStore = create<MapGroupStore>(set => ({
+  setMapGroup: (id: string, group: string) =>
+    set(state => ({ mapGroups: { ...state.mapGroups, [id]: group } })),
+  mapGroups: {},
+  getMapCounts: () => {
+    const counts: { [key: string]: number } = {}
+    Object.values(useMapGroupStore.getState().mapGroups).forEach((group: string) => {
+      counts[group] = counts[group] ? counts[group] + 1 : 1
+    })
+    return counts
+  }
+}))
 
 const DEFAULT_LAYER: LayerSpec = {
   source: '',
@@ -62,7 +81,6 @@ export default [
         return <>Map Page Element</>
       }
     },
-
     // Defines which types of element settings are available to the user.
     settings: [
       'pb-editor-page-element-settings-delete',
@@ -85,6 +103,7 @@ export default [
         type: 'map',
         elements: [],
         data: INITIAL_ELEMENT_DATA,
+        id: `${Math.random()}`,
         ...options
       }
     }
@@ -95,8 +114,18 @@ export default [
     name: 'pb-editor-page-element-advanced-settings-map',
     type: 'pb-editor-page-element-advanced-settings',
     elementType: 'map',
-    render({ data, Bind, submit }) {
+    render({ data, Bind, submit, ...rest }) {
       const [timeoutFn, setTimeoutFn] = useState<ReturnType<typeof setTimeout> | null>(null)
+      const mapStore = useMapGroupStore.getState()
+      const mapGroups = mapStore?.getMapCounts() || {}
+      const setMapGroup = (id: string) => mapStore?.setMapGroup?.(id, data.variables.mapGroup || '')
+
+      const elementId = useMemo(() => {
+        const id = `${Math.random()}}`
+        setMapGroup(id)
+        return id
+      }, [])
+
       useEffect(() => {
         if (timeoutFn) {
           clearTimeout(timeoutFn)
@@ -104,6 +133,7 @@ export default [
         setTimeoutFn(
           setTimeout(() => {
             submit()
+            setMapGroup(elementId)
           }, 250)
         )
         return () => {
@@ -199,6 +229,24 @@ export default [
                       </Select>
                     </Bind>
                   </Cell>
+                  {Object.entries(mapGroups)?.length > 1 ? (
+                    <Cell className="padded-cell" span={12}>
+                      <Bind name="variables.mapGroup">
+                        <Select>
+                          {Object.entries(mapGroups)?.map(([key, value], idx) => (
+                            <option key={idx} value={key}>
+                              {`${key} (${value} maps)`}
+                            </option>
+                          ))}
+                        </Select>
+                      </Bind>
+                    </Cell>
+                  ) : null}
+                  <Cell className="padded-cell" span={12}>
+                    <Bind name="variables.mapGroup">
+                      <Input label="New Map Group" />
+                    </Bind>
+                  </Cell>
                 </AccordionItem>
                 <AccordionItem
                   title="Map Layers"
@@ -206,10 +254,6 @@ export default [
                 >
                   <Bind name="variables.layers">
                     {({ form, value: layers, onChange }) => {
-                      // const layers = JSON.parse(_layers)
-                      // const onChange = (layers: Array<LayerSpec>) => {
-                      //   _onChange(JSON.stringify(layers))
-                      // }
                       const handleAdd = () => {
                         onChange([...layers, DEFAULT_LAYER])
                       }
@@ -414,6 +458,14 @@ export const LayerConfigurator = ({
         </Bind>
       </Cell>
       <Cell className="padded-cell" span={12}>
+        <Bind name={`variables.layers.[${index}].layer`}>
+          <Select label={'Layer Type:'} description={'Display point data or polygon geometries.'}>
+            <option value="polygon">Polygon</option>
+            <option value="point">Scaled Dots</option>
+          </Select>
+        </Bind>
+      </Cell>
+      <Cell className="padded-cell" span={12}>
         {cleanColumnList.length ? (
           <Select
             label={'Map Data Column (choropleth):'}
@@ -454,7 +506,7 @@ export const LayerConfigurator = ({
           })}
         </Select>
       </Cell>
-      <Cell className="padded-cell" span={12}>
+      {layer.type === "continuous" && <Cell className="padded-cell" span={12}>
         <p>Current Color Scheme:</p>
         <Stack direction="row" width={'100%'}>
           {colorScheme
@@ -474,30 +526,52 @@ export const LayerConfigurator = ({
               })
             : null}
         </Stack>
-      </Cell>
-      {/* bins 2 - 12 */}
+      </Cell>}
+      {/* categorical or continuous */}
       <Cell className="padded-cell" span={12}>
-        <Bind name={`variables.layers.[${index}].bins`}>
-          {/* number input */}
-          <Input
-            label={'Bins:'}
-            description={'Number of color bins to use in the map.'}
-            type="number"
-          />
-        </Bind>
-      </Cell>
-      {/* method */}
-      <Cell className="padded-cell" span={12}>
-        <Bind name={`variables.layers.[${index}].method`}>
-          <Select label={'Binning Method:'} description={'Choose a method for binning your data.'}>
-            {BINNING_METHODS.map((item, idx) => (
-              <option key={idx} value={item.value}>
-                {item.label}
-              </option>
-            ))}
+        <Bind name={`variables.layers.[${index}].type`}>
+          <Select
+            label={'Data Type:'}
+            description={
+              'Continuous maps draw colors based on a range of numbers. Categorical maps draw colors based on unique categories or values.'
+            }
+          >
+            <option value="categorical">Categorical</option>
+            <option value="continuous">Continuous</option>
+            {/* <option value="ordinal">Ordinal</option> */}
           </Select>
         </Bind>
       </Cell>
+      {/* bins 2 - 12 */}
+      {layer.type === 'continuous' && (
+        <>
+          <Cell className="padded-cell" span={12}>
+            <Bind name={`variables.layers.[${index}].bins`}>
+              {/* number input */}
+              <Input
+                label={'Bins:'}
+                description={'Number of color bins to use in the map.'}
+                type="number"
+              />
+            </Bind>
+          </Cell>
+          {/* method */}
+          <Cell className="padded-cell" span={12}>
+            <Bind name={`variables.layers.[${index}].method`}>
+              <Select
+                label={'Binning Method:'}
+                description={'Choose a method for binning your data.'}
+              >
+                {BINNING_METHODS.map((item, idx) => (
+                  <option key={idx} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </Select>
+            </Bind>
+          </Cell>
+        </>
+      )}
       <Cell className="padded-cell" span={12}>
         <Bind name={`variables.layers.[${index}].beforeId`}>
           <Select

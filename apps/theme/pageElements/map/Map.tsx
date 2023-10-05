@@ -47,14 +47,14 @@ export const Map = createRenderer(() => {
   const element = getElement<MapProps>()
   useFullBundle()
 
-  const { center, zoom, mapStyle, layers } = element.data.variables
+  const { center, zoom, mapStyle, mapGroup, layers } = element.data.variables
 
-  console.log(layers)
   return useHtmlElementRerender(
     <osl-glmap
       center={center ? JSON.stringify(center) : undefined}
       zoom={zoom !== undefined ? zoom : undefined}
       mapStyle={mapStyle || MAPSTYLES[0].value}
+      mapGroup={mapGroup}
     >
       {layers.map((layer, index) => {
         return (
