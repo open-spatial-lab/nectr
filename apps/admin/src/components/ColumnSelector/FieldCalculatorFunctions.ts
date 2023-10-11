@@ -162,34 +162,31 @@ export const fieldCalculatorFunctions = {
       label: 'Text Extract Between Indices'
     },
     {
-      value: 'string_split(string,',
+      value: 'string_split(string, separator)',
       tooltip:
-        " separator)	Splits the string along the separator	string_split('hello␣world', '␣')	['hello', 'world']	str_split, string_to_array",
-      label: ''
+        "Splits the string along the separator	string_split('hello␣world', '␣')	['hello', 'world']	str_split, string_to_array",
+      label: 'Split Text'
     },
     {
-      value: 'substring(string,',
+      value: 'substring(string, start, length)',
       tooltip:
-        " start, length)	Extract substring of length characters starting from character start. Note that a start value of 1 refers to the first character of the string.	substring('Hello', 2, 2)	el	substr",
-      label: ''
+        "Extract substring of length characters starting from character start. Note that a start value of 1 refers to the first character of the string.	substring('Hello', 2, 2)	el	substr",
+      label: 'Extract Substring'
     },
 
     {
-      value: 'contains(string,',
-      tooltip:
-        " search_string)	Return true if search_string is found within string	contains('abc', 'a')	true	 ",
+      value: 'contains(string, search_text)',
+      tooltip: "Return true if search_string is found within string	contains('abc', 'a')	true	 ",
       label: 'Contains Text'
     },
     {
-      value: 'starts_with(string,',
-      tooltip:
-        " search_string)	Return true if string begins with search_string	starts_with('abc', 'a')	true	 ",
+      value: 'starts_with(string, search_text)',
+      tooltip: "Return true if string begins with search_string	starts_with('abc', 'a')	true	 ",
       label: 'Starts with Text'
     },
     {
-      value: 'ends_with(string,',
-      tooltip:
-        " search_string)	Return true if string ends with search_string	ends_with('abc', 'c')	true	suffix",
+      value: 'ends_with(string, search_string)',
+      tooltip: "Return true if string ends with search_string	ends_with('abc', 'c')	true	suffix",
       label: 'End with Text'
     },
     {
@@ -259,24 +256,24 @@ export const fieldCalculatorFunctions = {
       value: 'rtrim(string, characters)',
       tooltip:
         "Removes any occurrences of any of the characters from the right side of the string	rtrim('>>>>test<<', '><')	>>>>test	 ",
-      label: 'Trim Spaces (Left)'
+      label: 'Trim Spaces (right)'
     },
     {
-      value: 'lpad(string,',
+      value: 'lpad(string, count, character)',
       tooltip:
         " count, character)	Pads the string with the character from the left until it has count characters	lpad('hello', 10, '>')	>>>>>hello	 ",
-      label: 'Trim Characters (Left)'
+      label: 'Pad Characters (left)'
     },
     {
       value: 'ltrim(string)',
-      tooltip: "	Removes any spaces from the left side of the string	ltrim('␣␣␣␣test␣␣')	test␣␣	 ",
-      label: ''
+      tooltip: "Removes any spaces from the left side of the string	ltrim('␣␣␣␣test␣␣')	test␣␣	 ",
+      label: 'Trim Spaces (left)'
     },
     {
       value: 'ltrim(string, characters)',
       tooltip:
         "Removes any occurrences of any of the characters from the left side of the string	ltrim('>>>>test<<', '><')	test<<	 ",
-      label: ''
+      label: 'Trim Characters (left)'
     },
     {
       value: 'split_part(string, separator, index)',
@@ -328,6 +325,63 @@ export const fieldCalculatorFunctions = {
     // {value: "substring_grapheme(string,", tooltip: " start, length)	Extract substring of length grapheme clusters starting from character start. Note that a start value of 1 refers to the first character of the string.	substring_grapheme('🦆🤦🏼‍♂️🤦🏽‍♀️🦆', 3, 2)	🤦🏽‍♀️🦆	 ", label:""},
     // {value: "to_base64(blob)", tooltip: "	Convert a blob to a base64 encoded string.	to_base64('A'::blob)	QQ==	base64", label:""},
     // {value: "unicode(string)", tooltip: "	Returns the unicode code of the first character of the string	unicode('ü')	252	 ", label:""},
+  ],
+  'Geospatial (PostGIS-like)': [
+    { value: 'ST_AsText(GEOMETRY)', label: 'Geometry to Text (WKT)', tooltip: '' },
+    { value: 'ST_AsWKB(GEOMETRY)', label: 'Geometry to Binary (WKB)', tooltip: '' },
+    { value: 'ST_AsHEXWKB(GEOMETRY)', label: 'Geometry as Binary Hex (WKB)', tooltip: '' },
+    { value: 'ST_AsGeoJSON(GEOMETRY)', label: 'Geometry as GeoJSON', tooltip: '' },
+    { value: 'ST_GeomFromText(VARCHAR)', label: 'Geometry from Text (WKT)', tooltip: '' },
+    { value: 'ST_GeomFromWKB(BLOB)', label: 'Geometry from Binary (WKB)', tooltip: '' },
+    { value: 'ST_GeomFromHEXWKB(VARCHAR)', label: 'Geometry from Binary Hex', tooltip: '' },
+    { value: 'ST_GeomFromGeoJSON(VARCHAR)', label: 'Geometry from GeoJSON', tooltip: '' },
+    { value: 'ST_Point(x,y)', label: 'Point from XY Coordinate', tooltip: '' },
+    { value: 'ST_ConvexHull(GEOMETRY)', label: 'Convex Hull', tooltip: '' },
+    { value: 'ST_Boundary(GEOMETRY)', label: 'Boundary', tooltip: '' },
+    { value: 'ST_Buffer(GEOMETRY)', label: 'Buffer', tooltip: '' },
+    { value: 'ST_Centroid(GEOMETRY)', label: 'Centroid', tooltip: '' },
+    { value: 'ST_Collect(GEOMETRY[])', label: 'Collect', tooltip: '' },
+    { value: 'ST_Normalize(GEOMETRY)', label: 'Normalize', tooltip: '' },
+    { value: 'ST_SimplifyPreserveTopology(GEOMETRY,', label: 'Simplify (Preserve Topology)', tooltip: '' },
+    { value: 'ST_Simplify(GEOMETRY,', label: 'Simplify', tooltip: '' },
+    { value: 'ST_Union(GEOMETRY,', label: 'Union', tooltip: '' },
+    { value: 'ST_Intersection(GEOMETRY,', label: 'Intersection', tooltip: '' },
+    { value: 'ST_MakeLine(GEOMETRY[])', label: 'Make Line', tooltip: '' },
+    { value: 'ST_Envelope(GEOMETRY)', label: 'Envelop', tooltip: '' },
+    { value: 'ST_FlipCoordinates(GEOMETRY)', label: 'Flip Coordinates', tooltip: '' },
+    { value: `ST_Transform(GEOMETRY, 'EPSG:#from',EPSG:#to')' `, label: 'Transform (Re-Project)', tooltip: '' },
+    { value: 'ST_Extent(GEOMETRY)', label: 'Extent', tooltip: '' },
+    // { value: 'ST_PointN(GEOMETRY,', label: '', tooltip: '' },
+    // { value: 'ST_StartPoint(GEOMETRY)', label: '', tooltip: '' },
+    // { value: 'ST_EndPoint(GEOMETRY)', label: '', tooltip: '' },
+    // { value: 'ST_ExteriorRing(GEOMETRY)', label: '', tooltip: '' },
+    // { value: 'ST_Reverse(GEOMETRY)', label: '', tooltip: '' },
+    // { value: 'ST_RemoveRepeatedPoints(GEOMETRY)', label: '', tooltip: '' },
+    // { value: 'ST_RemoveRepeatedPoints(GEOMETRY,', label: '', tooltip: '' },
+    { value: 'ST_ReducePrecision(GEOMETRY, number)', label: 'Reduce Precision', tooltip: '' },
+    { value: 'ST_PointOnSurface(GEOMETRY)', label: 'Point on Surface', tooltip: '' },
+    // { value: 'ST_CollectionExtract(GEOMETRY)', label: '', tooltip: '' },
+    // { value: 'ST_CollectionExtract(GEOMETRY,', label: '', tooltip: '' },
+    { value: 'ST_Area(GEOMETRY)', label: 'Area', tooltip: '' },
+    { value: 'ST_X(GEOMETRY)', label: 'X Value', tooltip: '' },
+    { value: 'ST_Y(GEOMETRY)', label: 'Y Value', tooltip: '' },
+    { value: 'ST_XMax(GEOMETRY)', label: 'X Max', tooltip: '' },
+    { value: 'ST_YMax(GEOMETRY)', label: 'Y Max', tooltip: '' },
+    { value: 'ST_XMin(GEOMETRY)', label: 'X Min', tooltip: '' },
+    { value: 'ST_YMin(GEOMETRY)', label: 'Y Max', tooltip: '' },
+    { value: 'ST_Length(GEOMETRY)', label: 'Length', tooltip: '' },
+    // { value: 'ST_IsClosed(GEOMETRY)', label: '', tooltip: '' },
+    // { value: 'ST_IsEmpty(GEOMETRY)', label: '', tooltip: '' },
+    // { value: 'ST_IsRing(GEOMETRY)', label: '', tooltip: '' },
+    // { value: 'ST_IsSimple(GEOMETRY)', label: '', tooltip: '' },
+    // { value: 'ST_IsValid(GEOMETRY)', label: '', tooltip: '' },
+    { value: 'ST_GeometryType(GEOMETRY)', label: 'Geometry Type', tooltip: '' },
+    // { value: 'ST_NGeometries(GEOMETRY)', label: 'Number of', tooltip: '' },
+    // { value: 'ST_NPoints(GEOMETRY)', label: '', tooltip: '' },
+    // { value: 'ST_NInteriorRings(GEOMETRY)', label: '', tooltip: '' },
+    { value: 'ST_Envelope_Agg(GEOMETRY)', label: 'Envelope Aggregation', tooltip: '' },
+    { value: 'ST_Union_Agg(GEOMETRY)', label: 'Union Aggregation', tooltip: '' },
+    { value: 'ST_Intersection_Agg(GEOMETRY)', label: 'Intersection Aggregation', tooltip: '' }
   ],
   Date: [
     {

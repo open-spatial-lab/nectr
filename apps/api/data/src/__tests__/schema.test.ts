@@ -35,6 +35,32 @@ const simpleSchema = {
   result: `select * from 's3://test_bucket/sdoh.csv' "sdoh";`
 } as MockSchema
 
+const customExpressionSchema = {
+  config: {
+    schema: {
+      ...simpleSchema.config.schema,
+      title: 'Custom Expression From',
+      sources: [
+        {
+          id: 'sdoh',
+          type: 'Dataset' as SourceTypes,
+          TYPE: 'Dataset',
+          title: 'sdoh'
+        }
+      ],
+      columns: [
+        {
+          sourceId: '',
+          name: '',
+          alias: 'col1',
+          expression: 'column1 + column2'
+        }
+      ]
+    },
+  },
+  result: `select column1 + column2 as "col1" from 's3://test_bucket/sdoh.csv' "sdoh";`
+} as MockSchema
+
 const columnSchema = {
   config: {
     schema: {
@@ -241,6 +267,7 @@ const groupHavingSchema = {
 
 const testCases = [
   simpleSchema,
+  customExpressionSchema,
   columnSchema,
   joinSchema,
   chainedJoinSchema,

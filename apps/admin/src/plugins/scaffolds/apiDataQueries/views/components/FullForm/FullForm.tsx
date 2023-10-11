@@ -99,7 +99,7 @@ export const FullForm: React.FC<FullFormProps> = ({
       setSchema(data)
     }
   }
-
+  console.log(apiDataQuery)
   return (
     <Form<QuerySchema> data={apiDataQuery} onSubmit={onSubmit} onChange={handleUpdate}>
       {({ submit, Bind, form }) => {

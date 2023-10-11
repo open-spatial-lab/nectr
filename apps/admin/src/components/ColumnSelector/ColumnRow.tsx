@@ -26,7 +26,9 @@ export const ColumnRow = ({
   idx,
   onRemove,
   onChange,
-  simple
+  simple,
+  setShowFieldCalculator,
+  setFieldCalculatorInfo
 }: {
   column: MetaColumnSchema
   idx: number
@@ -34,11 +36,18 @@ export const ColumnRow = ({
   onChange: <T extends keyof MetaColumnSchema>(
     index: number,
     property: T,
-    value: MetaColumnSchema[T]
-  ) => void
+    value: MetaColumnSchema[T],
+    ) => void,
+    setShowFieldCalculator?: () => void,
+    setFieldCalculatorInfo?: (v: MetaColumnSchema) => void
   simple?: boolean
 }) => {
   const [showSettings, setShowSettings] = React.useState(false)
+
+  const handleButtonClick = column.expression ? () => {
+    setFieldCalculatorInfo && setFieldCalculatorInfo(column)
+    setShowFieldCalculator && setShowFieldCalculator()
+  } : () => setShowSettings(s => !s)
   return (
     <>
       <ListItem
@@ -55,7 +64,7 @@ export const ColumnRow = ({
             <IconButton
               icon={<SettingsIcon />}
               label="Show/Hide Settings"
-              onClick={() => setShowSettings(s => !s)}
+              onClick={handleButtonClick}
             />
           </ListItemGraphic>
         )}
