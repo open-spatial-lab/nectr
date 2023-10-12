@@ -77,7 +77,8 @@ export class SqlBuilder {
     return subQuery.queryString
   }
   buildColumn(column: MinimalColumnInfo) {
-    const columnId = `"${column.sourceId}"."${column.name}"`
+    const columnId = column.expression ? column.expression :`"${column.sourceId}"."${column.name}"`
+    console.log('column', column)
     const colName = column.alias || columnId
     return this.qb.raw(`${columnId} as "${colName}"`)
   }
@@ -104,15 +105,15 @@ export class SqlBuilder {
       return
     }
     columns.forEach((column: (typeof columns)[number]) => {
-      const columnId = `"${column.sourceId}"."${column.name}"`
+      const columnExpression = column.expression ? column.expression : `"${column.sourceId}"."${column.name}"`
       if (column.aggregate) {
         const colName = column.alias || `${column.aggregate}_${column.name}`
         const columnFn = column.aggregate.toLowerCase()
-        const columnText = columnFn === 'count' ? 'count(*)' : `${columnFn}(${columnId})`
+        const columnText = columnFn === 'count' ? 'count(*)' : `${columnFn}(${columnExpression})`
         columnsList.push(this.qb.raw(`${columnText} as "${colName}"`))
       } else {
         const colName = column.alias || column.name
-        columnsList.push(this.qb.raw(`${columnId} as "${colName}"`))
+        columnsList.push(this.qb.raw(`${columnExpression} as "${colName}"`))
       }
     })
     this.query.select(columnsList)

@@ -185,7 +185,9 @@ export const DATA_COLUMN_TYPES = ['Text', 'Number', 'Date', 'Date and Time', 'Bo
 
 export const GEO_COLUMN_TYPES = ['Geometry (WKT)', 'Geometry (GeoJSON)', 'Geometry (WKB)'] as const
 
-export type COLUMN_TYPES = (typeof DATA_COLUMN_TYPES)[number] | (typeof GEO_COLUMN_TYPES)[number]
+export const CUSTOM_TYPES = ['Custom'] as const
+
+export type COLUMN_TYPES = (typeof DATA_COLUMN_TYPES)[number] | (typeof GEO_COLUMN_TYPES)[number] | (typeof CUSTOM_TYPES)[number]
 
 export type ColumnSchema = {
   name: string
@@ -194,6 +196,7 @@ export type ColumnSchema = {
   dataset?: string
   datasetId?: string
   aggregate?: AGGREGATE_FUNCTION_TYPES
+  expression?: string
 }
 
 export type MetaColumnSchema = ColumnSchema & {

@@ -20,12 +20,14 @@ export default /* GraphQL */ `
     sourceTitle: String!
     alias: String
     aggregate: String
+    expression: String
   }
 
   type ColumnOperation {
     operation: String
     args: [String]
   }
+
   type JoinQuery {
     leftSourceId: String!
     leftOn: String!
@@ -79,6 +81,7 @@ export default /* GraphQL */ `
     sourceTitle: String!
     alias: String
     aggregate: String
+    expression: String
   }
   
 

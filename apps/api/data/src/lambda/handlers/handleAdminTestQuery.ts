@@ -44,7 +44,6 @@ export const handleAdminTestQuery = async (
       'raw' in schema
         ? await connection.query(handleRawString(schema.raw))
         : await connection.handleQuery(schema, params)
-    // logger.info(queryResponse)
     if (queryResponse.ok) {
       return {
         statusCode: 200,
