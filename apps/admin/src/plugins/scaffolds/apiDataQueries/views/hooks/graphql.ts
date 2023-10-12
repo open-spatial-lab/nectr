@@ -47,6 +47,7 @@ export const API_DATA_QUERY_FIELDS_FRAGMENT = /* GraphQL */ `
       sourceTitle
       alias
       aggregate
+      expression
     }
     groupbys {
       sourceId
