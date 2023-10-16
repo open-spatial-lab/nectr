@@ -1,0 +1,28 @@
+# Use the official Python image as the base image
+FROM python:3.9-slim-buster
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Copy the requirements file into the container
+COPY requirements.txt .
+
+# Install dependencies
+RUN apt-get update && apt-get install -y libgdal-dev zip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy the function code into the container
+COPY src/convert.py .
+
+# Create a deployment package
+RUN mkdir -p lambda_function && \
+    cp convert.py lambda_function/ && \
+    cp -r venv/lib/python3.9/site-packages/* lambda_function/ && \
+    cd lambda_function && \
+    zip -r ../lambda.zip .
+
+# Mount the host file system
+VOLUME /host
+
+# Set the CMD to copy the deployment package to the host file system
+CMD ["cp", "lambda.zip", "/host"]

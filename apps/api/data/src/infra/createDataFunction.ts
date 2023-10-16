@@ -8,6 +8,7 @@ import { DataApiGateway } from './createDataGateway'
 // import { DataApiCloudfront } from './createDataCloudfront'
 import { DataBucket } from './createDataBucket'
 import { createDataLambdaPolicy } from './createDataLambdaPolicy'
+import { converterUri } from '../config/converterUri'
 export interface DataApiParams {
   env: Record<string, any>
 }
@@ -62,6 +63,10 @@ function createDataResources(app: PulumiApp, params: DataApiParams, dataBucket: 
     name: 'data-api-lambda-role',
     policy: policy.output
   })
+  const converterRole = createLambdaRole(app, {
+    name: 'converter-api-lambda-role',
+    policy: policy.output
+  })
   const dataQuery = app.addResource(aws.lambda.Function, {
     name: 'data-api-runner',
     config: {
@@ -88,6 +93,52 @@ function createDataResources(app: PulumiApp, params: DataApiParams, dataBucket: 
       }
     }
   })
+
+  const converter = app.addResource(aws.lambda.Function, {
+    name: 'data-converter',
+    config: {
+      role: converterRole.output.arn,
+      packageType: 'Image',
+      timeout: 60,
+      memorySize: 4096 * 2,
+      ephemeralStorage: {
+        size: 10240
+      },
+      description: 'Automatically converts files to Parquet',
+      imageUri: converterUri,
+      environment: {
+        variables: getCommonLambdaEnvVariables().apply(value => ({
+          ...value,
+          ...params.env
+        }))
+      }
+    }
+  })
+
+  // const allowBucket = app.addResource(aws.lambda.Permission, {
+  //   name: 'converter-allow-bucket',
+  //   config: {
+  //     action: 'lambda:InvokeFunction',
+  //     function: converter.output.arn,
+  //     principal: 's3.amazonaws.com',
+  //     sourceArn: params.env['S3_BUCKET'].arn
+  //   }
+  // })  
+  // console.log("S3 BUCKET", pulumi.interpolate`${params.env['S3_BUCKET'].arn}`,)
+  
+  // const bucketNotification = app.addResource(aws.s3.BucketNotification, {
+  //   name: 'converter-bucket-notification',
+  //   config: {
+  //     bucket: pulumi.interpolate`${params.env['S3_BUCKET'].id}`,
+  //     lambdaFunctions: [
+  //       {
+  //         lambdaFunctionArn: converter.output.arn,
+  //         events: ['s3:ObjectCreated:*'],
+  //         filterSuffix: '__toconvert____dataset__.*'
+  //       }
+  //     ]
+  //   }
+  // })
 
   const dataApiGateway = app.addModule(DataApiGateway, {
     'api-data-query': {

@@ -79,6 +79,7 @@
       "apps/api/graphql",
       "apps/api/headlessCMS",
       "apps/api/data",
+      "apps/api/parquet-converter",
       "apps/core"
     ]
   },

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Form, type FormAPI } from '@webiny/form'
 import { Grid, Cell } from '@webiny/ui/Grid'
 import { Input } from '@webiny/ui/Input'
@@ -28,14 +28,20 @@ import { FileUploader } from '../assets/FileUploader'
 import { TablePreview } from '../assets/TablePreview'
 import { Switch } from '@webiny/ui/Switch'
 import ColumnBuilder from '../../../../components/ColumnBuilder'
-import { getApiUrl } from '../../../../../../theme/pageElements/utils/dataApiUrl'
+import { getApiUrl, getFileUrl } from '../../../../../../theme/pageElements/utils/dataApiUrl'
+
+const S_IN_MS = 1000
+const TIMEOUT_INTERVAL = 1 * S_IN_MS
+const TIMEOUT_TOTAL_DURATION = 60 * S_IN_MS
 
 const resolveFile = (files: FileItem) => {
   const file: FileItem = Array.isArray(files) ? files[0] : files
   const fileParts = file.name.split('.')
-  const revisedFileName = `${fileParts.slice(0, fileParts.length - 1).join('.')}__dataset__.${
-    fileParts[fileParts.length - 1]
-  }`
+  const filetype = fileParts[fileParts.length - 1] || 'unknown-filetype'
+  const suffix = filetype !== 'parquet' ? '__toconvert____dataset__' : '__dataset__'
+  const fileName = `${fileParts.slice(0, fileParts.length - 1).join('.')}`
+  const revisedFileName = `${fileName}${suffix}.${filetype}`
+
   Object.defineProperty(file, 'name', {
     get: function () {
       return this._name
@@ -46,10 +52,12 @@ const resolveFile = (files: FileItem) => {
   })
 
   file.name = revisedFileName
-  const filetype = fileParts[fileParts.length - 1] || 'unknown-filetype'
   return {
     file,
-    filetype
+    filetype,
+    converting: suffix.includes('__toconvert__'),
+    outputFileName: `${fileName}__dataset__.parquet`,
+    statusFileName: `${fileName}__status__.json`
   }
 }
 
@@ -59,6 +67,7 @@ const resolveFile = (files: FileItem) => {
  * The form submission-related functionality is located in the `useDatasetsForm` React hook.
  */
 const DatasetsForm: React.FC = () => {
+  const formApi = useRef<FormAPI | null>(null)
   const { loading, emptyViewIsShown, currentDataset, cancelEditing, dataset, onSubmit } =
     useDatasetsForm()
 
@@ -81,7 +90,9 @@ const DatasetsForm: React.FC = () => {
     CREATE_FILE,
     {}
   )
-  const handleMeta = async (key: string, form?: FormAPI) => {
+  const handleMeta = async (key: string, _form?: FormAPI) => {
+    const form = _form || formApi.current
+    console.log('handleMeta', key)
     const metadataUrl = new URL(getApiUrl('__'))
     metadataUrl.searchParams.append('__metadata__', key)
     const metadataResponse = await fetch(metadataUrl.toString())
@@ -94,21 +105,37 @@ const DatasetsForm: React.FC = () => {
       columns: colList,
       data: dataList
     })
+
+    setUploading({
+      status: 'uploaded',
+      filename: key
+    })
+
+    form && form.setValue('filename', key)
     form && form.setValue('columns', parsedColumns)
   }
 
   const uploadFile =
     (form: FormAPI) =>
     async (files: FileItem): Promise<number | null> => {
+      if (!formApi.current) {
+        formApi.current = form
+      }
+      // Placeholder status
       setUploading({
         status: 'uploading',
         filename: files.name
       })
-      const { file, filetype } = resolveFile(files)
+      // Resolve filenames with appropriate suffixes
+      //  __dataset__ blocks public access
+      // __toconvert____dataset__ blocks public access and triggers conversion
+      const { file, filetype, converting } = resolveFile(files)
       const errors: any[] = []
 
       try {
+        // get presigned PUT request for file on S3
         const response = await getFileUploader()(file, { apolloClient })
+        // upload file to S3
         const createFileResponse = await createFile({
           variables: {
             data: {
@@ -124,13 +151,17 @@ const DatasetsForm: React.FC = () => {
           createFileResponse,
           'data.fileManager.createFile.data'
         ) as unknown as FileItem
-        await handleMeta(fileUploadData.key, form)
-        setUploading({
-          status: 'uploaded',
-          filename: fileUploadData.name
-        })
 
-        form.setValue('filename', fileUploadData.name)
+        if (!converting) {
+          await handleMeta(fileUploadData.key, form)
+        } else {
+          const fileNameNoSuffix = fileUploadData.name.split('.').slice(0, -1).join('.')
+          const fileName = `${fileNameNoSuffix}.parquet`
+          setUploading({
+            status: 'converting',
+            filename: fileName
+          })
+        }
 
         return 1
       } catch (e) {
@@ -140,28 +171,60 @@ const DatasetsForm: React.FC = () => {
       return null
     }
 
+  const [totalTimeoutDuration, setTotalTimeoutDuration] = useState(0)
+  const [timeoutFn, setTimeoutFn] = useState<any>(null)
+  const incrementTimeoutFn = () => setTotalTimeoutDuration(prev => prev + TIMEOUT_INTERVAL)
+
+  const checkIfConversionFinished = async (key: string) => {
+    const statusFileName = key.replace('__dataset__', '__status__')
+    const fileUrl = new URL(getFileUrl(statusFileName))
+    const metadataResponse = await fetch(fileUrl.toString())
+    const data = await metadataResponse.json()
+    return data
+  }
+
   useEffect(() => {
-    dataset?.filename && handleMeta(dataset?.filename)
-  }, [dataset?.filename])
+    let statusName = uploading?.filename
+    statusName = statusName.replace('__dataset__', '__status__')
+    statusName = statusName.replace('__toconvert__', '')
+    statusName = statusName.replace('.parquet', '.json')
 
-  // const handlePreview = (setValue: Function) => (results: Papa.ParseResult<unknown>) => {
-  //     if (results.errors.length > 0) {
-  //         return;
-  //     }
-  //     const columns = results.data[0] as unknown[];
-  //     const data = results.data.slice(1) as any[][];
-  //     setTable({
-  //         columns,
-  //         data
-  //     });
-  //     const columnData: Array<ColumnSchema> = columns.map(column => ({
-  //         name: column as string,
-  //         type: "Text",
-  //         description: `A column named "${column}"`
-  //     }));
-
-  //     setValue("columns", JSON.stringify(columnData));
-  // };
+    switch (uploading.status) {
+      case 'failed':
+        console.error('File upload failed')
+        break
+      case 'uploaded':
+        dataset?.filename && handleMeta(dataset?.filename)
+        break
+      case `converting`:
+        console.log('checking status....', totalTimeoutDuration)
+        uploading?.filename &&
+          setTimeoutFn(
+            setTimeout(
+              () =>
+                checkIfConversionFinished(statusName).then(data => {
+                  if (data?.body) {
+                    const body = JSON.parse(data.body)
+                    handleMeta(`${body.file_name}.parquet`)
+                    clearTimeout(timeoutFn)
+                  } else if (totalTimeoutDuration >= TIMEOUT_TOTAL_DURATION) {
+                      setUploading({
+                        status: 'failed',
+                        filename: uploading.filename
+                      })
+                  } else {
+                    incrementTimeoutFn()
+                  }
+                }),
+              TIMEOUT_INTERVAL
+            )
+          )
+        break
+      default:
+        break
+    }
+    () => clearTimeout(timeoutFn)
+  }, [dataset?.filename, dataset?.status, totalTimeoutDuration, uploading.status])
 
   if (emptyViewIsShown) {
     return (
@@ -175,23 +238,31 @@ const DatasetsForm: React.FC = () => {
       />
     )
   }
-
   return (
-    <Form data={dataset} onSubmit={onSubmit}>
+    <Form data={dataset} onSubmit={onSubmit} disabled={uploading.status === 'uploading' || uploading.status === 'converting'}> 
       {({ form, data, submit, Bind }) => (
         <SimpleForm>
           {loading && <CircularProgress />}
           <SimpleFormHeader title={data.title || 'New Dataset'} />
-          <FileUploader uploading={uploading} uploadFile={uploadFile(form)} form={form} />
+          {(uploading.status === 'not uploaded') ? (
+            <FileUploader uploading={uploading} uploadFile={uploadFile(form)} form={form} />
+          ) : 
+          (uploading.status === "uploaded") ? 
+            (null)
+          :(
+            <div style={{position: "absolute", left: '0', top: '0', width: '100%', height:'100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+              <h3 style={{fontWeight: "bold", textTransform: "uppercase"}}>{uploading.status}, please wait...</h3>
+            </div>
+          )}
 
           <SimpleFormContent>
             <Grid>
-              <Cell span={5}>
+              <Cell span={10}>
                 <Bind name="title" validators={validation.create('required')}>
                   <Input label={'Title'} />
                 </Bind>
               </Cell>
-              <Cell span={5}>
+              <Cell span={0} style={{ display: 'none' }}>
                 <Bind name="filename" validators={validation.create('required')}>
                   <Input label={'File'} disabled />
                 </Bind>
@@ -212,11 +283,6 @@ const DatasetsForm: React.FC = () => {
               <Cell span={12}>
                 <Bind name="columns">
                   {({ value }) => {
-                    // console.log(columns)
-                    // const columns = JSON.parse(
-                    //     _columns || "[]"
-                    // ) as Array<ColumnSchema>;
-
                     const onChangeColumns = (value: object) => {
                       form.setValue('columns', value)
                     }
@@ -235,7 +301,7 @@ const DatasetsForm: React.FC = () => {
               </Cell>
             </Grid>
           </SimpleFormContent>
-          <SimpleFormFooter>
+          {uploading.status === "uploaded" && <SimpleFormFooter>
             <ButtonDefault onClick={cancelEditing}>Cancel</ButtonDefault>
             <ButtonPrimary
               onClick={ev => {
@@ -244,7 +310,7 @@ const DatasetsForm: React.FC = () => {
             >
               Save Dataset
             </ButtonPrimary>
-          </SimpleFormFooter>
+          </SimpleFormFooter>}
         </SimpleForm>
       )}
     </Form>

@@ -17,36 +17,22 @@ export const inferFileType = (filename: string) => {
   const ext = filename.split('.').pop()
   switch (ext) {
     case 'csv':
-      return 'text/csv'
+      return { extension: ext, contentType: 'text/csv' }
     case 'json':
-      return 'application/json'
+      return { extension: ext, contentType: 'application/json' }
     case 'xml':
-      return 'application/xml'
+      return { extension: ext, contentType: 'application/xml' }
     case 'xls':
-      return 'application/vnd.ms-excel'
+      return { extension: ext, contentType: 'application/vnd.ms-excel' }
     case 'parquet':
-      return 'application/parquet'
+      return { extension: ext, contentType: 'application/parquet' }
     default:
-      return 'text/csv'
+      return { extension: ext, contentType: 'text/csv' }
   }
 }
 
-// const handleReadParquet = async (file: File, callback: Function) => {
-//     file
-//     callback
-//     // const reader = await parquet.ParquetReader.openFile(file.name);
-//     // console.log(reader)
-//     // const db = await initDB();
-//     // console.log('CONNCETED TO DUCKDB')
-//     // const c = await db.connect();
-//     // // @ts-ignore
-//     // await db.registerFileHandle("local.parquet", file);
-//     // console.log('registered file')
-//     // const r = await c.query(`SELECT * FROM local.parquet LIMIT 1`)
-//     // console.log(r)
-// }
-
 export const FileUploader: React.FC<FileUploaderProps> = ({ uploadFile, form, uploading }) => {
+  
   return (
     <Files
       multiple={false}
@@ -73,11 +59,6 @@ export const FileUploader: React.FC<FileUploaderProps> = ({ uploadFile, form, up
             <ButtonIcon icon={<UploadIcon />} />
             <p style={{ marginLeft: '0.25rem' }}>Upload...</p>
           </ButtonPrimary>
-          {uploading.status === 'uploading' && (
-            <span style={{ marginLeft: '1rem', marginTop: '1rem' }}>
-              Uploading {uploading.filename}...
-            </span>
-          )}
         </>
       )}
     </Files>
