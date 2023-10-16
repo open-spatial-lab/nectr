@@ -7,4 +7,5 @@ export type ColumnSelectProps = {
   disabled?: boolean
   label?: string
   children?: React.ReactNode
+  multi?: boolean
 }

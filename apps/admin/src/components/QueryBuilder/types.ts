@@ -144,7 +144,7 @@ export type JoinQuery = {
 
 export type GroupByQuery = {
   sourceId: string
-  column: string
+  column: string[]
 }
 
 export type SelectQuery = {

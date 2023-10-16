@@ -15,9 +15,13 @@ export const GroupByBuilder: React.FC<GroupByBuilderProps> = ({ groupbys, source
   const handleChange = (sourceId: string, column: string) => {
     const groupby = groupbys.find(groupby => groupby.sourceId === sourceId)
     if (!groupby) {
-      groupbys.push({ sourceId, column: column })
+      groupbys.push({ sourceId, column: [column] })
+      // @ts-ignore legacy check
+    } else if (typeof groupby.column === "string") {
+      // @ts-ignore legacy check
+      groupby.column = [groupby.column, column]
     } else {
-      groupby.column = column
+      groupby.column = [...(groupby?.column||[]), column]
     }
     onChange([...groupbys])
   }
