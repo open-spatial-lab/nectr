@@ -1,0 +1,4 @@
+geopandas
+fastparquet
+boto3
+pyarrow
