@@ -10,6 +10,13 @@ Nectr (short from con*nector* 🙃) - is a serverless CMS-like tool and library 
 4. Open the repo folder in your terminal of choice, and run `yarn install`. This will download the relevant packages and make them available.
 5. From here, you'll need to run the first deployment to AWS. This will take a while, and at this point, please check out the [Webiny Get Started](https://www.webiny.com/docs/get-started/install-webiny) guide. In most cases, it should be close to as easy as setting your AWS credentials, and running `yarn webiny deploy` to create an instance of nectr on your AWS account.
 
+## Archiving and Restoring IAC files
+The following commands can help you manage your webiny and pulumi IAC files. 
+|-`yarn archiveWorkspace` zips and uploads your relevant IAC files to S3
+|-`yarn restoreWorkspace` gets the most recent zip and expands them into your current repo
+You can use the environmnet variable `ARCHIVE_SUFFIX` to suffix your archive files, if managing multiple installations on one AWS account. 
+Additionally, you'll need to declare your AWS credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_SESSION_TOKEN), preferably short-term credentials, and your AWS region (AWS_REGION) as environment`` variables.
+
 ## Repo Structure
 ```
 |-apps: Main Webiny stuff lives here, including Nectr extensions
