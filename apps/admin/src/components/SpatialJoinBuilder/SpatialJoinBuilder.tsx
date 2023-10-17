@@ -144,8 +144,8 @@ export const SpatialJoinBuilder: React.FC<SpatialJoinBuilderProps> = ({
         <ColumnSelect
           columns={leftSource.columns}
           label={'Geometry column'}
-          value={leftSource?.columns.find(c => c.name === join.leftOn) || ({} as ColumnSchema)}
-          onChange={column => handleChange('leftOn', column.name)}
+          value={[(leftSource.columns.find(c => c.name === join.leftOn[0]) || {}) as ColumnSchema]}
+          onChange={column => handleChange('leftOn', [column[0]?.name])}
         />
         <GeometryInterpreter
           onChange={(value:string) => handleOperationChange('leftOnGeo', 0, value)}
@@ -164,8 +164,8 @@ export const SpatialJoinBuilder: React.FC<SpatialJoinBuilderProps> = ({
           <ColumnSelect
             label={'Geometry column'}
             columns={rightSource.columns}
-            value={rightSource.columns.find(c => c.name === join.rightOn) || ({} as ColumnSchema)}
-            onChange={column => handleChange('rightOn', column.name)}
+            value={[(rightSource.columns.find(c => c.name === join.rightOn[0]) || {}) as ColumnSchema]}
+            onChange={column => handleChange('rightOn', [column[0]?.name])}
           />
         )}
         <GeometryInterpreter
