@@ -133,9 +133,9 @@ export type ColumnOperation = {
 
 export type JoinQuery = {
   leftSourceId: string
-  leftOn: string
+  leftOn: string[]
   rightSourceId: string
-  rightOn: string
+  rightOn: string[]
   operator: JOIN_OPERATOR_TYPES
   geoPredicate?: string
   leftOnGeo?: ColumnOperation[]
@@ -144,7 +144,7 @@ export type JoinQuery = {
 
 export type GroupByQuery = {
   sourceId: string
-  column: string
+  column: string[]
 }
 
 export type SelectQuery = {

@@ -275,7 +275,7 @@ export class SqlBuilder {
   buildGroupByClauses(groupbys: ApiDataQueryEntity['groupbys'] = this.schema.groupbys) {
     if (!groupbys) return
     groupbys.forEach((groupby: (typeof groupbys)[number]) => {
-      const groupbyColumn = `"${groupby.sourceId}"."${groupby.column}"`
+      const groupbyColumn = groupby.column.map(col =>`"${groupby.sourceId}"."${col}"`).join(", ")
       const relatedWheres = this.schema.wheres?.filter(where => where.sourceId === groupby.sourceId)
       if (relatedWheres && relatedWheres.length) {
         const mappedGroupbys = relatedWheres.map(where => `"${where.sourceId}"."${where.column}"`)

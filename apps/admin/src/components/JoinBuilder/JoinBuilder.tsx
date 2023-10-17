@@ -30,9 +30,9 @@ export const JoinBuilder = ({
       ...joins,
       {
         leftSourceId: currentSources[0].id,
-        leftOn: currentSources[0].columns[0].name,
+        leftOn: [currentSources[0].columns[0].name],
         rightSourceId: availableSources[0].id,
-        rightOn: availableSources[0].columns[0].name,
+        rightOn: [availableSources[0].columns[0].name],
         operator: 'left'
       }
     ])
@@ -56,9 +56,9 @@ export const JoinBuilder = ({
     <NoPaddingGrid style={{ width: '100%' }}>
       {joins.map((join, index) => {
         const leftSource = currentSources.find(source => source.id === join.leftSourceId)
-        const leftColumn = leftSource?.columns.find(column => column.name === join.leftOn)
+        const leftColumn = leftSource?.columns.find(column => column.name === join.leftOn?.[0])
         const rightSource = allSources.find(source => source.id === join.rightSourceId)
-        const rightColumn = rightSource?.columns.find(column => column.name === join.rightOn)
+        const rightColumn = rightSource?.columns.find(column => column.name === join.rightOn?.[0])
         const rightSources = rightSource ? [...availableSources, rightSource] : availableSources
         const leftSources = currentSources.filter(source => source.id !== join.rightSourceId)
         return (
@@ -73,8 +73,8 @@ export const JoinBuilder = ({
                 <IndentArrow />
                 <ColumnSelect
                   columns={(leftSource?.columns || []) as ColumnSchema[]}
-                  value={leftColumn as ColumnSchema}
-                  onChange={column => updateJoinAtIndex(index, 'leftOn', column.name)}
+                  value={[leftColumn as ColumnSchema]}
+                  onChange={column => updateJoinAtIndex(index, 'leftOn', [column[0]?.name])}
                 />
               </Stack>
             </Cell>
@@ -89,8 +89,8 @@ export const JoinBuilder = ({
                 <ColumnSelect
                   disabled={false}
                   columns={(rightSource?.columns || []) as ColumnSchema[]}
-                  value={rightColumn as ColumnSchema}
-                  onChange={column => updateJoinAtIndex(index, 'rightOn', column.name)}
+                  value={[rightColumn as ColumnSchema]}
+                  onChange={column => updateJoinAtIndex(index, 'rightOn', [column[0]?.name])}
                 />
               </Stack>
             </Cell>

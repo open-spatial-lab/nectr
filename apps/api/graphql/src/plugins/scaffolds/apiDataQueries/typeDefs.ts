@@ -30,9 +30,9 @@ export default /* GraphQL */ `
 
   type JoinQuery {
     leftSourceId: String!
-    leftOn: String!
+    leftOn: [String]
     rightSourceId: String!
-    rightOn: String!
+    rightOn: [String]
     operator: String!
     geoPredicate: String
     leftOnGeo: [ColumnOperation]
@@ -42,8 +42,9 @@ export default /* GraphQL */ `
 
   type GroupByQuery {
     sourceId: String!
-    column: String!
+    column: [String]
   }
+  
   input SourceInput {
     id: String!
     type: String!
@@ -87,7 +88,7 @@ export default /* GraphQL */ `
 
   input GroupByQueryInput {
     sourceId: String!
-    column: String!
+    column: [String]
   }
 
   type ApiDataQuery {

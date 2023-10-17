@@ -137,9 +137,9 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
       ...previousJoin,
       {
         leftSourceId: template.from.id,
-        leftOn: '',
+        leftOn: [],
         rightSourceId: source.id,
-        rightOn: '',
+        rightOn: [],
         operator: 'inner'
       }
     ])
@@ -180,8 +180,6 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
       operator: join.operator
     })
   }
-
-  console.log(template)
 
   return (
     <div>
@@ -533,11 +531,11 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
               {joinDiagOpen.open && (
                 <Select
                   label={'Left on'}
-                  value={tempJoin.leftOn}
+                  value={tempJoin.leftOn?.[0]}
                   onChange={val => {
                     setTempJoin(j => ({
                       ...j,
-                      leftOn: val
+                      leftOn: [val]
                     }))
                   }}
                 >
@@ -557,11 +555,11 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
               {joinDiagOpen.open && (
                 <Select
                   label={'Right on'}
-                  value={tempJoin.rightOn}
+                  value={tempJoin.rightOn?.[0]}
                   onChange={val => {
                     setTempJoin({
                       ...tempJoin,
-                      rightOn: val
+                      rightOn: [val]
                     })
                   }}
                 >

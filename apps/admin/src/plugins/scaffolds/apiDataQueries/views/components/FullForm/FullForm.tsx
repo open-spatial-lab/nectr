@@ -99,7 +99,7 @@ export const FullForm: React.FC<FullFormProps> = ({
       setSchema(data)
     }
   }
-  console.log(apiDataQuery)
+
   return (
     <Form<QuerySchema> data={apiDataQuery} onSubmit={onSubmit} onChange={handleUpdate}>
       {({ submit, Bind, form }) => {
@@ -154,7 +154,6 @@ export const FullForm: React.FC<FullFormProps> = ({
                         )
                         const handleChange = (source: SourceMeta) => {
                           const { id, title, __typename } = source
-                          console.log(source)
                           const newSources = [
                             {
                               id,
@@ -190,7 +189,6 @@ export const FullForm: React.FC<FullFormProps> = ({
                       <Bind name="joins">
                         {({ onChange, value }) => {
                           const joins = value as JoinQuery[]
-                          console.log(currentSources)
                           return (
                             <>
                               <SpatialJoinBuilder
