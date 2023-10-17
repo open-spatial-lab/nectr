@@ -7,32 +7,35 @@ const ecr_repository_uri = `${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.co
 
 // Build the image and login to ECR
 await $`docker build --platform linux/amd64 -t ${imageName}:${tagName} .`
-await $`aws ecr get-login-password --region ${aws_region} | docker login --username AWS --password-stdin ${ecr_repository_uri}`
+await $`
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+aws ecr get-login-password --region ${aws_region} | docker login --username AWS --password-stdin ${ecr_repository_uri}`
 
 // check if the repo exists on AWS
-// otherwise, create the ECR repo 
+// otherwise, create the ECR repo
 
 let ECRrepositoryUri = ''
 try {
   const existingRepos = await $`aws ecr describe-repositories --repository-names ${imageName}`
-  ECRrepositoryUri = JSON.parse(existingRepos)["repositories"][0]["repositoryUri"]
+  ECRrepositoryUri = JSON.parse(existingRepos)['repositories'][0]['repositoryUri']
 } catch {
   console.log("Repository doesn't exist, creating...")
   try {
-    const ecrResponse = await $`aws ecr create-repository --repository-name ${imageName} --image-scanning-configuration scanOnPush=true --image-tag-mutability MUTABLE`
-    ECRrepositoryUri = JSON.parse(ecrResponse)["repository"]["repositoryUri"]
+    const ecrResponse =
+      await $`aws ecr create-repository --repository-name ${imageName} --image-scanning-configuration scanOnPush=true --image-tag-mutability MUTABLE`
+    ECRrepositoryUri = JSON.parse(ecrResponse)['repository']['repositoryUri']
   } catch {
-    console.log("Failed to make repo, exiting...Please check your AWS credentials.")
+    console.log('Failed to make repo, exiting...Please check your AWS credentials.')
     process.exit(1)
   }
 }
 
 // tag and push the image
-await $`docker tag ${imageName}:${tagName} ${ECRrepositoryUri}:latest`
-await $`docker push ${ecr_repository_uri}/${imageName}:${tagName}`
+await $`docker tag ${imageName}:${tagName} ${ECRrepositoryUri}:${tagName}`
+await $`docker push ${ECRrepositoryUri}:${tagName}`
 
 // create file in ../data/src/config
-// contains export const converterUri = `${ecr_repository_uri}/${imageName}:${tagName}`
+// contains export const converterUri = `${ECRrepositoryUri}:${tagName}`
 // file name is `converterUri.ts'
 await $`touch ../data/src/config/converterUri.ts`
-await $`echo "export const converterUri = '${ecr_repository_uri}/${imageName}:${tagName}'" > ../data/src/config/converterUri.ts`
+await $`echo "export const converterUri = '${ECRrepositoryUri}:${tagName}'" > ../data/src/config/converterUri.ts`

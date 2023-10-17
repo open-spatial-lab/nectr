@@ -1,0 +1,11 @@
+{
+  "description": "Parquet converter. Based on activity in a s3 bucket, this function will convert any Pandas/Geopandas compatible file suffixed with '__toconvert__' to parquet and store it in a different s3 bucket.",
+  "architectures": [
+      "x86"
+  ],
+  "operatingSystems": [
+      "Linux"
+  ],
+  "aboutText": "This repository is a WIP.",
+  "usageText": "MIT Licensed, use freely."
+}

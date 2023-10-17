@@ -67,6 +67,20 @@ function createDataResources(app: PulumiApp, params: DataApiParams, dataBucket: 
     name: 'converter-api-lambda-role',
     policy: policy.output
   })
+
+  const duckdbLayer = app.addResource(aws.lambda.LayerVersion, {
+    name: "duckdb-layer",
+    config: {
+      layerName: "duckdb",
+      description: "DuckDB",
+      licenseInfo: "MIT",
+      code: new pulumi.asset.AssetArchive({
+        '.': new pulumi.asset.FileArchive(path.join(app.paths.workspace, 'data/infra/layer/duckdb-layer.zip'))
+      }),
+      compatibleRuntimes: ["nodejs14.x", "nodejs16.x"]
+    }
+  })
+
   const dataQuery = app.addResource(aws.lambda.Function, {
     name: 'data-api-runner',
     config: {
@@ -79,7 +93,7 @@ function createDataResources(app: PulumiApp, params: DataApiParams, dataBucket: 
       code: new pulumi.asset.AssetArchive({
         '.': new pulumi.asset.FileArchive(path.join(app.paths.workspace, 'data/build'))
       }),
-      layers: ['arn:aws:lambda:us-east-2:217827289796:layer:duckdb-test:1'],
+      layers: [duckdbLayer.output.arn],
       environment: {
         variables: getCommonLambdaEnvVariables().apply(value => ({
           ...value,

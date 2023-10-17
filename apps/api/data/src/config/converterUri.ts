@@ -1,1 +1,1 @@
-export const converterUri = '217827289796.dkr.ecr.us-east-2.amazonaws.com/convert-to-parquet:latest'
+export const converterUri = 'public.ecr.aws/x3g2o4h7/convert-to-parquet:latest'

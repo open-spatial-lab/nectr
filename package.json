@@ -102,7 +102,8 @@
     "dev:api": "yarn webiny watch apps/api --env=dev",
     "dev": "concurrently --kill-others \"yarn dev:admin\" \"yarn dev:api\"",
     "archiveWorkspace": "node ./scripts/archive/archiveCurrentRepo.js && node ./scripts/archive/uploadArchiveToS3.js",
-    "restoreWorkspace": "node ./scripts/archive/restoreWorkspace.js"
+    "restoreWorkspace": "node ./scripts/archive/restoreWorkspace.js",
+    "cleanWorkspace": "node ./scripts/archive/cleanWorkspace.js"
   },
   "resolutions": {
     "@types/react": "17.0.39",

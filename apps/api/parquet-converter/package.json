@@ -7,7 +7,8 @@
   },
   "scripts": {
     "build": "zx ./scripts/build.mjs",
-    "test": "zx ./scripts/test.mjs"
+    "test": "zx ./scripts/test.mjs",
+    "publish": "zx ./scripts/publish.mjs"
   },
   "dependencies": {
     "zx": "^7.2.3"
