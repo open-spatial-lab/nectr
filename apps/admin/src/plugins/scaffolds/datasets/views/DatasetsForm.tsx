@@ -92,27 +92,26 @@ const DatasetsForm: React.FC = () => {
   )
   const handleMeta = async (key: string, _form?: FormAPI) => {
     const form = _form || formApi.current
-    console.log('handleMeta', key)
     const metadataUrl = new URL(getApiUrl('__'))
     metadataUrl.searchParams.append('__metadata__', key)
     const metadataResponse = await fetch(metadataUrl.toString())
-    const { columns, preview } = await metadataResponse.json()
-    const parsedColumns = JSON.parse(columns)
-    const colList = parsedColumns.map((col: ColumnSchema) => col.name)
-    const dataList = preview.map((row: Record<string, any>) => Object.values(row))
-
-    setTable({
-      columns: colList,
-      data: dataList
-    })
-
-    setUploading({
-      status: 'uploaded',
-      filename: key
-    })
-
-    form && form.setValue('filename', key)
-    form && form.setValue('columns', parsedColumns)
+    if (metadataResponse.ok) {
+      const { columns, preview } = await metadataResponse.json()
+      const parsedColumns = JSON.parse(columns)
+      const colList = parsedColumns.map((col: ColumnSchema) => col.name)
+      const dataList = preview.map((row: Record<string, any>) => Object.values(row))
+      setTable({
+        columns: colList,
+        data: dataList
+      })
+      setUploading({
+        status: 'uploaded',
+        filename: key
+      })
+      form && form.setValue('filename', key)
+      form && form.setValue('columns', parsedColumns)
+      form && form.setValue('isPublic', true)
+    }
   }
 
   const uploadFile =
@@ -188,6 +187,9 @@ const DatasetsForm: React.FC = () => {
     statusName = statusName.replace('__dataset__', '__status__')
     statusName = statusName.replace('__toconvert__', '')
     statusName = statusName.replace('.parquet', '.json')
+    
+    let parquetName = uploading?.filename
+    parquetName = parquetName.replace('__toconvert__', '')
 
     switch (uploading.status) {
       case 'failed':
@@ -204,8 +206,18 @@ const DatasetsForm: React.FC = () => {
               () =>
                 checkIfConversionFinished(statusName).then(data => {
                   if (data?.body) {
-                    const body = JSON.parse(data.body)
-                    handleMeta(`${body.file_name}.parquet`)
+                    try {
+                      setTimeout(() => {
+                        console.log('querying meta....')
+                        handleMeta(parquetName)
+                      }, 10000)
+                    } catch (e) {
+                      console.error(e)
+                      setTimeout(() => {
+                        console.log('querying meta....')
+                        handleMeta(parquetName)
+                      }, 3000)
+                    }
                     clearTimeout(timeoutFn)
                   } else if (totalTimeoutDuration >= TIMEOUT_TOTAL_DURATION) {
                       setUploading({
@@ -239,7 +251,7 @@ const DatasetsForm: React.FC = () => {
     )
   }
   return (
-    <Form data={dataset} onSubmit={onSubmit} disabled={uploading.status === 'uploading' || uploading.status === 'converting'}> 
+    <Form data={dataset} onSubmit={onSubmit}> 
       {({ form, data, submit, Bind }) => (
         <SimpleForm>
           {loading && <CircularProgress />}
@@ -270,6 +282,14 @@ const DatasetsForm: React.FC = () => {
               <Cell span={2}>
                 <TablePreview table={table} />
               </Cell>
+          <Cell span={12}>
+            <Bind name="isPublic">
+              <Switch
+                label={'Data Visible'}
+                description={'Should this data be visible to the public?'}
+              />
+            </Bind>
+          </Cell>
               <Cell span={12}>
                 <Bind name="description" validators={validation.create('maxLength:500')}>
                   <Input
@@ -289,14 +309,6 @@ const DatasetsForm: React.FC = () => {
 
                     return <ColumnBuilder columns={value || []} onChange={onChangeColumns} />
                   }}
-                </Bind>
-              </Cell>
-              <Cell span={12}>
-                <Bind name="isPublic">
-                  <Switch
-                    label={'Data Visible'}
-                    description={'Should this data be visible to the public?'}
-                  />
                 </Bind>
               </Cell>
             </Grid>

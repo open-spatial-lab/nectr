@@ -18,7 +18,7 @@ export default new Entity({
     title: { type: 'string' },
     description: { type: 'string' },
     createdOn: { type: 'string' },
-    isPublic: { type: 'boolean', default: false },
+    isPublic: { type: 'boolean', default: true },
     canView: { type: 'list', default: [] },
     canEdit: { type: 'list', default: [] },
     canDelete: { type: 'list', default: [] },

@@ -15,16 +15,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@75lb/deep-merge@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "@75lb/deep-merge@npm:1.1.1"
-  dependencies:
-    lodash.assignwith: ^4.2.0
-    typical: ^7.1.1
-  checksum: fd9063488d854bc5d2e1636426a51d7864d0d32d2d82c5b01a40e89466088680f6e2623345fb46782de438088b6d3f029b0eea6d79a7807e0000b365f6b8142b
-  languageName: node
-  linkType: hard
-
 "@ampproject/remapping@npm:^2.1.0, @ampproject/remapping@npm:^2.2.0":
   version: 2.2.0
   resolution: "@ampproject/remapping@npm:2.2.0"
@@ -10845,13 +10835,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.3.0":
-  version: 20.3.0
-  resolution: "@types/node@npm:20.3.0"
-  checksum: 613e878174febc0104dae210088645cbb5096a19ae5fdf57fbc06fa6ef71755b839858c2b313fb8c1df8b7c6660e1b5f7a64db2126af9d47d1d9238e2bc0a86d
-  languageName: node
-  linkType: hard
-
 "@types/node@npm:^12.12.22":
   version: 12.20.55
   resolution: "@types/node@npm:12.20.55"
@@ -13862,7 +13845,6 @@ __metadata:
     "@webiny/cli-plugin-deploy-pulumi": 5.34.5
     "@webiny/plugins": 5.34.5
     "@webiny/project-utils": 5.34.5
-    apache-arrow: ^13.0.0
     core-js: ^3.0.1
     cross-env: ^5.0.2
     cross-fetch: ^3.0.4
@@ -13870,7 +13852,6 @@ __metadata:
     graphql-request: ^3.4.0
     invariant: ^2.2.4
     papaparse: ^5.4.1
-    parquet-wasm: ^0.5.0-alpha.1
     parquetjs: ^0.11.2
     prop-types: ^15.7.2
     react: 17.0.2
@@ -14129,26 +14110,6 @@ __metadata:
   bin:
     arrow2csv: bin/arrow2csv.js
   checksum: 2ea0b1e444c9bab75518c8d618158713994b71d2f2bc97bc30e2067b1fa5085c16aa4cd804d282f1a4f31d23c83af97db7a034a09d632db51cffded2e5333722
-  languageName: node
-  linkType: hard
-
-"apache-arrow@npm:^13.0.0":
-  version: 13.0.0
-  resolution: "apache-arrow@npm:13.0.0"
-  dependencies:
-    "@types/command-line-args": 5.2.0
-    "@types/command-line-usage": 5.0.2
-    "@types/node": 20.3.0
-    "@types/pad-left": 2.1.1
-    command-line-args: 5.2.1
-    command-line-usage: 7.0.1
-    flatbuffers: 23.5.26
-    json-bignum: ^0.0.3
-    pad-left: ^2.1.0
-    tslib: ^2.5.3
-  bin:
-    arrow2csv: bin/arrow2csv.js
-  checksum: 34aeb3e179e5d068490ad9d4ab1e0113f1c1ed684415c1069c72b59a0b99db746bdd26040c817bfc305e9dd644751255410d7adb5688bdb3625dcf68dc714103
   languageName: node
   linkType: hard
 
@@ -14547,13 +14508,6 @@ __metadata:
   version: 4.0.2
   resolution: "array-back@npm:4.0.2"
   checksum: f30603270771eeb54e5aad5f54604c62b3577a18b6db212a7272b2b6c32049121b49431f656654790ed1469411e45f387e7627c0de8fd0515995cc40df9b9294
-  languageName: node
-  linkType: hard
-
-"array-back@npm:^6.2.2":
-  version: 6.2.2
-  resolution: "array-back@npm:6.2.2"
-  checksum: baae1e3a1687300a307d3bdf09715f6415e1099b5729d3d8e397309fb1e43d90b939d694602892172aaca7e0aeed38da89d04aa4951637d31c2a21350809e003
   languageName: node
   linkType: hard
 
@@ -15833,15 +15787,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk-template@npm:^0.4.0":
-  version: 0.4.0
-  resolution: "chalk-template@npm:0.4.0"
-  dependencies:
-    chalk: ^4.1.2
-  checksum: 6c706802a79a7963cbce18f022b046fe86e438a67843151868852f80ea7346e975a6a9749991601e7e5d3b6a6c4852a04c53dc966a9a3d04031bd0e0ed53c819
-  languageName: node
-  linkType: hard
-
 "chalk@npm:4.1.0":
   version: 4.1.0
   resolution: "chalk@npm:4.1.0"
@@ -16331,7 +16276,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"command-line-args@npm:5.2.1, command-line-args@npm:^5.2.1":
+"command-line-args@npm:5.2.1":
   version: 5.2.1
   resolution: "command-line-args@npm:5.2.1"
   dependencies:
@@ -16352,18 +16297,6 @@ __metadata:
     table-layout: ^1.0.2
     typical: ^5.2.0
   checksum: 8261d4e5536eb0bcddee0ec5e89c05bb2abd18e5760785c8078ede5020bc1c612cbe28eb6586f5ed4a3660689748e5aaad4a72f21566f4ef39393694e2fa1a0b
-  languageName: node
-  linkType: hard
-
-"command-line-usage@npm:7.0.1, command-line-usage@npm:^7.0.0":
-  version: 7.0.1
-  resolution: "command-line-usage@npm:7.0.1"
-  dependencies:
-    array-back: ^6.2.2
-    chalk-template: ^0.4.0
-    table-layout: ^3.0.0
-    typical: ^7.1.1
-  checksum: ac78ad6b83b9622bb111ae8e82205bde1d2da74df237fdd0bd7d98eda3592c8933ec600818b0b028b2313ddca638b1b60f0780dd9457ad4a0384b17156641f79
   languageName: node
   linkType: hard
 
@@ -20075,13 +20008,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flatbuffers@npm:23.5.26":
-  version: 23.5.26
-  resolution: "flatbuffers@npm:23.5.26"
-  checksum: 2528e549118d02fca9775cc9c17cf445741bb58b0a9575eb07bba823394a79dccb3bf97c48561720aa61d3dc9f42759129df0e05eb94c12f809cfb6126eaedd1
-  languageName: node
-  linkType: hard
-
 "flatted@npm:^3.1.0":
   version: 3.2.7
   resolution: "flatted@npm:3.2.7"
@@ -23403,13 +23329,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.assignwith@npm:^4.2.0":
-  version: 4.2.0
-  resolution: "lodash.assignwith@npm:4.2.0"
-  checksum: 014a88e398802ca4eaae314afb67f32eb2cab6f01e61490dbbb74694263f79715341ab8ddf4b344093a2253b506d347f67731f0499e457d9c0128be1d2caf6dd
-  languageName: node
-  linkType: hard
-
 "lodash.camelcase@npm:^4.3.0":
   version: 4.3.0
   resolution: "lodash.camelcase@npm:4.3.0"
@@ -25409,13 +25328,6 @@ __metadata:
   dependencies:
     callsites: ^3.0.0
   checksum: 6ba8b255145cae9470cf5551eb74be2d22281587af787a2626683a6c20fbb464978784661478dd2a3f1dad74d1e802d403e1b03c1a31fab310259eec8ac560ff
-  languageName: node
-  linkType: hard
-
-"parquet-wasm@npm:^0.5.0-alpha.1":
-  version: 0.5.0-alpha.1
-  resolution: "parquet-wasm@npm:0.5.0-alpha.1"
-  checksum: a0852c0e156d3862c8a93954aaf6a4aaf4ce670501f6871bae5e54ffe1e62286bf8dc70c7a1383c4ba5df210d6c2a3ccdc378e934745ca99497ed6fdde711e26
   languageName: node
   linkType: hard
 
@@ -29380,13 +29292,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stream-read-all@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "stream-read-all@npm:3.0.1"
-  checksum: 40d3c286837f1b1ae7e8105959804ad42fda00f2c087722d981cb1c9fbbea892b8a0a7ca1cf6a016c96770151a6201a3da5c8b66fe35e35106b52a5e9ab90e3e
-  languageName: node
-  linkType: hard
-
 "stream-shift@npm:^1.0.0":
   version: 1.0.1
   resolution: "stream-shift@npm:1.0.1"
@@ -29733,23 +29638,6 @@ __metadata:
     typical: ^5.2.0
     wordwrapjs: ^4.0.0
   checksum: 8f41b5671f101a5195747ec1727b1d35ea2cd5bf85addda11cc2f4b36892db9696ce3c2c7334b5b8a122505b34d19135fede50e25678df71b0439e0704fd953f
-  languageName: node
-  linkType: hard
-
-"table-layout@npm:^3.0.0":
-  version: 3.0.2
-  resolution: "table-layout@npm:3.0.2"
-  dependencies:
-    "@75lb/deep-merge": ^1.1.1
-    array-back: ^6.2.2
-    command-line-args: ^5.2.1
-    command-line-usage: ^7.0.0
-    stream-read-all: ^3.0.1
-    typical: ^7.1.1
-    wordwrapjs: ^5.1.0
-  bin:
-    table-layout: bin/cli.js
-  checksum: 2d4c538f224e64321d35788dbf78305cc1d138a3508e1a29f33e4f6b00bd082990a45dc85fd92948213f48ed8c0b3599155c2a05de412661ff020635e0db3762
   languageName: node
   linkType: hard
 
@@ -30374,13 +30262,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.5.3":
-  version: 2.6.2
-  resolution: "tslib@npm:2.6.2"
-  checksum: 329ea56123005922f39642318e3d1f0f8265d1e7fcb92c633e0809521da75eeaca28d2cf96d7248229deb40e5c19adf408259f4b9640afd20d13aecc1430f3ad
-  languageName: node
-  linkType: hard
-
 "tslib@npm:~2.0.1":
   version: 2.0.3
   resolution: "tslib@npm:2.0.3"
@@ -30563,13 +30444,6 @@ __metadata:
   version: 5.2.0
   resolution: "typical@npm:5.2.0"
   checksum: ccaeb151a9a556291b495571ca44c4660f736fb49c29314bbf773c90fad92e9485d3cc2b074c933866c1595abbbc962f2b8bfc6e0f52a8c6b0cdd205442036ac
-  languageName: node
-  linkType: hard
-
-"typical@npm:^7.1.1":
-  version: 7.1.1
-  resolution: "typical@npm:7.1.1"
-  checksum: 292c64a2e3d2296fd1b7a92bbe3a9ad683f643f3faa8c9b45f6911105da54246817a3e2a4f0fdd01bb4c49d2b940618ad30b6771ac1c94bf690a40c706f657fa
   languageName: node
   linkType: hard
 
@@ -31419,13 +31293,6 @@ __metadata:
     reduce-flatten: ^2.0.0
     typical: ^5.2.0
   checksum: 3d927f3c95d0ad990968da54c0ad8cde2801d8e91006cd7474c26e6b742cc8557250ce495c9732b2f9db1f903601cb74ec282e0f122ee0d02d7abe81e150eea8
-  languageName: node
-  linkType: hard
-
-"wordwrapjs@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "wordwrapjs@npm:5.1.0"
-  checksum: 063c7a5a85b694be1a5fd96f7ae0c0f4d717a087909e5c70cf25edec6eb5df5f2f5561f23e939cf6d7514cf81902610f74f288ef1612a49bf5451de15e0e29db
   languageName: node
   linkType: hard
 

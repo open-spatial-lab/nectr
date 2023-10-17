@@ -84,6 +84,20 @@ export default class CacheService {
     //   timestamp: Math.floor(Date.now() / 1000)
     // })
   }
+  async handleResult(output: QueryResponse<string, any>) {
+    if (output.ok) {
+      const cacheFileId = await this.cacheResult(output.result)
+      return this.redirectToCacheFile(cacheFileId)
+    } else {
+      return {
+        statusCode: 400,
+        headers: {
+          ...corsHeaders
+        },
+        body: JSON.stringify({ error: output.error })
+      }
+    }
+  }
 
   async cacheResult(data: string) {
     const fileId = nanoid()
@@ -92,7 +106,6 @@ export default class CacheService {
   }
 
   redirectToCacheFile(cacheFileId: string) {
-
     return {
       statusCode: 302,
       headers: {

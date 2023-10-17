@@ -7,6 +7,7 @@ import { handleAdminTestQuery } from './lambda/handlers/handleAdminTestQuery'
 import { handleOptionsRequest } from './lambda/handlers/handleOptions'
 import { handleMissingId } from './lambda/handlers/handleMissingId'
 import { handleStandardQuery } from './lambda/handlers/handleStandardQuery'
+import CacheService from './lambda/cache'
 
 export const S3_BUCKET = (process.env.S3_BUCKET as string) || 'data-api-dev'
 export const connection = new Connection()
@@ -30,17 +31,30 @@ export const handler = metricScope(
 
       const isMetaDataQuery = Boolean(params['__metadata__'])
       const isAdminTestQuery = params['__adminQuery__'] == 'true'
-      const metadataFile = params['__metadata__']
+      const _metadataFile = params['__metadata__']
       const token = event.headers['X-Authorization'] || event.headers['x-authorization']
 
       const queryDate = new Date()
       const queryStartTimestamp = queryDate.getTime()
       
       if (!connection.isInitialized) await connection.initialize()
-      if (isMetaDataQuery) return await handleMetadataQuery(metadataFile!, params)
-      if (isAdminTestQuery) return await handleAdminTestQuery(event.body!, params, token)
-      if (!id) return handleMissingId(event)
-      return handleStandardQuery(id, params, metrics, queryStartTimestamp)
+      if (isMetaDataQuery) {
+        const metadataFile = _metadataFile ? _metadataFile : ''
+        const output = await handleMetadataQuery(metadataFile, params)
+        const cacheService = new CacheService(metadataFile, params)
+        return await cacheService.handleResult(output)
+      } else if (isAdminTestQuery) {
+        const schema = JSON.parse(event.body!) as DataView | { raw: string }
+        const cacheService = new CacheService(schema['raw'] || event.body!, params)
+        const output = await handleAdminTestQuery(event.body!, params, token)
+        return cacheService.handleResult(output)
+      } else if (!id) {
+        return handleMissingId(event)
+      } else {
+        const cacheService = new CacheService(id, params)
+        const output = await handleStandardQuery(id, params, metrics, queryStartTimestamp)
+        return cacheService.handleResult(output)
+      }
     }
 )
 

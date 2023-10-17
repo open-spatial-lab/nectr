@@ -40,6 +40,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     output_name = file_key.replace('__toconvert__', '')
     output_name = output_name.split('.')[:-1]
     output_name = '.'.join(output_name)
+    # buffer geometry to fix errors, if any
+    if "geometry" in gdf.columns:
+        gdf["geometry"] = gdf["geometry"].buffer(0)
 
     # write to parquet
     gdf.to_parquet(f'/tmp/temp.parquet', index=False)
