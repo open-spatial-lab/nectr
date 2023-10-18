@@ -7,9 +7,7 @@ const ecr_repository_uri = `${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.co
 
 // Build the image and login to ECR
 await $`docker build --platform linux/amd64 -t ${imageName}:${tagName} .`
-await $`
-aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
-aws ecr get-login-password --region ${aws_region} | docker login --username AWS --password-stdin ${ecr_repository_uri}`
+await $`aws ecr get-login-password --region ${aws_region} | docker login --username AWS --password-stdin ${ecr_repository_uri}`
 
 // check if the repo exists on AWS
 // otherwise, create the ECR repo

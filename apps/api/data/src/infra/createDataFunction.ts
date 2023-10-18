@@ -69,26 +69,25 @@ function createDataResources(app: PulumiApp, params: DataApiParams, dataBucket: 
   })
 
   const duckdbLayer = app.addResource(aws.lambda.LayerVersion, {
-    name: "duckdb-layer",
+    name: 'duckdb-layer',
     config: {
-      layerName: "duckdb",
-      description: "DuckDB",
-      licenseInfo: "MIT",
-      code: new pulumi.asset.AssetArchive({
-        '.': new pulumi.asset.FileArchive(path.join(app.paths.workspace, 'data/infra/layer/duckdb-layer.zip'))
-      }),
-      compatibleRuntimes: ["nodejs14.x", "nodejs16.x"]
+      layerName: 'duckdb-layer',
+      description: 'DuckDB',
+      licenseInfo: 'MIT',
+      s3Bucket: core.fileManagerBucketId,
+      s3Key: 'duckdb-layer.zip',
+      compatibleRuntimes: ['nodejs14.x', 'nodejs16.x']
     }
   })
 
   const dataQuery = app.addResource(aws.lambda.Function, {
     name: 'data-api-runner',
     config: {
-      role: role.output.arn,
+      role: 'arn:aws:iam::495509594973:role/wby-data-api-lambda-role-fa2de55',
       runtime: 'nodejs14.x',
       handler: 'handler.handler',
       timeout: 30,
-      memorySize: 4096,
+      memorySize: 3008,
       description: 'Runs data jobs for the Nectr data API',
       code: new pulumi.asset.AssetArchive({
         '.': new pulumi.asset.FileArchive(path.join(app.paths.workspace, 'data/build'))
@@ -114,7 +113,7 @@ function createDataResources(app: PulumiApp, params: DataApiParams, dataBucket: 
       role: converterRole.output.arn,
       packageType: 'Image',
       timeout: 60,
-      memorySize: 4096 * 2,
+      memorySize: 3008,
       ephemeralStorage: {
         size: 10240
       },
