@@ -67,9 +67,9 @@ export default /* GraphQL */ `
 
   input JoinQueryInput {
     leftSourceId: String!
-    leftOn: String!
+    leftOn: [String]
     rightSourceId: String!
-    rightOn: String!
+    rightOn: [String]
     operator: String!
     geoPredicate: String
     leftOnGeo: [ColumnOperationInput]
