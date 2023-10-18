@@ -5,6 +5,7 @@ import { PbPageLayoutPlugin } from '@webiny/app-page-builder'
 import { FbFormLayoutPlugin } from '@webiny/app-form-builder'
 import { ThemePlugin } from '@webiny/app-website'
 import DefaultFormLayout from './layouts/forms/DefaultFormLayout'
+import dataGroup from './pageElements/dataGroup'
 
 export default () => [
   new ThemePlugin(theme),
@@ -17,5 +18,6 @@ export default () => [
     name: 'default',
     title: 'Default layout',
     component: DefaultFormLayout
-  })
+  }),
+  dataGroup
 ]

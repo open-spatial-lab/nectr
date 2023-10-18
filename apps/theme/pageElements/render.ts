@@ -4,11 +4,13 @@ import table from './table/website'
 import scatter from './scatterplot/website'
 import dropdown from './dropdown/website'
 import histogram from './histogram/website'
+import dataGroup from './dataGroup'
 export default [
   map,
   bar,
   table,
   scatter,
   dropdown,
-  histogram
+  histogram,
+  dataGroup
 ]

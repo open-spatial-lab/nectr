@@ -74,7 +74,7 @@ export default [
       // We use `pb-editor-element-group-media` to put our new
       // page element into the Media group in the left sidebar.
       title: 'map',
-      group: 'pb-editor-element-group-media',
+      group: 'pb-editor-element-group-data',
       preview() {
         // We can return any JSX / React code here. To keep it
         // simple, we are simply returning the element's name.
@@ -353,8 +353,9 @@ export const LayerConfigurator = ({
   Bind: BindComponent
 }) => {
   const baseMapLayers =
-    typeof document !== 'undefined' //@ts-ignore
-      ? Object.keys(document.getElementsByTagName('osl-glmap')?.[0]?.map?.style?._layers) || {}
+    (typeof document !== 'undefined' && Boolean(document))
+    // @ts-ignore
+      ? Object.keys(document?.getElementsByTagName('osl-glmap')?.[0]?.map?.style?._layers || {})
       : []
   const { dataViews, currentDataview } = useDataViews({ variables: { source: layer?.source } })
   const cleanColumnList = currentDataview?.columns || []

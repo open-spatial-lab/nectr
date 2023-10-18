@@ -7,8 +7,9 @@ export default function useHtmlElementRerender(
   const [htmlEl, setHtmlEl] = useState<React.ReactNode>(<div></div>)
   
   useEffect(() => {
+    console.log('updating...')
     const updateEl = async () => {
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 1000))
       setHtmlEl(<div></div>)
       Promise.resolve().then(() => {
         setHtmlEl(element)

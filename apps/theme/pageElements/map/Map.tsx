@@ -46,7 +46,7 @@ export const Map = createRenderer(() => {
   const { getElement } = useRenderer()
   const element = getElement<MapProps>()
   useFullBundle()
-
+  console.log(element)
   const { center, zoom, mapStyle, mapGroup, layers } = element.data.variables
 
   return useHtmlElementRerender(
