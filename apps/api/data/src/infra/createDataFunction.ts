@@ -83,7 +83,7 @@ function createDataResources(app: PulumiApp, params: DataApiParams, dataBucket: 
   const dataQuery = app.addResource(aws.lambda.Function, {
     name: 'data-api-runner',
     config: {
-      role: 'arn:aws:iam::495509594973:role/wby-data-api-lambda-role-fa2de55',
+      role: role.output.arn,
       runtime: 'nodejs14.x',
       handler: 'handler.handler',
       timeout: 30,

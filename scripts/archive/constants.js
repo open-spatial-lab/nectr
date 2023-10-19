@@ -4,7 +4,7 @@ const s3 = require('@aws-sdk/client-s3')
 
 const _suffix = process.env.ARCHIVE_SUFFIX
 const suffix = _suffix ? `-${_suffix}` : ''
-const bucketName = 'webiny-nectr-infrastructure-archive'
+const bucketName = 'webiny-nectr-infrastructure-archive' + suffix
 const s3Client = new s3.S3Client({})
 
 module.exports = {

@@ -6,8 +6,10 @@ const tagName = process.env.TAG_NAME || 'latest'
 const ecr_repository_uri = `${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com`
 
 // Build the image and login to ECR
-await $`docker build --platform linux/amd64 -t ${imageName}:${tagName} .`
+// logoout first to avoid any issues
+await $`aws ecr get-login-password --region ${aws_region} | docker logout`
 await $`aws ecr get-login-password --region ${aws_region} | docker login --username AWS --password-stdin ${ecr_repository_uri}`
+await $`docker build --platform linux/amd64 -t ${imageName}:${tagName} .`
 
 // check if the repo exists on AWS
 // otherwise, create the ECR repo

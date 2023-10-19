@@ -30,6 +30,8 @@ async function main() {
     )
     console.log(`Bucket ${bucketName} created.`)
   } catch (e){
+    console.log(`Bucket ${bucketName} already exists or failed to create bucket.`)
+    console.error(e)
     // bucket exists...
   }
 
@@ -114,6 +116,7 @@ async function main() {
     // Verify the output by downloading the file from the Amazon Simple Storage Service (Amazon S3) console.
     // Because the output is a 25 MB string, text editors might struggle to open the file.
   } catch (err) {
+    console.log('Error uploading archive to S3')
     console.error(err)
 
     if (uploadId) {
