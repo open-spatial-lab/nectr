@@ -18,7 +18,7 @@ export const createDataApp = (app: ApiPulumiApp) => {
 
   const { dataBucket, originIdentity } = createDataBucket(app, name)
   const cloudfront = app.getModule(ApiCloudfront)
-
+  
   const {
     data: {
       dataApiGateway
@@ -62,6 +62,7 @@ export const createDataApp = (app: ApiPulumiApp) => {
       }
     ]
   })
+
   resources.cloudfront.config.orderedCacheBehaviors(orderedBehaviors => {
     if (!orderedBehaviors) {
       return orderedBehaviors
