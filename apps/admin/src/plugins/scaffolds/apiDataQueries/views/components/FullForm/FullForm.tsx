@@ -257,7 +257,6 @@ export const FullForm: React.FC<FullFormProps> = ({
                         <Bind name="wheres">
                           {({ onChange, value }) => {
                             const wheres = value as WhereQuery[]
-
                             return (
                               <>
                                 <hr />

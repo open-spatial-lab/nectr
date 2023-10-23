@@ -66,13 +66,14 @@ export const useDatasetsForm = () => {
 
   const dataset = getQuery?.data?.datasets?.getDataset
   const emptyViewIsShown = !searchParams.has('new') && !loading && !dataset
-  const currentDataset = useCallback(() => history.push('/datasets?new'), [])
+  const handleNewDataset = useCallback(() => history.push('/datasets?new'), [])
   const cancelEditing = useCallback(() => history.push('/datasets'), [])
 
   return {
     loading,
     emptyViewIsShown,
-    currentDataset,
+    handleNewDataset,
+    currentDatasetId,
     cancelEditing,
     dataset,
     onSubmit

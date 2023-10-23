@@ -60,7 +60,15 @@ const resolveFile = (files: FileItem) => {
     statusFileName: `${fileName}__status__.json`
   }
 }
+const INITIAL_UPLOAD_STATE = {
+  status: "not uploaded",
+  filename: "",
+}
 
+const INITIAL_TABLE_STATE = {
+  columns: [],
+  data: [[]],
+}
 /**
  * Renders a form which enables creating new or editing existing Dataset entries.
  * Includes two basic fields - title (required) and description.
@@ -68,49 +76,57 @@ const resolveFile = (files: FileItem) => {
  */
 const DatasetsForm: React.FC = () => {
   const formApi = useRef<FormAPI | null>(null)
-  const { loading, emptyViewIsShown, currentDataset, cancelEditing, dataset, onSubmit } =
-    useDatasetsForm()
-
-  const [uploading, setUploading] = useState({
-    status: 'not uploaded',
-    filename: ''
-  })
+  const {
+    loading,
+    emptyViewIsShown,
+    handleNewDataset,
+    cancelEditing,
+    dataset,
+    onSubmit,
+    currentDatasetId,
+  } = useDatasetsForm()
+    
+  const [uploading, setUploading] = useState(INITIAL_UPLOAD_STATE)
 
   const [table, setTable] = useState<{
     columns: any[]
     data: any[][]
-  }>({
-    columns: [],
-    data: [[]]
-  })
+  }>(INITIAL_TABLE_STATE)
+
+  useEffect(() => {
+    setUploading(INITIAL_UPLOAD_STATE)
+    setTable(INITIAL_TABLE_STATE)
+  }, [currentDatasetId])
 
   const apolloClient = useApolloClient()
 
-  const [createFile] = useMutation<CreateFileMutationResponse, CreateFileMutationVariables>(
-    CREATE_FILE,
-    {}
-  )
+  const [createFile] = useMutation<
+    CreateFileMutationResponse,
+    CreateFileMutationVariables
+  >(CREATE_FILE, {})
   const handleMeta = async (key: string, _form?: FormAPI) => {
     const form = _form || formApi.current
-    const metadataUrl = new URL(getApiUrl('__'))
-    metadataUrl.searchParams.append('__metadata__', key)
+    const metadataUrl = new URL(getApiUrl("__"))
+    metadataUrl.searchParams.append("__metadata__", key)
     const metadataResponse = await fetch(metadataUrl.toString())
     if (metadataResponse.ok) {
       const { columns, preview } = await metadataResponse.json()
       const parsedColumns = JSON.parse(columns)
       const colList = parsedColumns.map((col: ColumnSchema) => col.name)
-      const dataList = preview.map((row: Record<string, any>) => Object.values(row))
+      const dataList = preview.map((row: Record<string, any>) =>
+        Object.values(row)
+      )
       setTable({
         columns: colList,
-        data: dataList
+        data: dataList,
       })
       setUploading({
-        status: 'uploaded',
-        filename: key
+        status: "uploaded",
+        filename: key,
       })
-      form && form.setValue('filename', key)
-      form && form.setValue('columns', parsedColumns)
-      form && form.setValue('isPublic', true)
+      form && form.setValue("filename", key)
+      form && form.setValue("columns", parsedColumns)
+      form && form.setValue("isPublic", true)
     }
   }
 
@@ -122,8 +138,8 @@ const DatasetsForm: React.FC = () => {
       }
       // Placeholder status
       setUploading({
-        status: 'uploading',
-        filename: files.name
+        status: "uploading",
+        filename: files.name,
       })
       // Resolve filenames with appropriate suffixes
       //  __dataset__ blocks public access
@@ -139,26 +155,29 @@ const DatasetsForm: React.FC = () => {
           variables: {
             data: {
               ...response,
-              tags: ['dataset', filetype],
+              tags: ["dataset", filetype],
               meta: {
-                private: true
-              }
-            }
-          }
+                private: true,
+              },
+            },
+          },
         })
         const fileUploadData = get(
           createFileResponse,
-          'data.fileManager.createFile.data'
+          "data.fileManager.createFile.data"
         ) as unknown as FileItem
 
         if (!converting) {
           await handleMeta(fileUploadData.key, form)
         } else {
-          const fileNameNoSuffix = fileUploadData.name.split('.').slice(0, -1).join('.')
+          const fileNameNoSuffix = fileUploadData.name
+            .split(".")
+            .slice(0, -1)
+            .join(".")
           const fileName = `${fileNameNoSuffix}.parquet`
           setUploading({
-            status: 'converting',
-            filename: fileName
+            status: "converting",
+            filename: fileName,
           })
         }
 
@@ -172,10 +191,11 @@ const DatasetsForm: React.FC = () => {
 
   const [totalTimeoutDuration, setTotalTimeoutDuration] = useState(0)
   const [timeoutFn, setTimeoutFn] = useState<any>(null)
-  const incrementTimeoutFn = () => setTotalTimeoutDuration(prev => prev + TIMEOUT_INTERVAL)
+  const incrementTimeoutFn = () =>
+    setTotalTimeoutDuration((prev) => prev + TIMEOUT_INTERVAL)
 
   const checkIfConversionFinished = async (key: string) => {
-    const statusFileName = key.replace('__dataset__', '__status__')
+    const statusFileName = key.replace("__dataset__", "__status__")
     const fileUrl = new URL(getFileUrl(statusFileName))
     const metadataResponse = await fetch(fileUrl.toString())
     const data = await metadataResponse.json()
@@ -184,46 +204,46 @@ const DatasetsForm: React.FC = () => {
 
   useEffect(() => {
     let statusName = uploading?.filename
-    statusName = statusName.replace('__dataset__', '__status__')
-    statusName = statusName.replace('__toconvert__', '')
-    statusName = statusName.replace('.parquet', '.json')
-    
+    statusName = statusName.replace("__dataset__", "__status__")
+    statusName = statusName.replace("__toconvert__", "")
+    statusName = statusName.replace(".parquet", ".json")
+
     let parquetName = uploading?.filename
-    parquetName = parquetName.replace('__toconvert__', '')
+    parquetName = parquetName.replace("__toconvert__", "")
 
     switch (uploading.status) {
-      case 'failed':
-        console.error('File upload failed')
+      case "failed":
+        console.error("File upload failed")
         break
-      case 'uploaded':
+      case "uploaded":
         dataset?.filename && handleMeta(dataset?.filename)
         break
       case `converting`:
-        console.log('checking status....', totalTimeoutDuration)
+        console.log("checking status....", totalTimeoutDuration)
         uploading?.filename &&
           setTimeoutFn(
             setTimeout(
               () =>
-                checkIfConversionFinished(statusName).then(data => {
+                checkIfConversionFinished(statusName).then((data) => {
                   if (data?.body) {
                     try {
                       setTimeout(() => {
-                        console.log('querying meta....')
+                        console.log("querying meta....")
                         handleMeta(parquetName)
                       }, 10000)
                     } catch (e) {
                       console.error(e)
                       setTimeout(() => {
-                        console.log('querying meta....')
+                        console.log("querying meta....")
                         handleMeta(parquetName)
                       }, 3000)
                     }
                     clearTimeout(timeoutFn)
                   } else if (totalTimeoutDuration >= TIMEOUT_TOTAL_DURATION) {
-                      setUploading({
-                        status: 'failed',
-                        filename: uploading.filename
-                      })
+                    setUploading({
+                      status: "failed",
+                      filename: uploading.filename,
+                    })
                   } else {
                     incrementTimeoutFn()
                   }
@@ -235,16 +255,24 @@ const DatasetsForm: React.FC = () => {
       default:
         break
     }
+    
     () => clearTimeout(timeoutFn)
-  }, [dataset?.filename, dataset?.status, totalTimeoutDuration, uploading.status])
+  }, [
+    dataset?.filename,
+    dataset?.status,
+    totalTimeoutDuration,
+    uploading.status,
+  ])
 
   if (emptyViewIsShown) {
     return (
       <EmptyView
-        title={'Click on the left side list to display Datasets details or create a...'}
+        title={
+          "Click on the left side list to display Datasets details or create a..."
+        }
         action={
-          <ButtonDefault onClick={currentDataset}>
-            <ButtonIcon icon={<AddIcon />} /> {'New Dataset'}
+          <ButtonDefault onClick={handleNewDataset}>
+            <ButtonIcon icon={<AddIcon />} /> {"New Dataset"}
           </ButtonDefault>
         }
       />
