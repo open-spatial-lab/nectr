@@ -84,8 +84,8 @@ export const exampleSourceSpecs = {
       {
         leftSourceId: 'sdoh',
         rightSourceId: 'other-join',
-        leftOn: 'column1',
-        rightOn: 'column3',
+        leftOn: ['column1'],
+        rightOn: ['column3'],
         operator: 'inner'
       }
     ],

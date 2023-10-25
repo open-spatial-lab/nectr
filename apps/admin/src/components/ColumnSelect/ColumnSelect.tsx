@@ -9,7 +9,8 @@ export const ColumnSelect = ({
   value,
   disabled,
   label = 'Select a column',
-  multi = false
+  multi = false,
+  compact = false
 }: ColumnSelectProps) => {
   const randomId = useRef(Math.random().toString(36).substring(7))
   // @ts-ignore
@@ -30,6 +31,7 @@ export const ColumnSelect = ({
         multiple={multi}
         disabled={disabled}
         value={selectedValue}
+        
 
         onChange={(_e, _val) => {
           if (_val === null || !Boolean(_val)){
@@ -45,7 +47,7 @@ export const ColumnSelect = ({
             {option.name}
           </MenuItem>
         )}
-        renderInput={params => <TextField {...params} label={label} />}
+        renderInput={params => <TextField {...params} label={label} size={compact ? 'small' : 'medium'} />}
       />
     </FormControl>
   )

@@ -109,9 +109,9 @@ const joinSchema = {
       joins: [
         {
           leftSourceId: 'sdoh',
-          leftOn: 'fips',
+          leftOn: ['fips'],
           rightSourceId: 'sdoh-join',
-          rightOn: 'geoid',
+          rightOn: ['geoid'],
           operator: 'inner'
         }
       ]
@@ -119,7 +119,43 @@ const joinSchema = {
     params: {},
     isSubQuery: false
   },
-  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" inner join 's3://test_bucket/sdoh-join.csv' "sdoh-join" on "sdoh"."fips" = "sdoh-join"."geoid";`
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" inner join 's3://test_bucket/sdoh-join.csv' "sdoh-join" on ("sdoh"."fips" = "sdoh-join"."geoid");`
+} as MockSchema
+
+
+const compoundJoinQuery = {
+  config: {
+    schema: {
+      ...API_DATA_QUERY_TEST_PROPERTIES,
+      title: 'Compound Join',
+      sources: [
+        {
+          id: 'sdoh',
+          type: 'Dataset' as SourceTypes,
+          TYPE: 'Dataset',
+          title: 'sdoh'
+        },
+        {
+          id: 'sdoh-join',
+          type: 'Dataset' as SourceTypes,
+          TYPE: 'Dataset',
+          title: 'sdoh-join'
+        }
+      ],
+      joins: [
+        {
+          leftSourceId: 'sdoh',
+          leftOn: ['fips', 'fips2'],
+          rightSourceId: 'sdoh-join',
+          rightOn: ['geoid', 'geoid2'],
+          operator: 'inner'
+        }
+      ]
+    },
+    params: {},
+    isSubQuery: false
+  },
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" inner join 's3://test_bucket/sdoh-join.csv' "sdoh-join" on ("sdoh"."fips" = "sdoh-join"."geoid" and "sdoh"."fips2" = "sdoh-join"."geoid2");`
 } as MockSchema
 
 const chainedJoinSchema = {
@@ -150,16 +186,16 @@ const chainedJoinSchema = {
       joins: [
         {
           leftSourceId: 'sdoh',
-          leftOn: 'fips',
+          leftOn: ['fips'],
           rightSourceId: 'sdoh-join',
-          rightOn: 'geoid',
+          rightOn: ['geoid'],
           operator: 'inner'
         },
         {
           leftSourceId: 'sdoh-join',
-          leftOn: 'geoid',
+          leftOn: ['geoid'],
           rightSourceId: 'other-join',
-          rightOn: '__id__',
+          rightOn: ['__id__'],
           operator: 'left'
         }
       ]
@@ -167,7 +203,7 @@ const chainedJoinSchema = {
     params: {},
     isSubQuery: false
   },
-  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" inner join 's3://test_bucket/sdoh-join.csv' "sdoh-join" on "sdoh"."fips" = "sdoh-join"."geoid" left join 's3://test_bucket/other-join.parquet' "other-join" on "sdoh-join"."geoid" = "other-join"."__id__";`
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" inner join 's3://test_bucket/sdoh-join.csv' "sdoh-join" on ("sdoh"."fips" = "sdoh-join"."geoid") left join 's3://test_bucket/other-join.parquet' "other-join" on ("sdoh-join"."geoid" = "other-join"."__id__");`
 } as MockSchema
 
 const whereSchema = {
@@ -209,7 +245,7 @@ const groupSchema = {
       groupbys: [
         {
           sourceId: 'sdoh',
-          column: 'column1'
+          column: ['column1']
         }
       ]
     },
@@ -234,17 +270,18 @@ const compoundSchema = {
       joins: [
         {
           leftSourceId: 'sdoh-join',
-          leftOn: 'geoid',
+          leftOn: ['geoid'],
           rightSourceId: 'dataview',
-          rightOn: 'geoid',
+          rightOn: ['geoid'],
           operator: 'inner'
         }
       ],
       title: 'Compound Query'
     }
   },
-  result: `select * from 's3://test_bucket/sdoh-join.csv' "sdoh-join" inner join (select "sdoh"."column1" as "column1", "sdoh"."column2" as "column2", "other-join"."column3" as "column3" from 's3://test_bucket/sdoh.csv' "sdoh" inner join 's3://test_bucket/other-join.parquet' "other-join" on "sdoh"."column1" = "other-join"."column3" where "sdoh"."column1" > 0) "dataview" on "sdoh-join"."geoid" = "dataview"."geoid";`
-} as MockSchema
+  result: `select * from 's3://test_bucket/sdoh-join.csv' "sdoh-join" inner join (select "sdoh"."column1" as "column1", "sdoh"."column2" as "column2", "other-join"."column3" as "column3" from 's3://test_bucket/sdoh.csv' "sdoh" inner join 's3://test_bucket/other-join.parquet' "other-join" on ("sdoh"."column1" = "other-join"."column3") where "sdoh"."column1" > 0) "dataview" on ("sdoh-join"."geoid" = "dataview"."geoid");`
+} as any
+
 const groupHavingSchema = {
   config: {
     schema: {
@@ -270,6 +307,7 @@ const testCases = [
   customExpressionSchema,
   columnSchema,
   joinSchema,
+  compoundJoinQuery,
   chainedJoinSchema,
   whereSchema,
   groupSchema,

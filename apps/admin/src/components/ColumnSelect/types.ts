@@ -7,4 +7,5 @@ export type ColumnSelectProps = {
   disabled?: boolean
   label?: string
   multi?: boolean
+  compact?: boolean
 }
