@@ -337,6 +337,15 @@ export class SqlBuilder {
       }
     })
   }
+  buildOrderByClauses(
+    orderbys: ApiDataQueryEntity["orderbys"] = this.schema.orderbys
+  ){
+    if (!orderbys) return
+    orderbys.forEach((orderby: (typeof orderbys)[number]) => {
+      const orderbyColumn = `"${orderby.sourceId}"."${orderby.column}"`
+      this.query.orderByRaw(`${orderbyColumn} ${orderby.direction}`)
+    })
+  }
   buildLimitClause(limit: ApiDataQueryEntity["limit"] = this.schema.limit) {
     if (!limit) return
     this.query.limit(limit)
@@ -352,6 +361,7 @@ export class SqlBuilder {
     this.buildSelectClause()
     this.buildWhereClauses()
     this.buildGroupByClauses()
+    this.buildOrderByClauses()
     this.buildLimitClause()
     this.buildOffsetClause()
   }

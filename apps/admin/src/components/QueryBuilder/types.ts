@@ -147,6 +147,12 @@ export type GroupByQuery = {
   column: string[]
 }
 
+export type OrderByQuery = {
+  sourceId: string
+  column: string
+  direction: 'asc' | 'desc'
+}
+
 export type SelectQuery = {
   from: Source
   id: string

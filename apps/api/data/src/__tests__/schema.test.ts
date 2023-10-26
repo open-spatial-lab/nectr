@@ -35,6 +35,36 @@ const simpleSchema = {
   result: `select * from 's3://test_bucket/sdoh.csv' "sdoh";`
 } as MockSchema
 
+const orderedSchema = {
+  config: {
+    schema: {
+      ...API_DATA_QUERY_TEST_PROPERTIES,
+      title: 'Simple From',
+      sources: [
+        {
+          id: 'sdoh',
+          type: 'Dataset' as SourceTypes,
+          TYPE: 'Dataset',
+          title: 'sdoh'
+        }
+      ],
+      orderbys: [
+        {
+          sourceId: 'sdoh',
+          column: 'column1',
+          direction: 'asc'
+        },
+        {
+          sourceId: 'sdoh',
+          column: 'column2',
+          direction: 'desc'
+        }
+      ]
+    }
+  },
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" order by "sdoh"."column1" asc, "sdoh"."column2" desc;`
+} as MockSchema
+
 const customExpressionSchema = {
   config: {
     schema: {
@@ -304,6 +334,7 @@ const groupHavingSchema = {
 
 const testCases = [
   simpleSchema,
+  orderedSchema,
   customExpressionSchema,
   columnSchema,
   joinSchema,

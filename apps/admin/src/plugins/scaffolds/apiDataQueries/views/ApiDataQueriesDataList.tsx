@@ -4,7 +4,7 @@ import { ButtonIcon, ButtonPrimary, ButtonSecondary } from '@webiny/ui/Button'
 import { ReactComponent as AddIcon } from '@webiny/app-admin/assets/icons/add-18px.svg'
 import {
   DataList,
-  ScrollList,
+  // ScrollList,
   ListItem,
   ListItemText,
   ListItemMeta,
@@ -27,6 +27,14 @@ const HeavyText = styled('span')`
 // More sorters can be added, but not that further adjustments will be needed on the GraphQL API side.
 const sorters = [
   {
+    label: 'Title A-Z',
+    value: 'title_ASC'
+  },
+  {
+    label: 'Title Z-A',
+    value: 'title_DESC'
+  },
+  {
     label: 'Newest to oldest',
     value: 'createdOn_DESC'
   },
@@ -36,9 +44,19 @@ const sorters = [
   }
 ]
 
+const sort = (data: any, sortLabel: String) => {
+  switch (sortLabel) {
+    case 'title_ASC':
+      return data.sort((a: any, b: any) => a.title.localeCompare(b.title))
+    case 'title_DESC':
+      return data.sort((a: any, b: any) => b.title.localeCompare(a.title))
+    default:
+        return data
+  }}
+
 const ApiDataQueriesDataList: React.FC<{ onHide: () => void }> = ({ onHide }) => {
   const {
-    apiDataQueries,
+    apiDataQueries: _apiDataQueries,
     loading,
     refresh,
     pagination,
@@ -46,9 +64,10 @@ const ApiDataQueriesDataList: React.FC<{ onHide: () => void }> = ({ onHide }) =>
     newApiDataQuery,
     editApiDataQuery,
     deleteApiDataQuery,
-    currentApiDataQueryId
+    currentApiDataQueryId,
+    variables
   } = useApiDataQueriesDataList()
-
+  const apiDataQueries = sort(_apiDataQueries, variables.sort)
   return (
     <DataList
       title={'Data Views'}
@@ -76,7 +95,7 @@ const ApiDataQueriesDataList: React.FC<{ onHide: () => void }> = ({ onHide }) =>
       }
     >
       {({ data }: { data: any[] }) => (
-        <ScrollList>
+        <>
           {data.map(item => (
             <ListItem
               onClick={() => editApiDataQuery(item.id)}
@@ -92,7 +111,7 @@ const ApiDataQueriesDataList: React.FC<{ onHide: () => void }> = ({ onHide }) =>
               </ListItemMeta>
             </ListItem>
           ))}
-        </ScrollList>
+        </>
       )}
     </DataList>
   )

@@ -38,6 +38,7 @@ interface useApiDataQueriesDataListHook {
     editApiDataQuery: (id: string) => void
     deleteApiDataQuery: (id: string) => void
     currentApiDataQueryId: string | null
+    variables: ApiDataQueriesState
   }
 }
 
@@ -151,6 +152,7 @@ export const useApiDataQueriesDataList: useApiDataQueriesDataListHook = () => {
     newApiDataQuery,
     editApiDataQuery,
     deleteApiDataQuery,
-    currentApiDataQueryId
+    currentApiDataQueryId,
+    variables
   }
 }
