@@ -136,6 +136,7 @@ export const FullForm: React.FC<FullFormProps> = ({
           form.setValue("title", `New ${dataViewTemplate} Data View - ${date}`)
         }, [dataViewTemplate])
 
+        console.log(form.data)
         return (
           <NoPaddingForm>
             <SimpleFormContent>

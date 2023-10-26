@@ -34,6 +34,7 @@ export const ColumnSelector: React.FC<{
     index: number
   } | null>(null)
 
+
   const currentSourceColumns = currentSource?.columns || []
   const sourceIds = sources?.map(source => source.id) || []
   const columnWidth = simpleView || (!simpleView && hideCurrent) ? 6 : 4
@@ -79,14 +80,14 @@ export const ColumnSelector: React.FC<{
     return null
   }
 
-  const handleAddColumn = (column: MetaColumnSchema) => {
+  const handleAddColumn = (column: MetaColumnSchema, includeExpression = false) => {
     const name = getColName(column)
     // @ts-ignore
     const metaSchema: MetaColumnSchema = {
       name,
       sourceId: currentSource.id,
       sourceTitle: currentSource.title,
-      expression: column.expression,
+      expression: includeExpression ? column.expression : undefined,
       alias: column.alias,
     }
     const duplicateColumns = currentColumns.filter(
@@ -235,7 +236,7 @@ export const ColumnSelector: React.FC<{
           onAdd={
             fieldCalculatorInfo?.index !== undefined
               ? getHandleUpdateAtIndex(fieldCalculatorInfo.index)
-              : handleAddColumn
+              : (col: any) => handleAddColumn(col, true)
           }
           onClose={() => {toggleFieldCalculator();resetFieldCalculator()}}
           initialColumnName={fieldCalculatorInfo?.columnName}

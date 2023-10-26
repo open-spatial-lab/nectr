@@ -93,7 +93,6 @@ export const JoinRow: React.FC<JoinRowProps> = ({
   onChange,
   onRemove,
 }) => {
-  console.log(join)
   const allSources = [...currentSources, ...availableSources]
   const leftSource = currentSources.find(
     (source) => source.id === join.leftSourceId

@@ -16,7 +16,7 @@ export const ColumnSelect = ({
   // @ts-ignore
   const cleanValue = value === "None" ? [] : value
   const selectedValue = multi ? cleanValue : cleanValue[0]
-
+  
   return (
     <FormControl
       fullWidth

@@ -34,6 +34,7 @@ const ApiDataQueriesForm: React.FC = () => {
   if (!apiDataQuery && !dataViewTemplate) {
     return <DataViewTemplates setDataViewTemplate={setDataViewTemplate} />
   }
+  // console.log('apiDataQuery',apiDataQuery)
 
   emptyViewIsShown && currentApiDataQuery()
 

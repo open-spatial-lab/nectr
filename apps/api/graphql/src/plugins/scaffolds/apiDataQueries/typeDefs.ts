@@ -21,6 +21,8 @@ export default /* GraphQL */ `
     alias: String
     aggregate: String
     expression: String
+    description: String
+    type: String
   }
 
   type ColumnOperation {
@@ -89,6 +91,8 @@ export default /* GraphQL */ `
     alias: String
     aggregate: String
     expression: String
+    description: String
+    type: String
   }
   
 
