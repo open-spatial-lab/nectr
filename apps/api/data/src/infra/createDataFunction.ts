@@ -14,6 +14,7 @@ import { DataBucket } from "./createDataBucket"
 import { createDataLambdaPolicy } from "./createDataLambdaPolicy"
 import { converterUri } from "../config/converterUri"
 import { createDataConverterRole } from "./createDataConverterRole"
+import { MAX_MEMORY } from "../config/maxMemory"
 export interface DataApiParams {
   env: Record<string, any>
 }
@@ -126,7 +127,7 @@ function createDataResources(
     "DataRunnerTaskLambdaPolicy"
   )
   const role = createLambdaRole(app, {
-    name: "data-api-lambda-role",
+    name: "data-runner-api-lambda-role",
     policy: policy.output,
   })
 
@@ -137,7 +138,7 @@ function createDataResources(
     "DataConvererTaskLambdaPolicy"
   )
   const converterRole = createDataConverterRole(app, {
-    name: "converter-2-api-lambda-role",
+    name: "converter-3-api-lambda-role",
     policy: converterPolicy.output,
   })
 
@@ -160,7 +161,7 @@ function createDataResources(
       runtime: "nodejs14.x",
       handler: "handler.handler",
       timeout: 30,
-      memorySize: 10240,
+      memorySize: MAX_MEMORY,
       description: "Runs data jobs for the Nectr data API",
       code: new pulumi.asset.AssetArchive({
         ".": new pulumi.asset.FileArchive(
@@ -182,18 +183,19 @@ function createDataResources(
     },
   })
 
+
   const converter = app.addResource(aws.lambda.Function, {
     name: "data-converter-v2",
     config: {
       role: converterRole.output.arn,
       packageType: "Image",
       timeout: 60,
-      memorySize: 10240,
+      memorySize: MAX_MEMORY,
       ephemeralStorage: {
         size: 10240,
       },
       description: "Automatically converts files to Parquet",
-      imageUri: converterUri,
+      imageUri: `${process.env['AWS_ACCOUNT_ID']}.dkr.ecr.${process.env.AWS_REGION}.amazonaws.com/convert-to-parquet:latest`,
       environment: {
         variables: getCommonLambdaEnvVariables().apply((value) => ({
           ...value,

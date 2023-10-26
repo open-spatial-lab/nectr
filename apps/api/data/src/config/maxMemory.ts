@@ -1,0 +1,1 @@
+export const MAX_MEMORY = process.env['IS_NEW_ACCOUNT'] ? 3008 : 10240
