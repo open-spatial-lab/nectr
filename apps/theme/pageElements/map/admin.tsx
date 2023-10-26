@@ -78,7 +78,7 @@ export default [
       preview() {
         // We can return any JSX / React code here. To keep it
         // simple, we are simply returning the element's name.
-        return <>Map Page Element</>
+        return <>Map</>
       }
     },
     // Defines which types of element settings are available to the user.
