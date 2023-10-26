@@ -31,7 +31,7 @@ async function main() {
     console.log(`Bucket ${bucketName} created.`)
   } catch (e){
     console.log(`Bucket ${bucketName} already exists or failed to create bucket.`)
-    console.error(e)
+    // console.error(e)
     // bucket exists...
   }
 
