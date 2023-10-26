@@ -81,6 +81,7 @@ export const useQueryBuilderPreview = ({ raw, schema }: { raw?: string; schema?:
         cols: nonNullSchema.columns,
         joins: nonNullSchema.joins,
         groupbys: nonNullSchema.groupbys,
+        orderbys: nonNullSchema.orderbys,
         page
       })
     : raw

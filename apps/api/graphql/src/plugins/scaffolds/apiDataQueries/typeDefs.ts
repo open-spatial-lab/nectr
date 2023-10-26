@@ -44,6 +44,12 @@ export default /* GraphQL */ `
     sourceId: String!
     column: [String]
   }
+
+  type OrderByQuery {
+    sourceId: String!
+    column: String!
+    direction: String!
+  }
   
   input SourceInput {
     id: String!
@@ -91,6 +97,12 @@ export default /* GraphQL */ `
     column: [String]
   }
 
+  input OrderByQueryInput {
+    sourceId: String!
+    column: String!
+    direction: String!
+  }
+
   type ApiDataQuery {
     id: ID!
     title: String!
@@ -99,6 +111,7 @@ export default /* GraphQL */ `
     joins: [JoinQuery]
     columns: [MetaColumnSchema]
     groupbys: [GroupByQuery]
+    orderbys: [OrderByQuery]
     createdOn: DateTime!
     savedOn: DateTime!
     isPublic: Boolean
@@ -132,6 +145,7 @@ export default /* GraphQL */ `
     joins: [JoinQueryInput]
     columns: [MetaColumnSchemaInput]
     groupbys: [GroupByQueryInput]
+    orderbys: [OrderByQueryInput]
     limit: Int
     offset: Int
     combinedOperator: String
@@ -151,6 +165,7 @@ export default /* GraphQL */ `
     joins: [JoinQueryInput]
     columns: [MetaColumnSchemaInput]
     groupbys: [GroupByQueryInput]
+    orderbys: [OrderByQueryInput]
     limit: Int
     offset: Int
     combinedOperator: String
@@ -166,6 +181,8 @@ export default /* GraphQL */ `
   enum ApiDataQueriesListSort {
     createdOn_ASC
     createdOn_DESC
+    title_ASC
+    title_DESC
   }
 
   type ApiDataQueriesList {

@@ -8,6 +8,7 @@ import {
   GroupByQuery,
   JoinQuery,
   MetaColumnSchema,
+  OrderByQuery,
   Source,
   WhereQuery
 } from 'admin/src/components/QueryBuilder/types'
@@ -35,6 +36,7 @@ export interface ApiDataQueryEntity {
   joins?: Array<JoinQuery>
   columns?: Array<MinimalColumnInfo>
   groupbys?: Array<GroupByQuery>
+  orderbys?: Array<OrderByQuery>
   limit?: number
   offset?: number
   dataViewTemplate?: String

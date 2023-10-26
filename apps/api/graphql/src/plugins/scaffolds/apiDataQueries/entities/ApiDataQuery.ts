@@ -30,6 +30,7 @@ export default new Entity<ApiDataQueryEntity>({
     joins: { type: 'list', default: [] },
     columns: { type: 'list', default: [] },
     groupbys: { type: 'list', default: [] },
+    orderbys: { type: 'list', default: [] },
     defaultParameters: {
       type: 'string',
       default: '{}'

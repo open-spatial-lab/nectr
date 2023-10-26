@@ -53,6 +53,11 @@ export const API_DATA_QUERY_FIELDS_FRAGMENT = /* GraphQL */ `
       sourceId
       column
     }
+    orderbys {
+      sourceId
+      column
+      direction
+    }
     limit
     offset
     combinedOperator

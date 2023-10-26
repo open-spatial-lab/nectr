@@ -5,12 +5,8 @@ import { FullForm } from '../../../components/FullForm/FullForm'
 const FullFormComponent = (props: FullFormProps) => (
   <FullForm
     {...props}
-    showJoins={true}
-    showColumns={true}
-    showWheres={true}
-    showGroupBy={true}
-    showSources={true}
     dataViewTemplate={'full'}
+    showFull={true}
   />
 )
 const GroupComponent = (props: FullFormProps) => (
@@ -31,6 +27,7 @@ const CombineComponent = (props: FullFormProps) => (
     showJoins={true}
     showColumns={true}
     showWheres={true}
+    showOrderBy={true}
     showGroupBy={false}
     showSources={true}
     dataViewTemplate="combine"
@@ -55,6 +52,7 @@ const PublishComponent = (props: FullFormProps) => (
     showColumns={true}
     showWheres={true}
     showGroupBy={false}
+    showOrderBy={true}
     showSources={true}
     showSimpleColumns={true}
     dataViewTemplate="publish"
