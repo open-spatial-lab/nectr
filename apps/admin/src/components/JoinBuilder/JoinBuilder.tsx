@@ -106,6 +106,7 @@ export const JoinRow: React.FC<JoinRowProps> = ({
       <div>
         Warning: Sources not found. Changes in other datasets may have broken
         this data view.
+        <ButtonPrimary onClick={onRemove}>Remove this data combination</ButtonPrimary>
       </div>
     )
   }
