@@ -213,7 +213,7 @@ export class SqlBuilder {
       ? this.params[paramName]
       : where.value
     if (_whereValue === undefined || _whereValue === "*") return
-    const whereValue = ['Like','NotLike','NotILike', 'ILike'].includes(where.operator)
+    const whereValue = ['Like','NotLike','NotILike', 'ILike'].includes(where.operator) && _whereValue[0] !== '%' && _whereValue[_whereValue.length - 1] !== '%'
       ? `%${_whereValue}%` 
       : _whereValue
 
@@ -229,10 +229,9 @@ export class SqlBuilder {
       // @ts-ignore
       this.query[whereFn](...whereArgs)
     } else {
-      console.log('ASDF', whereFn)
       switch (where.operator) {
         case "NotLike": {
-          const statement = this.qb.raw(`${whereColumn} not like ${whereValue}`)
+          const statement = this.qb.raw(`${whereColumn} not like '${whereValue}'`)
           isFirst
             ? this.query.whereRaw(statement)
             : this.query.andWhereRaw(statement)
@@ -375,6 +374,10 @@ export class SqlBuilder {
     if (!offset) return
     this.query.offset(offset)
   }
+  buildDistinct(distinct: ApiDataQueryEntity["distinct"] = this.schema.distinct) {
+    if (!distinct) return
+    this.query.distinct()
+  }
   async buildStatement() {
     await this.fetchSourceSchemas()
     await this.buildFromClause()
@@ -385,5 +388,6 @@ export class SqlBuilder {
     this.buildOrderByClauses()
     this.buildLimitClause()
     this.buildOffsetClause()
+    this.buildDistinct()
   }
 }

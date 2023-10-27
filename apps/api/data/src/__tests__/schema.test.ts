@@ -302,7 +302,7 @@ const whereNotLikeSchema = {
       where2: 2
     }
   },
-  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" where "sdoh"."column1" = 1 or "sdoh"."column2" > 2;`
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" where "sdoh"."column1" = 1 or "sdoh"."column2" > 2 and "sdoh"."column3" not like '%test%';`
 } as MockSchema
 
 const groupSchema = {
