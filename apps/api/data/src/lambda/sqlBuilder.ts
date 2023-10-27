@@ -28,6 +28,8 @@ export const OPERATOR_FN_SUFFIXES = {
   NotBetween: "NotBetween",
   Like: "Like",
   ILike: "ILike",
+  NotLike: "NotLike",
+  NotILike: "NotILike",
   "=": "",
   ">": "",
   ">=": "",
@@ -187,7 +189,7 @@ export class SqlBuilder {
       ? whereVerb.toLowerCase() + whereSuffix
       : wherePrefix + whereVerb + whereSuffix
     const formattedColumn = this.qb.raw(column)
-    const whereArgs = !whereSuffix.length
+    const whereArgs = !whereSuffix?.length
       ? [formattedColumn, operator, value]
       : [formattedColumn, value]
 
@@ -207,10 +209,14 @@ export class SqlBuilder {
     const whereVerb = hasGroup ? "Having" : "Where"
     const whereColumn = `"${where.sourceId}"."${where.column}"`
     const paramName = where.customAlias || where.column
-    const whereValue = this.params.hasOwnProperty(paramName)
+    const _whereValue = this.params.hasOwnProperty(paramName)
       ? this.params[paramName]
       : where.value
-    if (whereValue === undefined || whereValue === "*") return
+    if (_whereValue === undefined || _whereValue === "*") return
+    const whereValue = ['Like','NotLike','NotILike', 'ILike'].includes(where.operator)
+      ? `%${_whereValue}%` 
+      : _whereValue
+
     const { whereFn, whereArgs } = this.generateWhereArgs(
       whereColumn,
       where.operator,
@@ -219,8 +225,20 @@ export class SqlBuilder {
       whereVerb,
       isFirst
     )
-    // @ts-ignore
-    this.query[whereFn](...whereArgs)
+    if (whereFn in this.query) {
+      // @ts-ignore
+      this.query[whereFn](...whereArgs)
+    } else {
+      console.log('ASDF', whereFn)
+      switch (where.operator) {
+        case "NotLike": {
+          const statement = this.qb.raw(`${whereColumn} not like ${whereValue}`)
+          isFirst
+            ? this.query.whereRaw(statement)
+            : this.query.andWhereRaw(statement)
+        }
+      }
+    }
   }
   buildWhereClauses() {
     const wheres = this.schema.wheres
@@ -294,17 +312,20 @@ export class SqlBuilder {
     const raw = (str: any) => this.qb.raw(str)
 
     // @ts-ignore
-    this.query[joinFunction as knexMethod](this.qb.raw(rightSourceFrom), function(){
-      // @ts-ignore
-      this.on(function () {
-        join.leftOn.forEach((_, index) => {
-          const lCol = raw(`"${join.leftSourceId}"."${join.leftOn[index]}"`);
-          const rCol = raw(`"${join.rightSourceId}"."${join.rightOn[index]}"`);
-          // @ts-ignore
-          this.on(lCol, "=", rCol)
+    this.query[joinFunction as knexMethod](
+      this.qb.raw(rightSourceFrom),
+      function () {
+        // @ts-ignore
+        this.on(function () {
+          join.leftOn.forEach((_, index) => {
+            const lCol = raw(`"${join.leftSourceId}"."${join.leftOn[index]}"`)
+            const rCol = raw(`"${join.rightSourceId}"."${join.rightOn[index]}"`)
+            // @ts-ignore
+            this.on(lCol, "=", rCol)
+          })
         })
-      })
-    })
+      }
+    )
   }
 
   async buildJoinClauses(
@@ -339,7 +360,7 @@ export class SqlBuilder {
   }
   buildOrderByClauses(
     orderbys: ApiDataQueryEntity["orderbys"] = this.schema.orderbys
-  ){
+  ) {
     if (!orderbys) return
     orderbys.forEach((orderby: (typeof orderbys)[number]) => {
       const orderbyColumn = `"${orderby.sourceId}"."${orderby.column}"`

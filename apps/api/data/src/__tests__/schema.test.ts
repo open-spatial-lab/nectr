@@ -266,6 +266,44 @@ const whereSchema = {
   },
   result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" where "sdoh"."column1" = 1 or "sdoh"."column2" > 2;`
 } as MockSchema
+const whereNotLikeSchema = {
+  config: {
+    schema: {
+      ...simpleSchema.config.schema,
+      title: 'Where and not like Params',
+      wheres: [
+        {
+          sourceId: 'sdoh',
+          column: 'column1',
+          operator: '=',
+          value: 1,
+          customAlias: 'where1'
+        } as WhereQuery,
+        {
+          sourceId: 'sdoh',
+          column: 'column2',
+          operator: '>',
+          value: -1,
+          customAlias: 'where2',
+          allowCustom: true
+        },
+        {
+          sourceId: 'sdoh',
+          column: 'column3',
+          operator: 'NotLike',
+          value: '%test%',
+          customAlias: 'where3',
+          allowCustom: true
+        }
+      ],
+      combinedOperator: 'or'
+    },
+    params: {
+      where2: 2
+    }
+  },
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" where "sdoh"."column1" = 1 or "sdoh"."column2" > 2;`
+} as MockSchema
 
 const groupSchema = {
   config: {
@@ -341,6 +379,7 @@ const testCases = [
   compoundJoinQuery,
   chainedJoinSchema,
   whereSchema,
+  whereNotLikeSchema,
   groupSchema,
   groupHavingSchema,
   compoundSchema

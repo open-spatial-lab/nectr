@@ -16,7 +16,9 @@ export const OPERATORS = [
   'Between',
   'NotBetween',
   'Like',
-  'ILike'
+  'NotLike',
+  'ILike',
+  'NotILike'
 ] as const
 
 export const JOIN_OPERATORS = ['left', 'right', 'inner', 'outer'] as const
@@ -95,6 +97,8 @@ export type OPERATOR_ARGS = {
   NotBetween: [string | number, string | number]
   Like: [string]
   ILike: [string]
+  NotLike: [string]
+  NotILike: [string]
 }
 
 export const COMBINE_OPERATORS = ['and', 'or'] as const
