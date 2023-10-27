@@ -19,15 +19,15 @@ export const Dropdown = createRenderer(() => {
   useFullBundle()
   const element = getElement<SelectProps>()
   const { source, options, defaultOption, option } = element.data.variables
-
+  console.log(option)
   return useHtmlElementRerender(
     <div>
-      <osl-select
+      <osl-select-control
         data={getApiUrl(source)}
         options={JSON.stringify(options)}
         option={option}
-        defaultOption={defaultOption}
-      ></osl-select>
+        initialValue={defaultOption}
+      ></osl-select-control>
     </div>,
     [JSON.stringify(element.data.variables)]
   )
@@ -43,7 +43,7 @@ function stringifyWithQuotes(obj: any): string {
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      'osl-select': any
+      'osl-select-control': any
     }
   }
 }

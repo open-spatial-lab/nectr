@@ -213,13 +213,13 @@ export default [
                 {`
 ${fullBundleScriptText}
 
-<osl-select
+<osl-select-control
 data="${getApiUrl(data.variables.source)}"    
 options='${JSON.stringify(data.variables.options)}'
 option="${data.variables.option}"
-defaultOption="${data.variables.defaultOption}"
+initialValue="${data.variables.defaultOption}"
 >
-</osl-select>`}
+</osl-select-control>`}
               </pre>
             </Cell>
             <Cell span={12}>
