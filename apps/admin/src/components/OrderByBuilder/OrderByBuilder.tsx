@@ -2,7 +2,7 @@ import React from "react"
 import { OrderByBuilderProps } from "./types"
 import { NoPaddingGrid } from "../SplitView"
 import { Cell } from "@webiny/ui/Grid"
-import { ColumnSchema } from "../../plugins/scaffolds/dataUploads/types"
+// import { ColumnSchema } from "../../plugins/scaffolds/dataUploads/types"
 import { OrderByQuery, SourceMeta } from "../QueryBuilder/types"
 import { ButtonPrimary, IconButton } from "@webiny/ui/Button"
 import { ReactComponent as TrashIcon } from "../../assets/trash.svg"
@@ -67,7 +67,7 @@ const OrderByRow: React.FC<{
   sources: SourceMeta[]
   orderby: OrderByQuery
 }> = ({ onRemove, onChange, sources, orderby }) => {
-  const currentSource = sources.find((source) => source.id === orderby.sourceId)
+  // const currentSource = sources.find((source) => source.id === orderby.sourceId)
 
   return (
     <>

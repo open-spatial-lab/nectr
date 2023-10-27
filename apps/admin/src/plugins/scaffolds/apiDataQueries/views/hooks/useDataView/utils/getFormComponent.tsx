@@ -16,6 +16,7 @@ const GroupComponent = (props: FullFormProps) => (
     showColumns={true}
     showWheres={true}
     showGroupBy={true}
+    showOrderBy={true}
     showSources={true}
     dataViewTemplate="groupBy"
   />

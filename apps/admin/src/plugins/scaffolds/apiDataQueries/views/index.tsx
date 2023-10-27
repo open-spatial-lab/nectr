@@ -31,6 +31,7 @@ const AbsoluteDrawerContainer = styled("div")<{ drawerOpen: boolean }>`
 const UnconstrainedDrawer = styled(Drawer)`
   width: fit-content;
   min-width: 50vw;
+  padding-bottom:10vh;
 `
 
 const OpenCloseDrawerButton = styled(ButtonPrimary)<{ drawerOpen: boolean }>`
