@@ -73,7 +73,7 @@ export default class ApiDataQueriesQueryImplementation
    * @param after
    * @param before
    */
-  async listApiDataQueries({ limit = 10, sort, after, before }: ListApiDataQueriesParams) {
+  async listApiDataQueries({ limit = 999, sort, after, before }: ListApiDataQueriesParams) {
     const PK = this.getPK()
     const query: ApiDataQueriesQueryParams = {
       limit,

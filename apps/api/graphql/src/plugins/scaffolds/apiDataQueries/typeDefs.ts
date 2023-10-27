@@ -17,7 +17,7 @@ export default /* GraphQL */ `
   type MetaColumnSchema {
     name: String!
     sourceId: String!
-    sourceTitle: String!
+    sourceTitle: String
     alias: String
     aggregate: String
     expression: String
@@ -87,7 +87,7 @@ export default /* GraphQL */ `
   input MetaColumnSchemaInput {
     name: String!
     sourceId: String!
-    sourceTitle: String!
+    sourceTitle: String
     alias: String
     aggregate: String
     expression: String
