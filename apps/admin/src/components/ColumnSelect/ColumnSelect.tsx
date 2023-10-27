@@ -40,8 +40,8 @@ export const ColumnSelect = ({
           const val = Array.isArray(_val) ? _val : [_val as ColumnSchema]
           onChange(val)
         }}
-        getOptionLabel={o => o.name}
-        options={columns}
+        getOptionLabel={o => o?.name}
+        options={columns || []}
         renderOption={(props, option) => (
           <MenuItem {...props} key={option.name} value={option.name}>
             {option.name}
