@@ -29,7 +29,6 @@ export interface ApiDataQueryEntity {
   isPublic?: boolean
   createdBy: Pick<SecurityIdentity, 'id' | 'displayName' | 'type'>
   webinyVersion: string
-
   sources?: Array<Source>
   wheres?: Array<WhereQuery>
   combinedOperator?: (typeof COMBINE_OPERATORS)[number]
@@ -37,6 +36,7 @@ export interface ApiDataQueryEntity {
   columns?: Array<MinimalColumnInfo>
   groupbys?: Array<GroupByQuery>
   orderbys?: Array<OrderByQuery>
+  distinct?: Boolean
   limit?: number
   offset?: number
   dataViewTemplate?: String

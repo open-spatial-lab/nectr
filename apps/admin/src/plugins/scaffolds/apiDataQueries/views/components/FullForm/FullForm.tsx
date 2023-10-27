@@ -136,7 +136,7 @@ export const FullForm: React.FC<FullFormProps> = ({
           form.setValue("title", `New ${dataViewTemplate} Data View - ${date}`)
         }, [dataViewTemplate])
 
-        console.log(form.data)
+        console.log('form', form.data)
         return (
           <NoPaddingForm>
             <SimpleFormContent>
@@ -158,6 +158,14 @@ export const FullForm: React.FC<FullFormProps> = ({
                         <Switch
                           label={"Make this data public"}
                           description={"Allow anyone to use this data"}
+                        />
+                      </Bind>
+                    </div>
+                    <div>
+                      <Bind name="distinct">
+                        <Switch
+                          label={"Deduplicate Data"}
+                          description={"Remove duplicate rows"}
                         />
                       </Bind>
                     </div>

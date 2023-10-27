@@ -116,6 +116,7 @@ export default /* GraphQL */ `
     columns: [MetaColumnSchema]
     groupbys: [GroupByQuery]
     orderbys: [OrderByQuery]
+    distinct: Boolean
     createdOn: DateTime!
     savedOn: DateTime!
     isPublic: Boolean
@@ -150,6 +151,7 @@ export default /* GraphQL */ `
     columns: [MetaColumnSchemaInput]
     groupbys: [GroupByQueryInput]
     orderbys: [OrderByQueryInput]
+    distinct: Boolean
     limit: Int
     offset: Int
     combinedOperator: String
@@ -170,6 +172,7 @@ export default /* GraphQL */ `
     columns: [MetaColumnSchemaInput]
     groupbys: [GroupByQueryInput]
     orderbys: [OrderByQueryInput]
+    distinct: Boolean
     limit: Int
     offset: Int
     combinedOperator: String

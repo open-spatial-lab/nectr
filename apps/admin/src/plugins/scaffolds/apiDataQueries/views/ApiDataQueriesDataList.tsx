@@ -96,7 +96,6 @@ const ApiDataQueriesDataList: React.FC<{ onHide: () => void }> = ({ onHide }) =>
     >
       {({ data }: { data: any[] }) => (
         <>
-        console.log(data)
           {data.map(item => (
             <ListItem
               onClick={() => editApiDataQuery(item.id)}

@@ -85,9 +85,8 @@ const DatasetsForm: React.FC = () => {
     onSubmit,
     currentDatasetId,
   } = useDatasetsForm()
-    
   const [uploading, setUploading] = useState(INITIAL_UPLOAD_STATE)
-
+  console.log(dataset)
   const [table, setTable] = useState<{
     columns: any[]
     data: any[][]
@@ -104,22 +103,26 @@ const DatasetsForm: React.FC = () => {
     CreateFileMutationResponse,
     CreateFileMutationVariables
   >(CREATE_FILE, {})
+
   const handleMeta = async (key: string, _form?: FormAPI) => {
+    console.log('handle meta', key)
     const form = _form || formApi.current
     const metadataUrl = new URL(getApiUrl("__"))
     metadataUrl.searchParams.append("__metadata__", key)
     const metadataResponse = await fetch(metadataUrl.toString())
     if (metadataResponse.ok) {
       const { columns, preview } = await metadataResponse.json()
-      const parsedColumns = JSON.parse(columns)
+      const parsedColumns = JSON.parse(columns).map((col: ColumnSchema) => ({
+        ...col,
+        ...(form?.data["columns"].find(
+          (c: ColumnSchema) => c.name === col.name
+        ) || {}),
+      }))
       const colList = parsedColumns.map((col: ColumnSchema) => col.name)
       const dataList = preview.map((row: Record<string, any>) =>
         Object.values(row)
       )
-      setTable({
-        columns: colList,
-        data: dataList,
-      })
+      setTable({ columns: colList, data: dataList })
       setUploading({
         status: "uploaded",
         filename: key,
@@ -166,7 +169,6 @@ const DatasetsForm: React.FC = () => {
           createFileResponse,
           "data.fileManager.createFile.data"
         ) as unknown as FileItem
-
         if (!converting) {
           await handleMeta(fileUploadData.key, form)
         } else {
@@ -188,6 +190,8 @@ const DatasetsForm: React.FC = () => {
 
       return null
     }
+
+
 
   const [totalTimeoutDuration, setTotalTimeoutDuration] = useState(0)
   const [timeoutFn, setTimeoutFn] = useState<any>(null)
@@ -216,7 +220,7 @@ const DatasetsForm: React.FC = () => {
         console.error("File upload failed")
         break
       case "uploaded":
-        dataset?.filename && handleMeta(dataset?.filename)
+        uploading?.filename && handleMeta(uploading.filename)
         break
       case `converting`:
         console.log("checking status....", totalTimeoutDuration)
@@ -258,12 +262,11 @@ const DatasetsForm: React.FC = () => {
     
     () => clearTimeout(timeoutFn)
   }, [
-    dataset?.filename,
+    uploading?.filename,
     dataset?.status,
     totalTimeoutDuration,
     uploading.status,
   ])
-
   if (emptyViewIsShown) {
     return (
       <EmptyView
@@ -341,7 +344,7 @@ const DatasetsForm: React.FC = () => {
               </Cell>
             </Grid>
           </SimpleFormContent>
-          {uploading.status === "uploaded" && <SimpleFormFooter>
+          {Boolean(uploading.status === "uploaded" || Boolean(dataset)) && <SimpleFormFooter>
             <ButtonDefault onClick={cancelEditing}>Cancel</ButtonDefault>
             <ButtonPrimary
               onClick={ev => {

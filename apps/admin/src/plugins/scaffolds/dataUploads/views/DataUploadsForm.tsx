@@ -264,7 +264,6 @@ const DataUploadsForm: React.FC = () => {
       />
     )
   }
-
   return (
     <Form data={dataUpload} onSubmit={onSubmit}>
       {({ form, data, submit, Bind }) => {

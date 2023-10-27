@@ -179,6 +179,7 @@ export type QuerySchema = {
   wheres?: Array<WhereQuery>
   joins?: Array<JoinQuery>
   groupbys?: GroupByQuery
+  distinct?: boolean
   orderbys?: OrderByQuery
   combinedOperator?: (typeof COMBINE_OPERATORS)[number]
   limit?: number

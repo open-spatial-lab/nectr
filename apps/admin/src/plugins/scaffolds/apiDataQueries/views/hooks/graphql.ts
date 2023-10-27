@@ -25,6 +25,7 @@ export const API_DATA_QUERY_FIELDS_FRAGMENT = /* GraphQL */ `
       allowCustom
       customAlias
     }
+    distinct
     joins {
       leftSourceId
       leftOn
