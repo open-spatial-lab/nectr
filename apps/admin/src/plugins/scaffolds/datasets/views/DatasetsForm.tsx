@@ -86,7 +86,6 @@ const DatasetsForm: React.FC = () => {
     currentDatasetId,
   } = useDatasetsForm()
   const [uploading, setUploading] = useState(INITIAL_UPLOAD_STATE)
-  console.log(dataset)
   const [table, setTable] = useState<{
     columns: any[]
     data: any[][]
@@ -105,7 +104,6 @@ const DatasetsForm: React.FC = () => {
   >(CREATE_FILE, {})
 
   const handleMeta = async (key: string, _form?: FormAPI) => {
-    console.log('handle meta', key)
     const form = _form || formApi.current
     const metadataUrl = new URL(getApiUrl("__"))
     metadataUrl.searchParams.append("__metadata__", key)
@@ -114,7 +112,7 @@ const DatasetsForm: React.FC = () => {
       const { columns, preview } = await metadataResponse.json()
       const parsedColumns = JSON.parse(columns).map((col: ColumnSchema) => ({
         ...col,
-        ...(form?.data["columns"].find(
+        ...(form?.data?.["columns"]?.find(
           (c: ColumnSchema) => c.name === col.name
         ) || {}),
       }))
@@ -153,6 +151,7 @@ const DatasetsForm: React.FC = () => {
       try {
         // get presigned PUT request for file on S3
         const response = await getFileUploader()(file, { apolloClient })
+
         // upload file to S3
         const createFileResponse = await createFile({
           variables: {
@@ -232,13 +231,11 @@ const DatasetsForm: React.FC = () => {
                   if (data?.body) {
                     try {
                       setTimeout(() => {
-                        console.log("querying meta....")
                         handleMeta(parquetName)
                       }, 10000)
                     } catch (e) {
-                      console.error(e)
+                      // console.error(e)
                       setTimeout(() => {
-                        console.log("querying meta....")
                         handleMeta(parquetName)
                       }, 3000)
                     }
@@ -281,6 +278,7 @@ const DatasetsForm: React.FC = () => {
       />
     )
   }
+
   return (
     <Form data={dataset} onSubmit={onSubmit}> 
       {({ form, data, submit, Bind }) => (

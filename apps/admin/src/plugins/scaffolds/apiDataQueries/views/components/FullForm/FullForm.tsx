@@ -135,8 +135,7 @@ export const FullForm: React.FC<FullFormProps> = ({
           form.setValue("isPublic", true)
           form.setValue("title", `New ${dataViewTemplate} Data View - ${date}`)
         }, [dataViewTemplate])
-
-        console.log('form', form.data)
+        
         return (
           <NoPaddingForm>
             <SimpleFormContent>
