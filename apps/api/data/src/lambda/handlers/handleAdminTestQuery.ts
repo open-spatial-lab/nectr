@@ -1,3 +1,4 @@
+import { TableData } from 'duckdb'
 import { S3_BUCKET, connection, logger } from '../..'
 import { QueryResponse } from '../../types/types'
 import corsHeaders from '../../utils/corsHeaders'
@@ -13,7 +14,7 @@ export const handleAdminTestQuery = async (
   body: string,
   params: Record<string, unknown>,
   token?: string
-): Promise<QueryResponse<string, string>> => {
+): Promise<QueryResponse<TableData, string>> => {
   const schema = JSON.parse(body!) as DataView | { raw: string }
   if (!token) {
     return {
@@ -38,7 +39,7 @@ export const handleAdminTestQuery = async (
     if (queryResponse.ok) {
       return {
         ok: true,
-        result: JSON.stringify(queryResponse.result)
+        result: queryResponse.result
       }
     }
   } catch (error) {

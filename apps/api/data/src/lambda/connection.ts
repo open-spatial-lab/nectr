@@ -1,4 +1,4 @@
-import DuckDB from 'duckdb'
+import DuckDB, {type TableData} from 'duckdb'
 import { QueryResponse } from '../types/types'
 import { serverSchemaService } from './schemas/serverSchemaService'
 import { SqlBuilder } from './sqlBuilder'
@@ -38,10 +38,10 @@ export default class Connection {
     }
   }
 
-  async query(query: string): Promise<QueryResponse<any, string>> {
+  async query(query: string): Promise<QueryResponse<TableData, string>> {
     logger.info({query})
     return new Promise((resolve, reject) => {
-      this.connection!.all(query, (err: any, res: any) => {
+      this.connection!.all(query, (err: unknown, res: TableData) => {
         if (err) {
           logger.error({err, query})
           reject({
@@ -57,15 +57,15 @@ export default class Connection {
     })
   }
 
-  async handleIdQuery(id: string, params: any): Promise<QueryResponse<any, string>> {
+  async handleIdQuery(id: string, params: Record<string,unknown>): Promise<QueryResponse<TableData, string>> {
     const schema = await serverSchemaService.getSchema(id)
     if (!schema.ok) {
       return schema
     }
-    // @ts-ignore
+    // @ts-ignore these types are interchangeable TODO cleanup data view vs api query
     return await this.handleQuery(schema.result, params)
   }
-  async handleQuery(schema: DataView, params: any): Promise<QueryResponse<any, string>> {
+  async handleQuery(schema: DataView, params: Record<string,unknown>): Promise<QueryResponse<TableData, string>> {
     const sqlBuilder = new SqlBuilder(
       // @ts-ignore
       schema,
@@ -76,8 +76,7 @@ export default class Connection {
     await sqlBuilder.buildStatement()
     const query = sqlBuilder.queryString
     try {
-      const data = await this.query(query)
-      return data
+      return await this.query(query)
     } catch (err) {
       return {
         error: `Error at handle id query: ${JSON.stringify(err)}; \n Schema: \n ${JSON.stringify(

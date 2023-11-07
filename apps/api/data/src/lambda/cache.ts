@@ -5,6 +5,10 @@ import * as s3 from '@aws-sdk/client-s3'
 import { nanoid } from 'nanoid'
 import { logger } from '..'
 import corsHeaders from '../utils/corsHeaders'
+import { TableData } from 'duckdb'
+import { DataOutputs } from '../types/cacheEntity'
+import * as Papa from 'papaparse'
+import { pack } from 'msgpackr';
 export default class CacheService {
   s3: s3.S3
   bucket: string = process.env['DATA_BUCKET']!
@@ -12,11 +16,15 @@ export default class CacheService {
   PK: string = ''
   SK: string = ''
   params: Record<string, unknown> = {}
+  format: "json" | "csv" | "msgpack" = "json"
 
   constructor(id: string, params: Record<string, unknown>) {
     this.PK = id
     this.params = params
     this.s3 = new s3.S3({ region: this.region })
+    if ('format' in params) {
+      this.format = params?.['format'] as "json" | "csv" | "msgpack"
+    }
   }
 
   compressParams(params: Record<string, unknown>) {
@@ -33,7 +41,7 @@ export default class CacheService {
       })
     })
   }
-  // @ts-ignore
+
   async checkCache(): Promise<QueryResponse<{ Item?: Partial<CacheTableEntity> }, string>> {
     const SK = (await this.compressParams(this.params)) as string
     if (!SK) {
@@ -58,12 +66,54 @@ export default class CacheService {
     }
   }
 
-  async putData(key: string, data: string) {
+  getKey(key: string){
+    switch(this.format){
+      case "json":
+        return `cache/${key}.json`
+      case "csv":
+        return `cache/${key}.csv`
+      case "msgpack":
+        return `cache/${key}.msgpack`
+      default:
+        return `cache/${key}.json`
+    }
+  }
+
+  getContentType(){
+    switch(this.format){
+      case "json":
+        return 'application/json'
+      case "csv":
+        return 'text/csv'
+      case "msgpack":
+        return 'application/octet-stream'
+      default:
+        return 'application/json'
+    }
+  }
+  formatData(data: DataOutputs){
+    switch(this.format){
+      case "json":
+        return JSON.stringify(data)
+      case "csv":
+        if (Array.isArray(data)) {
+          return Papa.unparse(data)
+        } else {
+          return Papa.unparse(data.preview)
+        }
+      case "msgpack":
+        return pack(data)
+      default:
+        return JSON.stringify(data)
+    }
+  }
+
+  async putData(key: string, data: DataOutputs) {
     await this.s3.putObject({
       Bucket: this.bucket,
-      Key: `cache/${key}.json`,
-      ContentType: 'application/json',
-      Body: data
+      Key: this.getKey(key),
+      ContentType: this.getContentType(),
+      Body: this.formatData(data)
     })
   }
 
@@ -84,7 +134,8 @@ export default class CacheService {
     //   timestamp: Math.floor(Date.now() / 1000)
     // })
   }
-  async handleResult(output: QueryResponse<string, any>) {
+
+  async handleResult(output: QueryResponse<TableData, unknown>) {
     if (output.ok) {
       const cacheFileId = await this.cacheResult(output.result)
       return this.redirectToCacheFile(cacheFileId)
@@ -99,9 +150,12 @@ export default class CacheService {
     }
   }
 
-  async cacheResult(data: string) {
+  async cacheResult(data: DataOutputs) {
     const fileId = nanoid()
-    await Promise.all([this.cacheTable(fileId), this.putData(fileId, data)])
+    await Promise.all([
+      this.cacheTable(fileId), 
+      this.putData(fileId, data)
+    ])
     return fileId
   }
 
@@ -110,7 +164,7 @@ export default class CacheService {
       statusCode: 302,
       headers: {
         ...corsHeaders,
-        Location: `https://${process.env['API_URL']}/cache/${cacheFileId}.json`
+        Location: `https://${process.env['API_URL']}/${this.getKey(cacheFileId)}`
       }
     }
   }

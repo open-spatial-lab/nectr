@@ -8,8 +8,9 @@ import type {
   WhereQuery,
   JoinQuery,
   ColumnOperation,
+  OPERATOR_TYPES,
 } from "../../../../admin/src/components/QueryBuilder/types"
-import knex, { type Knex} from "knex"
+import knex, { type Knex } from "knex"
 import { SchemaService } from "../types/schemaService"
 
 const JOIN_OPERATOR_FUNCTIONS = {
@@ -198,6 +199,41 @@ export class SqlBuilder {
       whereArgs,
     }
   }
+
+  sanitizeParam(operator: OPERATOR_TYPES, param: string, fallbackValue: any) {
+    const value = this.params[param] || fallbackValue
+    if (value === "*") {
+      return value
+    }
+
+    switch (operator) {
+      case "In":
+      case "NotIn":
+      case "Between":
+      case "NotBetween":
+        // split based on comma for strings not in single or double quotes
+        const commasNotInQuotes = /,(?=(?:[^"]|"[^"]*")*$)(?=(?:[^']|'[^']*')*$)/g
+        const splitValue = value.split(commasNotInQuotes)
+        // remove outer quotes from string
+        const removeQuotes = /^['"](.*)['"]$/
+        const cleanValue = splitValue.map((val) => {
+          const match = val.match(removeQuotes)
+          return match ? match[1] : val
+        })
+        return splitValue.length > 1 ? splitValue : value.split(",")
+      case "Like":
+      case "NotLike":
+      case "NotILike":
+      case "ILike":
+        return value[0] !== "%" && value[value.length - 1] !== "%"
+          ? `%${value}%`
+          : value
+      default: {
+        return value
+      }
+    }
+  }
+
   buildWhereClause(
     where: WhereQuery,
     combinedOperator: ApiDataQueryEntity["combinedOperator"] = this.schema
@@ -209,14 +245,8 @@ export class SqlBuilder {
     const whereVerb = hasGroup ? "Having" : "Where"
     const whereColumn = `"${where.sourceId}"."${where.column}"`
     const paramName = where.customAlias || where.column
-    const _whereValue = this.params.hasOwnProperty(paramName)
-      ? this.params[paramName]
-      : where.value
-    if (_whereValue === undefined || _whereValue === "*") return
-    const whereValue = ['Like','NotLike','NotILike', 'ILike'].includes(where.operator) && _whereValue[0] !== '%' && _whereValue[_whereValue.length - 1] !== '%'
-      ? `%${_whereValue}%` 
-      : _whereValue
-
+    const whereValue = this.sanitizeParam(where.operator, paramName, where.value)
+    if (whereValue === undefined || whereValue === "*") return
     const { whereFn, whereArgs } = this.generateWhereArgs(
       whereColumn,
       where.operator,
@@ -231,7 +261,9 @@ export class SqlBuilder {
     } else {
       switch (where.operator) {
         case "NotLike": {
-          const statement = this.qb.raw(`${whereColumn} not like '${whereValue}'`)
+          const statement = this.qb.raw(
+            `${whereColumn} not like '${whereValue}'`
+          )
           isFirst
             ? this.query.whereRaw(statement)
             : this.query.andWhereRaw(statement)
@@ -374,7 +406,9 @@ export class SqlBuilder {
     if (!offset) return
     this.query.offset(offset)
   }
-  buildDistinct(distinct: ApiDataQueryEntity["distinct"] = this.schema.distinct) {
+  buildDistinct(
+    distinct: ApiDataQueryEntity["distinct"] = this.schema.distinct
+  ) {
     if (!distinct) return
     this.query.distinct()
   }

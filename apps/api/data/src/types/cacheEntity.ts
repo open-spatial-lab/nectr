@@ -1,5 +1,6 @@
 import { Entity } from 'dynamodb-toolbox'
 import {cmsTable as table} from '../../../../core/aws/table'
+import { TableData } from 'duckdb'
 
 export interface ResultCacheSchema {
   PK: string
@@ -21,3 +22,9 @@ export const ResultCacheEntity = new Entity({
     content: { type: 'string' }
   }
 })
+
+export type MetaDataResponse = {
+  columns: string
+  preview: TableData
+}
+export type DataOutputs = TableData | MetaDataResponse

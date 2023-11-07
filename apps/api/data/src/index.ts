@@ -45,6 +45,7 @@ export const handler = metricScope(
         return await cacheService.handleResult(output)
       } else if (isAdminTestQuery) {
         const schema = JSON.parse(event.body!) as DataView | { raw: string }
+        // @ts-ignore
         const cacheService = new CacheService(schema['raw'] || event.body!, params)
         const output = await handleAdminTestQuery(event.body!, params, token)
         return cacheService.handleResult(output)

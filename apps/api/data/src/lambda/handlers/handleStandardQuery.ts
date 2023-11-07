@@ -1,15 +1,14 @@
 import { MetricsLogger, Unit } from 'aws-embedded-metrics'
 import { connection, logger } from '../..'
-import CacheService from '../cache'
-import * as Papa from 'papaparse'
 import { QueryResponse } from '../../types/types'
+import { TableData } from 'duckdb'
 
 export const handleStandardQuery = async (
   id: string,
   params: Record<string, unknown>,
   metrics: MetricsLogger,
   queryStartTimestamp: number
-): Promise<QueryResponse<string, any>> => {
+): Promise<QueryResponse<TableData, unknown>> => {
   // const cacheService = new CacheService(id, params)
   // const cachedResult = await cacheService.checkCache()
   // if (cachedResult.ok && cachedResult?.result?.Item?.id) {
@@ -20,11 +19,9 @@ export const handleStandardQuery = async (
   metrics.putMetric('QueryDuration', new Date().getTime() - queryStartTimestamp, Unit.Milliseconds)
 
   if (data.ok) {
-    const outputCsv = params['format'] === 'csv'
-    const result = outputCsv ? Papa.unparse(data.result) : JSON.stringify(data.result)
     return {
       ok: true,
-      result
+      result: data.result
     }
   } else {
     return {
