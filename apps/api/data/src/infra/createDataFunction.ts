@@ -3,7 +3,6 @@ import * as pulumi from "@pulumi/pulumi"
 import * as aws from "@pulumi/aws"
 import { createAppModule, PulumiApp, PulumiAppModule } from "@webiny/pulumi"
 import { CoreOutput } from "@webiny/pulumi-aws/apps/common"
-import { CoreFileManger } from "@webiny/pulumi-aws/apps/core"
 import {
   createLambdaRole,
   getCommonLambdaEnvVariables,
@@ -12,7 +11,6 @@ import { DataApiGateway } from "./createDataGateway"
 // import { DataApiCloudfront } from './createDataCloudfront'
 import { DataBucket } from "./createDataBucket"
 import { createDataLambdaPolicy } from "./createDataLambdaPolicy"
-import { converterUri } from "../config/converterUri"
 import { createDataConverterRole } from "./createDataConverterRole"
 import { MAX_MEMORY } from "../config/maxMemory"
 export interface DataApiParams {

@@ -57,6 +57,7 @@
     "jsonwebtoken": "^9.0.1",
     "jwk-to-pem": "^2.0.5",
     "knex": "^2.4.2",
+    "msgpackr": "^1.9.9",
     "mustache": "^4.2.0",
     "nanoid": "^4.0.2",
     "node-fetch": "^3.3.2",

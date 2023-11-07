@@ -7,13 +7,14 @@ const ecr_repository_uri = `${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.co
 
 // Build the image and login to ECR
 // logoout first to avoid any issues
-await $`aws ecr get-login-password --region ${aws_region} | docker logout`
-await $`aws ecr get-login-password --region ${aws_region} | docker login --username AWS --password-stdin ${ecr_repository_uri}`
+// await $`aws ecr get-login-password --region ${aws_region} | docker logout`
+// await $`aws ecr-public get-login-password --region ${aws_region} | docker login --username AWS --password-stdin public.ecr.aws`
+await $`docker logout public.ecr.aws`
 await $`docker build --platform linux/amd64 -t ${imageName}:${tagName} .`
+await $`aws ecr get-login-password --region ${aws_region} | docker login --username AWS --password-stdin ${ecr_repository_uri}`
 
 // check if the repo exists on AWS
 // otherwise, create the ECR repo
-
 let ECRrepositoryUri = ''
 try {
   const existingRepos = await $`aws ecr describe-repositories --repository-names ${imageName}`
@@ -33,9 +34,3 @@ try {
 // tag and push the image
 await $`docker tag ${imageName}:${tagName} ${ECRrepositoryUri}:${tagName}`
 await $`docker push ${ECRrepositoryUri}:${tagName}`
-
-// create file in ../data/src/config
-// contains export const converterUri = `${ECRrepositoryUri}:${tagName}`
-// file name is `converterUri.ts'
-await $`touch ../data/src/config/converterUri.ts`
-await $`echo "export const converterUri = '${ECRrepositoryUri}:${tagName}'" > ../data/src/config/converterUri.ts`
