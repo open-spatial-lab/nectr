@@ -129,6 +129,7 @@ export default /* GraphQL */ `
     combinedOperator: String
     dataViewTemplate: String
     createdBy: ApiDataQueryCreatedBy
+    ttl: Number
   }
 
   type ApiDataQueryCreatedBy {
@@ -156,6 +157,7 @@ export default /* GraphQL */ `
     offset: Int
     combinedOperator: String
     dataViewTemplate: String
+    ttl: Number
   }
 
   input ApiDataQueryUpdateInput {
@@ -177,6 +179,7 @@ export default /* GraphQL */ `
     offset: Int
     combinedOperator: String
     dataViewTemplate: String
+    ttl: Number
   }
 
   type ApiDataQueriesListMeta {

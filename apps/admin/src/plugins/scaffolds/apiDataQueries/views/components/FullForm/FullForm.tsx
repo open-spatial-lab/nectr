@@ -28,9 +28,11 @@ import { FormProps } from "../../hooks/useDataView/types"
 import { QuerySchema } from "../../../../../../components/QueryBuilder/types"
 import { FormAPI, GenericFormData } from "@webiny/form/types"
 import styled from "@emotion/styled"
-import { Stack } from "@mui/material"
+import { Stack, Tooltip } from "@mui/material"
 import { Checkbox } from "@webiny/ui/Checkbox"
 import { SpatialJoinBuilder } from "../../../../../../components/SpatialJoinBuilder"
+import { TtlSelector } from "../../../../../../components/TtlSelector"
+import { ClearCacheButton } from "../../../../../../components/ClearCacheButton"
 
 export type FullFormProps = FormProps & {
   showFull?: boolean
@@ -135,12 +137,12 @@ export const FullForm: React.FC<FullFormProps> = ({
           form.setValue("isPublic", true)
           form.setValue("title", `New ${dataViewTemplate} Data View - ${date}`)
         }, [dataViewTemplate])
-        
+
         return (
           <NoPaddingForm>
             <SimpleFormContent>
               <Grid>
-                <Cell span={8}>
+                <Cell span={12}>
                   <Bind name="title" validators={validation.create("required")}>
                     <Input label={"Title"} className="test test" />
                   </Bind>
@@ -150,8 +152,8 @@ export const FullForm: React.FC<FullFormProps> = ({
                   name="dataViewTemplate"
                   validators={validation.create("required")}
                 />
-                <Cell span={4} phone={12} tablet={12}>
-                  <Stack spacing={2} alignItems="flex-start">
+                <Cell span={12} phone={12} tablet={12}>
+                  <Stack spacing={2} direction="row">
                     <div>
                       <Bind name="isPublic">
                         <Switch
@@ -176,7 +178,6 @@ export const FullForm: React.FC<FullFormProps> = ({
                     />
                   </Stack>
                 </Cell>
-
                 {Boolean(showSources || showFull) && (
                   <Cell span={12}>
                     <Bind name="sources">
@@ -345,9 +346,7 @@ export const FullForm: React.FC<FullFormProps> = ({
                                 <br />
                                 <br />
                                 <br />
-                                <h3>
-                                  Order / Sort Data
-                                </h3>
+                                <h3>Order / Sort Data</h3>
                                 <br />
                                 <OrderByBuilder
                                   sources={currentSources}
@@ -362,6 +361,26 @@ export const FullForm: React.FC<FullFormProps> = ({
                     )}
                   </>
                 )}
+
+                <Cell span={3}>
+                  <Tooltip title="Data caching improves the cost and speed of your data view by saving the results for a period of time. By default, results will be saved for one week. You can reduce this to update results more frequently, if your data changes often. If you are seeing old results on your visualizations or data view, click the button titled 'Refresh Data View Now' to clear old saved versions of your data view.">
+                    <p>Advanced: Data Caching &#8505;</p>
+                  </Tooltip>
+                </Cell>
+
+                <Cell span={6}>
+                  <Bind name="ttl">
+                    {({ onChange, value }) => {
+                      return <TtlSelector value={value} onChange={onChange} />
+                    }}
+                  </Bind>
+                </Cell>
+
+                {apiDataQuery.id ? (
+                  <Cell span={3}>
+                    <ClearCacheButton id={apiDataQuery.id} />
+                  </Cell>
+                ) : null}
               </Grid>
             </SimpleFormContent>
             <SimpleFormFooter>

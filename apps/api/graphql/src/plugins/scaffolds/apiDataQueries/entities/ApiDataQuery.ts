@@ -42,6 +42,7 @@ export default new Entity<ApiDataQueryEntity>({
     offset: { type: 'number' },
     // Will store current version of Webiny, for example "5.9.1".
     // Might be useful in the future or while performing upgrades.
-    webinyVersion: { type: 'string' }
+    webinyVersion: { type: 'string' },
+    ttl: { type: 'number', default: 1 * 24 * 60 * 60 }
   }
 })

@@ -53,8 +53,7 @@ export default class BaseSchemaService implements SchemaService {
     ids: string[],
     fresh: boolean = false
   ): Promise<QueryResponse<DataView[], string>> {
-    // const missingIds = fresh ? ids : ids.filter(id => !this.cachedSchemas.has(id))
-    const missingIds = ids
+    const missingIds = fresh ? ids : ids.filter(id => !this.cachedSchemas.has(id))
     
     if (missingIds.length) {
       return {

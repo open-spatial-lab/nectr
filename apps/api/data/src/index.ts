@@ -41,20 +41,17 @@ export const handler = metricScope(
       if (isMetaDataQuery) {
         const metadataFile = _metadataFile ? _metadataFile : ''
         const output = await handleMetadataQuery(metadataFile, params)
-        const cacheService = new CacheService(metadataFile, params)
+        const cacheService = new CacheService(metadataFile, params, 0, 'metadata')
         return await cacheService.handleResult(output)
       } else if (isAdminTestQuery) {
         const schema = JSON.parse(event.body!) as DataView | { raw: string }
-        // @ts-ignore
-        const cacheService = new CacheService(schema['raw'] || event.body!, params)
+        const cacheService = new CacheService(schema['raw'] || event.body!, params, 0)
         const output = await handleAdminTestQuery(event.body!, params, token)
-        return cacheService.handleResult(output)
+        return cacheService.handleResult(output, false)
       } else if (!id) {
         return handleMissingId(event)
       } else {
-        const cacheService = new CacheService(id, params)
-        const output = await handleStandardQuery(id, params, metrics, queryStartTimestamp)
-        return cacheService.handleResult(output)
+        return await handleStandardQuery(id, params, metrics, queryStartTimestamp, token)
       }
     }
 )

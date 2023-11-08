@@ -3,6 +3,7 @@ import { QueryResponse } from '../types/types'
 import { serverSchemaService } from './schemas/serverSchemaService'
 import { SqlBuilder } from './sqlBuilder'
 import { logger } from '..'
+import { ApiDataQueryEntity } from '../../../graphql/src/plugins/scaffolds/apiDataQueries/types'
 
 export default class Connection {
   duckDB?: DuckDB.Database
@@ -58,14 +59,11 @@ export default class Connection {
   }
 
   async handleIdQuery(id: string, params: Record<string,unknown>): Promise<QueryResponse<TableData, string>> {
-    const schema = await serverSchemaService.getSchema(id)
-    if (!schema.ok) {
-      return schema
-    }
+
     // @ts-ignore these types are interchangeable TODO cleanup data view vs api query
     return await this.handleQuery(schema.result, params)
   }
-  async handleQuery(schema: DataView, params: Record<string,unknown>): Promise<QueryResponse<TableData, string>> {
+  async handleQuery(schema: DataView | ApiDataQueryEntity, params: Record<string,unknown>): Promise<QueryResponse<TableData, string>> {
     const sqlBuilder = new SqlBuilder(
       // @ts-ignore
       schema,

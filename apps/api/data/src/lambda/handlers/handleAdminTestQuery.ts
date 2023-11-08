@@ -1,9 +1,7 @@
 import { TableData } from 'duckdb'
 import { S3_BUCKET, connection, logger } from '../..'
 import { QueryResponse } from '../../types/types'
-import corsHeaders from '../../utils/corsHeaders'
-import { verifyToken } from '../identity'
-
+import {authorize} from "../identity"
 // regex to replace "%BUCKET%" with the bucket name
 const bucketRegex = new RegExp('%BUCKET%', 'g')
 // replace new lines with spaces
@@ -16,19 +14,9 @@ export const handleAdminTestQuery = async (
   token?: string
 ): Promise<QueryResponse<TableData, string>> => {
   const schema = JSON.parse(body!) as DataView | { raw: string }
-  if (!token) {
-    return {
-      ok: false,
-      error: 'Unauthorized - please provide a token in the X-Authorization header'
-    }
-  }
-
-  const auth = await verifyToken(token)
-  if (!auth.ok) {
-    return {
-      ok: false,
-      error: 'Not authorized'
-    }
+  const authorized = await authorize(token)
+  if (!authorized.ok) {
+    throw new Error(`Unauthorized: ${authorized.error}`)
   }
   let error = ''
   try {

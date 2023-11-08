@@ -40,6 +40,7 @@ export interface ApiDataQueryEntity {
   limit?: number
   offset?: number
   dataViewTemplate?: String
+  ttl?: number
 }
 
 export interface ApiDataQueryPermissions extends SecurityPermission {
