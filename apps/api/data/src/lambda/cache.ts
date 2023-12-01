@@ -131,7 +131,7 @@ export default class CacheService {
   async putData(key: string, data: DataOutputs) {
     await this.s3.putObject({
       Bucket: this.bucket,
-      Key: this.getKey(key),
+      Key: key,
       ContentType: this.getContentType(),
       Body: this.formatData(data),
     })
@@ -140,20 +140,11 @@ export default class CacheService {
   async deleteData(key: string) {
     await this.s3.deleteObject({
       Bucket: this.bucket,
-      Key: this.getKey(key),
+      Key: key,
     })
   }
 
   async cacheTable(fileId: string) {
-    logger.info({
-      message: "Caching table",
-      config: {
-        PK: this.PK,
-        SK: this.SK,
-        id: fileId,
-        timestamp: Math.floor(Date.now() / 1000),
-      },
-    })
     return await CacheEntity.put({
       PK: this.PK,
       SK: this.SK,
@@ -167,8 +158,9 @@ export default class CacheService {
       const cacheFileId = await this.cacheResult(output.result, cacheTable)
       return this.redirectToCacheFile(cacheFileId)
     } else {
+      console.log("CACHE SERVICE OUTPUT", output)
       return {
-        statusCode: 400,
+        statusCode: 500,
         headers: {
           ...corsHeaders,
         },
@@ -178,18 +170,17 @@ export default class CacheService {
   }
 
   async cacheResult(data: DataOutputs, cacheTable: boolean = true) {
-    const fileId = nanoid()
+    const fileId = this.getKey(nanoid())
     await Promise.all([cacheTable && this.cacheTable(fileId), this.putData(fileId, data)])
     return fileId
   }
 
   async clearCacheById(id: string) {
-    const cacheEntries = await CacheEntity.query({
-      PK: id,
-    })
+    const cacheEntries = await CacheEntity.query(id)
     if (!cacheEntries?.Items?.length) {
       return
     }
+
     await Promise.all([
       Promise.all(
         cacheEntries.Items.map((entry) => entry.id && this.deleteData(entry.id))
@@ -201,15 +192,20 @@ export default class CacheService {
       ),
     ])
   }
-
+  handleSuccess(){
+    return {
+      statusCode: 200,
+      headers: {
+        ...corsHeaders,
+      }
+    }
+  }
   redirectToCacheFile(cacheFileId: string) {
     return {
       statusCode: 302,
       headers: {
         ...corsHeaders,
-        Location: `https://${process.env["API_URL"]}/${this.getKey(
-          cacheFileId
-        )}`,
+        Location: `https://${process.env["API_URL"]}/${cacheFileId}`,
       },
     }
   }
