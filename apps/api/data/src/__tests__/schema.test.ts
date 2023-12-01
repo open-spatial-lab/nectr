@@ -305,6 +305,35 @@ const whereNotLikeSchema = {
   result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" where "sdoh"."column1" = 1 or "sdoh"."column2" > 2 and "sdoh"."column3" not like '%test%';`
 } as MockSchema
 
+const whereLikeOneOfSchema = {
+  config: {
+    schema: {
+      ...simpleSchema.config.schema,
+      title: 'Where like one of',
+      wheres: [
+        {
+          sourceId: 'sdoh',
+          column: 'column1',
+          operator: '=',
+          value: 1,
+          customAlias: 'where1'
+        } as WhereQuery,
+        {
+          sourceId: 'sdoh',
+          column: 'column2',
+          operator: 'ILikeOneOf',
+          value: [0,1,2,3],
+          customAlias: 'where2',
+          allowCustom: true
+        }
+      ],
+      combinedOperator: 'and'
+    },
+    params: {
+    }
+  },
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" where "sdoh"."column1" = 1 and ("sdoh"."column2" ilike '%0%' or "sdoh"."column2" ilike '%1%' or "sdoh"."column2" ilike '%2%' or "sdoh"."column2" ilike '%3%');`
+} as MockSchema
 const groupSchema = {
   config: {
     schema: {
@@ -382,7 +411,8 @@ const testCases = [
   whereNotLikeSchema,
   groupSchema,
   groupHavingSchema,
-  compoundSchema
+  compoundSchema,
+  whereLikeOneOfSchema
 ]
 
 const main = async () => {

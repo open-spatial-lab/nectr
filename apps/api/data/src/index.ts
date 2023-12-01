@@ -8,6 +8,7 @@ import { handleOptionsRequest } from './lambda/handlers/handleOptions'
 import { handleMissingId } from './lambda/handlers/handleMissingId'
 import { handleStandardQuery } from './lambda/handlers/handleStandardQuery'
 import CacheService from './lambda/cache'
+import corsHeaders from "./utils/corsHeaders"
 
 export const S3_BUCKET = (process.env.S3_BUCKET as string) || 'data-api-dev'
 export const connection = new Connection()
@@ -36,22 +37,38 @@ export const handler = metricScope(
 
       const queryDate = new Date()
       const queryStartTimestamp = queryDate.getTime()
-      
-      if (!connection.isInitialized) await connection.initialize()
-      if (isMetaDataQuery) {
-        const metadataFile = _metadataFile ? _metadataFile : ''
-        const output = await handleMetadataQuery(metadataFile, params)
-        const cacheService = new CacheService(metadataFile, params, 0, 'metadata')
-        return await cacheService.handleResult(output)
-      } else if (isAdminTestQuery) {
-        const schema = JSON.parse(event.body!) as DataView | { raw: string }
-        const cacheService = new CacheService(schema['raw'] || event.body!, params, 0)
-        const output = await handleAdminTestQuery(event.body!, params, token)
-        return cacheService.handleResult(output, false)
-      } else if (!id) {
-        return handleMissingId(event)
-      } else {
-        return await handleStandardQuery(id, params, metrics, queryStartTimestamp, token)
+      try {
+        if (!connection.isInitialized) await connection.initialize()
+        if (isMetaDataQuery) {
+          const metadataFile = _metadataFile ? _metadataFile : ''
+          const output = await handleMetadataQuery(metadataFile, params)
+          const cacheService = new CacheService(metadataFile, params, 0, 'metadata')
+          return await cacheService.handleResult(output)
+        } else if (isAdminTestQuery) {
+          const schema = JSON.parse(event.body!) as DataView | { raw: string }
+          // @ts-ignore
+          const cacheService = new CacheService(schema['raw'] || event.body!, params, 0)
+          const output = await handleAdminTestQuery(event.body!, params, token)
+          console.log("NODE ADMIN TEST QUERY output", output)
+          return cacheService.handleResult(output, false)
+        } else if (!id) {
+          return handleMissingId(event)
+        } else {
+          return await handleStandardQuery(id, params, metrics, queryStartTimestamp, token)
+
+        }
+      } catch (error) {
+        console.log("NODE ERROR", error)
+        return {
+          statusCode: 500,
+          headers: {
+            ...corsHeaders,
+          },
+          body: JSON.stringify({
+            error,
+            message: 'There was an error'
+          })
+        }
       }
     }
 )

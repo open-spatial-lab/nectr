@@ -29,9 +29,10 @@ export const handleAdminTestQuery = async (
         ok: true,
         result: queryResponse.result
       }
+    } else {
+      return queryResponse
     }
   } catch (error) {
-    error = error.message
     logger.error({
       message: 'Error handling query',
       error,

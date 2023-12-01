@@ -10,20 +10,28 @@ export const handleStandardQuery = async (
   metrics: MetricsLogger,
   queryStartTimestamp: number,
   token?: string
-): Promise<ReturnType<CacheService['handleResult']>> => {
+): Promise<ReturnType<CacheService['handleResult']|CacheService['handleSuccess']>> => {
   const schema = await serverSchemaService.getSchema(id)
   if (!schema.ok) {
     throw new Error(`Schema error: ${schema.error}`)
   }
+  if (schema.result.isPublic === false) {
+    const authorized = await authorize(token)
+    if (!authorized.ok) {
+      throw new Error(`Unauthorized: ${authorized.error}`)
+    }
+  }
+  
   const ttl = 'ttl' in schema.result ? schema.result.ttl || 0 : 0
   const cacheService = new CacheService(id, params, ttl)
 
-  if (params.fresh){ 
+  if (params['__fresh__']){ 
     const authorized = await authorize(token)
     if (!authorized.ok) {
       throw new Error(`Unauthorized: ${authorized.error}`)
     }
     await cacheService.clearCacheById(id)
+    return cacheService.handleSuccess()
   }
   
   const cachedResult = await cacheService.checkCache()

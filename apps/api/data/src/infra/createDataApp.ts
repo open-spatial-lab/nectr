@@ -1,9 +1,12 @@
+// dotenv
+import { config } from 'dotenv'
 import { ApiGateway, ApiCloudfront } from '@webiny/pulumi-aws'
 // import { DataApiCloudfront } from './createDataCloudfront'
 import { type ApiPulumiApp } from '@webiny/pulumi-aws'
 import { CoreOutput } from '@webiny/pulumi-aws'
 import { DataFunction } from './createDataFunction'
 import { createDataBucket } from './createDataBucket'
+config()
 
 export interface DataApiParams {
   env: Record<string, any>

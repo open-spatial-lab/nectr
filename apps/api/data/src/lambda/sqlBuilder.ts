@@ -36,7 +36,12 @@ export const OPERATOR_FN_SUFFIXES = {
   ">=": "",
   "<": "",
   "<=": "",
+  ILikeOneOf: "",
+  LikeOneOf: ""
 }
+
+export const CUSTOM_WHERE_OPERATORS = ["ILikeOneOf", "LikeOneOf"]
+
 // any valid method of knex()
 type knexMethod = keyof ReturnType<typeof knex>
 
@@ -93,7 +98,6 @@ export class SqlBuilder {
     const columnId = column.expression
       ? column.expression
       : `"${column.sourceId}"."${column.name}"`
-    console.log("column", column)
     const colName = column.alias || columnId
     return this.qb.raw(`${columnId} as "${colName}"`)
   }
@@ -140,6 +144,10 @@ export class SqlBuilder {
     })
     this.query.select(columnsList)
   }
+  getColText(source:string, column:string){
+    return source === "derived" ? `"${column}"` : `"${source}"."${column}"`
+  }
+
   async buildSourceText(source: Source) {
     const id = source.id
     if (!this.schemaService) return
@@ -185,6 +193,7 @@ export class SqlBuilder {
     whereVerb: string,
     isFirst: boolean = false
   ) {
+    // @ts-ignore
     const whereSuffix = OPERATOR_FN_SUFFIXES[operator]
     const whereFn = isFirst
       ? whereVerb.toLowerCase() + whereSuffix
@@ -200,6 +209,29 @@ export class SqlBuilder {
     }
   }
 
+  handleCustomWhereClause(
+    column: string,
+    operator: WhereQuery["operator"],
+    value: Array<unknown>,
+    wherePrefix: string,
+    _whereVerb: string,
+    isFirst: boolean = false
+  ){
+    const queryFn = isFirst ? "where" : `${wherePrefix}Where`
+    const innerOperators = {
+      "ILikeOneOf": "ilike",
+      "LikeOneOf": "like"
+    }
+    // @ts-ignore
+    const innerOperator = innerOperators[operator]
+    // @ts-ignore
+    this.query[queryFn]((builder: any) => {
+      value.forEach((v) => {
+        builder.orWhereRaw(`${column} ${innerOperator} '%${v}%'`);
+      });
+    });
+  }
+
   sanitizeParam(operator: OPERATOR_TYPES, param: string, fallbackValue: any) {
     const value = this.params[param] || fallbackValue
     if (value === "*") {
@@ -211,15 +243,20 @@ export class SqlBuilder {
       case "NotIn":
       case "Between":
       case "NotBetween":
+      case "ILikeOneOf":
+      case "LikeOneOf":
         // split based on comma for strings not in single or double quotes
+        if (Array.isArray(value)) {
+          return value
+        }
         const commasNotInQuotes = /,(?=(?:[^"]|"[^"]*")*$)(?=(?:[^']|'[^']*')*$)/g
         const splitValue = value.split(commasNotInQuotes)
         // remove outer quotes from string
-        const removeQuotes = /^['"](.*)['"]$/
-        const cleanValue = splitValue.map((val) => {
-          const match = val.match(removeQuotes)
-          return match ? match[1] : val
-        })
+        // const removeQuotes = /^['"](.*)['"]$/
+        // const cleanValues = splitValue.map((val) => {
+        //   const match = val.match(removeQuotes)
+        //   return match ? match[1] : val
+        // })
         return splitValue.length > 1 ? splitValue : value.split(",")
       case "Like":
       case "NotLike":
@@ -242,11 +279,24 @@ export class SqlBuilder {
     isFirst: boolean = false
   ) {
     const wherePrefix = combinedOperator || "and"
-    const whereVerb = hasGroup ? "Having" : "Where"
-    const whereColumn = `"${where.sourceId}"."${where.column}"`
+    const whereVerb = hasGroup ? "Where" : "Where"
+    const whereColumn = this.getColText(where.sourceId, where.column)
     const paramName = where.customAlias || where.column
     const whereValue = this.sanitizeParam(where.operator, paramName, where.value)
-    if (whereValue === undefined || whereValue === "*") return
+    if (whereValue === undefined || whereValue === "*") {
+      return
+    }
+    if (CUSTOM_WHERE_OPERATORS.includes(where.operator)) {
+      this.handleCustomWhereClause(
+        whereColumn,
+        where.operator,
+        whereValue,
+        wherePrefix,
+        whereVerb,
+        isFirst
+      )
+      return
+    }
     const { whereFn, whereArgs } = this.generateWhereArgs(
       whereColumn,
       where.operator,
@@ -374,14 +424,14 @@ export class SqlBuilder {
     if (!groupbys) return
     groupbys.forEach((groupby: (typeof groupbys)[number]) => {
       const groupbyColumn = groupby.column
-        .map((col) => `"${groupby.sourceId}"."${col}"`)
+        .map((col) => this.getColText(groupby.sourceId, col))
         .join(", ")
       const relatedWheres = this.schema.wheres?.filter(
         (where) => where.sourceId === groupby.sourceId
       )
       if (relatedWheres && relatedWheres.length) {
         const mappedGroupbys = relatedWheres.map(
-          (where) => `"${where.sourceId}"."${where.column}"`
+          (where) => this.getColText(where.sourceId, where.column)
         )
         this.query.groupByRaw(`${groupbyColumn}, ${mappedGroupbys.join(", ")}`)
       } else {
@@ -394,7 +444,7 @@ export class SqlBuilder {
   ) {
     if (!orderbys) return
     orderbys.forEach((orderby: (typeof orderbys)[number]) => {
-      const orderbyColumn = `"${orderby.sourceId}"."${orderby.column}"`
+      const orderbyColumn = this.getColText(orderby.sourceId, orderby.column)
       this.query.orderByRaw(`${orderbyColumn} ${orderby.direction}`)
     })
   }

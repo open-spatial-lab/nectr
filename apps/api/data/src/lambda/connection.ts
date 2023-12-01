@@ -1,4 +1,4 @@
-import DuckDB, {type TableData} from 'duckdb'
+import DuckDB, {DuckDbError, type TableData} from 'duckdb'
 import { QueryResponse } from '../types/types'
 import { serverSchemaService } from './schemas/serverSchemaService'
 import { SqlBuilder } from './sqlBuilder'
@@ -40,20 +40,23 @@ export default class Connection {
   }
 
   async query(query: string): Promise<QueryResponse<TableData, string>> {
-    logger.info({query})
+    // logger.info({query})
     return new Promise((resolve, reject) => {
-      this.connection!.all(query, (err: unknown, res: TableData) => {
+      this.connection!.all(query, (err: DuckDbError | null, res: TableData) => {
         if (err) {
-          logger.error({err, query})
-          reject({
-            error: err,
+          console.log('NODE ERR STACK',err.stack)
+          // throw new Error('Error running query:' + err.stack || ' Unknown error')
+          // logger.error({err, query})
+          resolve({
+            error: err.stack || 'Unknown error',
             ok: false
           })
+        } else {
+          resolve({
+            result: res,
+            ok: true
+          })
         }
-        resolve({
-          result: res,
-          ok: true
-        })
       })
     })
   }
@@ -73,8 +76,21 @@ export default class Connection {
     )
     await sqlBuilder.buildStatement()
     const query = sqlBuilder.queryString
+    logger.info({
+      sqlQuery: query
+    })
     try {
-      return await this.query(query)
+      const result = await this.query(query)
+      console.log("RESULT", result) 
+      if (result.ok) {
+        return {
+          ok: true,
+          result: result.result
+        }
+      } else {
+        return result
+      }
+      return result
     } catch (err) {
       return {
         error: `Error at handle id query: ${JSON.stringify(err)}; \n Schema: \n ${JSON.stringify(

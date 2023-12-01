@@ -18,7 +18,9 @@ export const OPERATORS = [
   'Like',
   'NotLike',
   'ILike',
-  'NotILike'
+  'NotILike',
+  "LikeOneOf",
+  "ILikeOneOf",
 ] as const
 
 export const JOIN_OPERATORS = ['left', 'right', 'inner', 'outer'] as const
@@ -99,6 +101,8 @@ export type OPERATOR_ARGS = {
   ILike: [string]
   NotLike: [string]
   NotILike: [string]
+  LikeOneOf: [string]
+  ILikeOneOf: [string]
 }
 
 export const COMBINE_OPERATORS = ['and', 'or'] as const
