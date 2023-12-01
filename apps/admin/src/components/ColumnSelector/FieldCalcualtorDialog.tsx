@@ -103,6 +103,17 @@ export const FieldCalculatorDialog: React.FC<{
     onAdd(column)
     onClose()
   }
+  const handleInsertColumn = (columns: MetaColumnSchema[]) => {
+    const sourceId = columns?.[0]?.sourceId
+    if (sourceId === "derived") {
+      handleInsert(`"${columns[0].name}"`)
+      return
+    }
+    if (!sourceId){
+      return
+    }
+    handleInsert(`"${sourceId}"."${columns[0].name}"`)
+  }
 
   return (
     <Dialog open={true} fullScreen onClose={onClose} sx={{ maxWidth: 'initial'}}>
@@ -136,7 +147,7 @@ export const FieldCalculatorDialog: React.FC<{
                 isNested={true}
                 sources={sources}
                 currentColumns={[]}
-                onChange={columns => columns?.[0]?.sourceId && handleInsert(`"${columns[0].sourceId}"."${columns[0].name}"`)}
+                onChange={handleInsertColumn}
                 hideCurrent={true}
                 hideAdvanced={true}
                 />
