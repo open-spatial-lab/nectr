@@ -20,7 +20,7 @@ export const SourceSelector = ({
 
   const cleanedSourceTypes = cleanedSources.map((s) => ({
     ...s,
-    __typename: s.__typename === "Dataset" ? "Dataset" : "Data View",
+    groupLabel: s.__typename === "Dataset" ? "Dataset" : "Data View",
   })) as SourceMeta[]
 
   const sortedSources = cleanedSourceTypes.sort(
@@ -55,7 +55,8 @@ export const SourceSelector = ({
             onChange={(_e, source) => {
               source && onChange(source)
             }}
-            groupBy={(option) => option.__typename}
+            // @ts-ignore
+            groupBy={(option) => option.groupLabel}
             getOptionLabel={(o) => o?.title}
             options={sortedSources || []}
             renderOption={(props, option) => (

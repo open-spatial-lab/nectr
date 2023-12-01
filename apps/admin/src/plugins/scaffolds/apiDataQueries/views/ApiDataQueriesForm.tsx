@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useDataView } from './hooks/useDataView/useDataView'
 import { CircularProgress } from '@mui/material'
 import DataViewTemplates from './components/DataViewTemplates'
@@ -30,6 +30,11 @@ const ApiDataQueriesForm: React.FC = () => {
   const { emptyViewIsShown, loading, currentApiDataQuery, apiDataQuery } = hookProps
   const { schema } = useDataViewSchema();
   const previewProps = useQueryBuilderPreview({schema});
+
+  useEffect(() => {
+    setDataViewTemplate(undefined)
+  }, [apiDataQuery])
+
   if (!apiDataQuery && !dataViewTemplate) {
     return <DataViewTemplates setDataViewTemplate={setDataViewTemplate} />
   }

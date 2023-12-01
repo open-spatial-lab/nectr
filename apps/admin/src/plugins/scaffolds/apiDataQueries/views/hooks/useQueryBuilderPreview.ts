@@ -1,25 +1,31 @@
-import { useCurrentAccessKey } from './useCurrentAccessKey'
-import React from 'react'
-import { QuerySchema } from '../../../../../../../admin/src/components/QueryBuilder/types'
-import { QueryResponse } from '../../../../../../../api/data/src/types/types'
-import { config as appConfig } from '@webiny/app/config'
+import { useCurrentAccessKey } from "./useCurrentAccessKey"
+import React from "react"
+import { QuerySchema } from "../../../../../../../admin/src/components/QueryBuilder/types"
+import { QueryResponse } from "../../../../../../../api/data/src/types/types"
+import { config as appConfig } from "@webiny/app/config"
 const apiUrl = `${appConfig.getKey(
-  'API_URL',
+  "API_URL",
   process.env.REACT_APP_API_URL
 )}/data-query/?__adminQuery__=true`
 
 const INITIAL_DATA = {
   ok: false,
-  error: 'No data'
+  error: "No data",
 } as const
 
-export const useQueryBuilderPreview = ({ raw, schema }: { raw?: string; schema?: QuerySchema }) => {
+export const useQueryBuilderPreview = ({
+  raw,
+  schema,
+}: {
+  raw?: string
+  schema?: QuerySchema
+}) => {
   const currentToken = useCurrentAccessKey()
   const [data, setData] =
-    React.useState<QueryResponse<Array<Record<string, unknown>>, string>>(INITIAL_DATA)
-
+    React.useState<QueryResponse<Array<Record<string, unknown>>, string>>(
+      INITIAL_DATA
+    )
   const [page, setPage] = React.useState(0)
-
   const isQuerying = React.useRef(false)
   const isSchema = Boolean(schema)
 
@@ -38,37 +44,41 @@ export const useQueryBuilderPreview = ({ raw, schema }: { raw?: string; schema?:
     // if secondary schema.join references right source id from earlier schema.join, reverse the list
     // otherwise leave as is
     const lastJoinIndex = schema?.joins?.length ? schema.joins.length - 1 : 0
-    const shouldReverseJoins = schema?.joins?.[lastJoinIndex]?.leftSourceId !== schema?.sources?.[0]?.id
-    const joins = shouldReverseJoins ? [...schema?.joins||[]].reverse() : schema?.joins
+    const shouldReverseJoins =
+      schema?.joins?.[lastJoinIndex]?.leftSourceId !== schema?.sources?.[0]?.id
+    const joins = shouldReverseJoins
+      ? [...(schema?.joins || [])].reverse()
+      : schema?.joins
     const body = isSchema
       ? JSON.stringify({
           ...schema,
           joins,
           limit: 10,
-          offset: page * 10
+          offset: page * 10,
         })
       : JSON.stringify({ raw })
 
     isQuerying.current = true
 
     const response = await fetch(apiUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'X-Authorization': currentToken as string
+        "X-Authorization": currentToken as string,
       },
-      body
+      body,
     })
     if (!response.ok) {
       const error = await response.json()
+      console.log(error)
       setData({
         ok: false,
-        error: error.message
+        error: error.error.replace("Binder Error", "Query Error"),
       })
       isQuerying.current = false
     } else {
       setData({
         ok: true,
-        result: await response.json()
+        result: await response.json(),
       })
       isQuerying.current = false
     }
@@ -84,7 +94,7 @@ export const useQueryBuilderPreview = ({ raw, schema }: { raw?: string; schema?:
         orderbys: nonNullSchema.orderbys,
         distinct: nonNullSchema.distinct,
         wheres: nonNullSchema.wheres,
-        page
+        page,
       })
     : raw
 
@@ -96,6 +106,6 @@ export const useQueryBuilderPreview = ({ raw, schema }: { raw?: string; schema?:
     data,
     page,
     setPage,
-    id: schema?.id || raw
+    id: schema?.id || raw,
   }
 }

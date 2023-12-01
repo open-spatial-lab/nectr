@@ -47,7 +47,7 @@ export const PreviewTable: React.FC<PreviewTableProps> = ({ id, data, page, setP
   return (
     <div>
       <TableView {...{ id, data, page, setPage, raw }} />
-      {/* <TableError data={data} /> */}
+      <TableError data={data} />
     </div>
   )
 }
@@ -57,6 +57,14 @@ const ErrorFeedback: React.FC<{ error: string }> = ({ error }) => {
 }
 
 const paginatedEntries = 10
+
+const TableError: React.FC<{data: PreviewTableProps['data']}> = ({ data }) => {
+  if (data.ok) {
+    return null
+  }
+  return <ErrorFeedback error={data.error} />
+}
+
 const TableView: React.FC<PreviewTableProps> = ({ data, page, setPage, id,raw }) => {
   const [loading, setLoading] = React.useState(false)
   const [maxEntries, setMaxEntries] = React.useState(-1)

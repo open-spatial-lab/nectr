@@ -16,7 +16,6 @@ export const useDataView: useDataViewHook = (templateName) => {
     onSubmit,
     datasets,
   } = useApiDataQueriesForm()
-
   const { setSchema, setSources, schema } = useDataViewSchema()
   const sources = schema?.sources || []
 

@@ -1,7 +1,7 @@
 import { useCurrentAccessKey } from './useCurrentAccessKey'
 import React from 'react'
 import { config as appConfig } from '@webiny/app/config'
-
+  
 export const useClearCache = (id: string) => {
   const [isClearingCache, setIsClearingCache] = React.useState(false)
   const [lastCleared, setLastCleared] = React.useState<null | string>(null)
