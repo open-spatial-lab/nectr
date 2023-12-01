@@ -83,7 +83,7 @@ export const FullForm: React.FC<FullFormProps> = ({
       data?.joins
         ?.map((join: JoinQuery) => [join.leftSourceId, join.rightSourceId])
         .flat() || []
-    let shouldUpdate = false
+    let shouldUpdateSources = false
     let newSources = [...sources]
     const missingSources = joinIds.filter(
       (id) => !formSourceIds.includes(id) && Boolean(id)
@@ -100,26 +100,29 @@ export const FullForm: React.FC<FullFormProps> = ({
           title: source.title,
           type: source.__typename,
         })) as SourceMeta[]
-      shouldUpdate = true
+      shouldUpdateSources = true
       newSources = [
         ...((data?.sources || []) as SourceMeta[]),
         ...missingSourceSchemas,
       ]
     }
     if (excessSources.length) {
-      shouldUpdate = true
+      shouldUpdateSources = true
       newSources = newSources.filter(
         (source) => !excessSources.includes(source.id)
       )
     }
-    if (shouldUpdate) {
+    // @ts-ignore
+    const groupIds = data?.groupbys?.map((group: any) => group.sourceId) || []
+    const shouldPurgeGroupBy = groupIds.length && groupIds[0] !== data?.sources?.[0]?.id
+    shouldPurgeGroupBy && form.setValue("groupbys", [])
+    if (shouldUpdateSources) {
       setSources(newSources)
       form.setValue("sources", newSources)
     } else {
       setSchema(data)
     }
   }
-
   return (
     <Form<QuerySchema>
       data={apiDataQuery}

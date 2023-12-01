@@ -10,7 +10,7 @@ const apiUrl = `${appConfig.getKey(
 
 const INITIAL_DATA = {
   ok: false,
-  error: "No data",
+  error: "Loading...",
 } as const
 
 export const useQueryBuilderPreview = ({
@@ -57,7 +57,10 @@ export const useQueryBuilderPreview = ({
           offset: page * 10,
         })
       : JSON.stringify({ raw })
-
+    setData({
+      ok: false,
+      error: "Loading...",
+    })
     isQuerying.current = true
 
     const response = await fetch(apiUrl, {
@@ -69,10 +72,9 @@ export const useQueryBuilderPreview = ({
     })
     if (!response.ok) {
       const error = await response.json()
-      console.log(error)
       setData({
         ok: false,
-        error: error.error.replace("Binder Error", "Query Error"),
+        error: error?.error?.replace("Binder Error", "Query Error") || error.message,
       })
       isQuerying.current = false
     } else {

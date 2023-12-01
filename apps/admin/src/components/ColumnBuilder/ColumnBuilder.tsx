@@ -36,7 +36,7 @@ export const ColumnBuilder: React.FC<ColumnBuilderProps> = ({ columns, onChange 
           </Cell>
           {columns.map((column, index) => (
             <ColumnRow
-              key={index}
+              key={`${column}${index}`}
               column={column}
               onChange={column => updateColumn(index, column)}
               onDelete={() => removeColumn(index)}

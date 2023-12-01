@@ -53,6 +53,9 @@ export const PreviewTable: React.FC<PreviewTableProps> = ({ id, data, page, setP
 }
 
 const ErrorFeedback: React.FC<{ error: string }> = ({ error }) => {
+  if (error.includes("Loading")) {
+    return <Alert severity="info">{error}</Alert>
+  } 
   return <Alert severity="error">{error}</Alert>
 }
 
