@@ -1,10 +1,10 @@
-import { useCallback, useReducer } from 'react'
-import { useRouter } from '@webiny/react-router'
-import { useQuery, useMutation } from '@apollo/react-hooks'
-import { useSnackbar } from '@webiny/app-admin/hooks/useSnackbar'
-import { useConfirmationDialog } from '@webiny/app-admin/hooks/useConfirmationDialog'
-import { PaginationProp } from '@webiny/ui/List/DataList/types'
-import { LIST_API_DATA_QUERIES, DELETE_API_DATA_QUERY } from './graphql'
+import { useCallback, useReducer } from "react"
+import { useRouter } from "@webiny/react-router"
+import { useQuery, useMutation } from "@apollo/react-hooks"
+import { useSnackbar } from "@webiny/app-admin/hooks/useSnackbar"
+import { useConfirmationDialog } from "@webiny/app-admin/hooks/useConfirmationDialog"
+import { PaginationProp } from "@webiny/ui/List/DataList/types"
+import { LIST_API_DATA_QUERIES, DELETE_API_DATA_QUERY } from "./graphql"
 
 /**
  * Contains essential data listing functionality - data querying and UI control.
@@ -18,7 +18,7 @@ import { LIST_API_DATA_QUERIES, DELETE_API_DATA_QUERY } from './graphql'
 // }
 
 interface useApiDataQueriesDataListHook {
-  (): {
+  (search?: string): {
     apiDataQueries: Array<{
       id: string
       title: string
@@ -54,7 +54,9 @@ const reducer = (
   next: Partial<ApiDataQueriesState>
 ): ApiDataQueriesState => ({ ...prev, ...next })
 
-export const useApiDataQueriesDataList: useApiDataQueriesDataListHook = () => {
+export const useApiDataQueriesDataList: useApiDataQueriesDataListHook = (
+  searchText
+) => {
   // Base state and UI React hooks.
   const { history } = useRouter()
   const { showSnackbar } = useSnackbar()
@@ -63,29 +65,29 @@ export const useApiDataQueriesDataList: useApiDataQueriesDataListHook = () => {
     limit: 99999,
     after: undefined,
     before: undefined,
-    sort: undefined
+    sort: 'title_ASC',
   })
 
   const searchParams = new URLSearchParams(location.search)
-  const currentApiDataQueryId = searchParams.get('id') || null
+  const currentApiDataQueryId = searchParams.get("id") || null
   // Queries and mutations.
   const listQuery = useQuery(LIST_API_DATA_QUERIES, {
     variables,
-    onError: e => showSnackbar(e.message)
+    onError: (e) => showSnackbar(e.message),
   })
 
   const [deleteIt, deleteMutation] = useMutation(DELETE_API_DATA_QUERY, {
-    refetchQueries: [{ query: LIST_API_DATA_QUERIES }]
+    refetchQueries: [{ query: LIST_API_DATA_QUERIES }],
   })
 
   const { data: apiDataQueries = [], meta = {} } = listQuery.loading
     ? {}
     : listQuery?.data?.apiDataQueries?.listApiDataQueries || {}
-  const loading = [listQuery, deleteMutation].some(item => item.loading)
+  const loading = [listQuery, deleteMutation].some((item) => item.loading)
 
   // Base CRUD actions - new, edit, and delete.
-  const newApiDataQuery = useCallback(() => history.push('/data-views?new'), [])
-  const editApiDataQuery = useCallback(id => {
+  const newApiDataQuery = useCallback(() => history.push("/data-views?new"), [])
+  const editApiDataQuery = useCallback((id) => {
     history.push(`/data-views?id=${id}`)
     if (currentApiDataQueryId !== id) {
       window.location.reload()
@@ -93,11 +95,11 @@ export const useApiDataQueriesDataList: useApiDataQueriesDataListHook = () => {
   }, [])
 
   const deleteApiDataQuery = useCallback(
-    item => {
+    (item) => {
       showConfirmation(async () => {
         try {
           await deleteIt({
-            variables: item
+            variables: item,
           })
 
           showSnackbar(`Api Data Query "${item.title}" deleted.`)
@@ -114,7 +116,8 @@ export const useApiDataQueriesDataList: useApiDataQueriesDataListHook = () => {
 
   // Sorting.
   const setSort = useCallback(
-    value => setVariables({ after: undefined, before: undefined, sort: value }),
+    (value) =>
+      setVariables({ after: undefined, before: undefined, sort: value }),
     []
   )
 
@@ -138,11 +141,15 @@ export const useApiDataQueriesDataList: useApiDataQueriesDataListHook = () => {
     // setPreviousPage,
     // setNextPage,
     hasPreviousPage: meta.before,
-    hasNextPage: meta.after
+    hasNextPage: meta.after,
   }
 
   return {
-    apiDataQueries: apiDataQueries.sort(),
+    apiDataQueries: apiDataQueries
+      .sort()
+      .filter((f: any) =>
+        searchText?.length ? f.title.includes(searchText) : true
+      ),
     loading,
     refresh: (): void => {
       listQuery.refetch()
@@ -153,6 +160,6 @@ export const useApiDataQueriesDataList: useApiDataQueriesDataListHook = () => {
     editApiDataQuery,
     deleteApiDataQuery,
     currentApiDataQueryId,
-    variables
+    variables,
   }
 }

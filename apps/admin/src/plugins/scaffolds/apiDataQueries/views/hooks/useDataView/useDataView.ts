@@ -1,12 +1,12 @@
-import { useEffect, useMemo } from 'react'
-import { getApiUrl } from 'theme/pageElements/utils/dataApiUrl'
-import { useApiDataQueriesDataList } from '../useApiDataQueriesDataList'
-import { useApiDataQueriesForm } from '../useApiDataQueriesForm'
-import { useDataViewHook } from './types'
-import { getFormComponent } from './utils'
-import { useDataViewSchema } from '../useGlobalFormData'
+import { useEffect, useMemo } from "react"
+import { getApiUrl } from "theme/pageElements/utils/dataApiUrl"
+import { useApiDataQueriesDataList } from "../useApiDataQueriesDataList"
+import { useApiDataQueriesForm } from "../useApiDataQueriesForm"
+import { useDataViewHook } from "./types"
+import { getFormComponent } from "./utils"
+import { useDataViewSchema } from "../useGlobalFormData"
 
-export const useDataView: useDataViewHook = templateName => {
+export const useDataView: useDataViewHook = (templateName) => {
   const {
     loading,
     emptyViewIsShown,
@@ -14,14 +14,14 @@ export const useDataView: useDataViewHook = templateName => {
     cancelEditing,
     apiDataQuery,
     onSubmit,
-    datasets
+    datasets,
   } = useApiDataQueriesForm()
 
   const { setSchema, setSources, schema } = useDataViewSchema()
   const sources = schema?.sources || []
 
   const { apiDataQueries } = useApiDataQueriesDataList()
-  const currentIds = sources?.map(source => source.id).filter(Boolean) || []
+  const currentIds = sources?.map((source) => source.id).filter(Boolean) || []
   const datasetsAndDataviews = useMemo(
     () => (datasets && apiDataQueries ? [...datasets, ...apiDataQueries] : []),
     [datasets, apiDataQueries]
@@ -32,13 +32,39 @@ export const useDataView: useDataViewHook = templateName => {
     }
   }, [apiDataQuery?.sources?.length])
 
-  const availableSources = datasetsAndDataviews.filter((source) => !currentIds.includes(source.id))
-  const currentSources = currentIds.map(id => datasetsAndDataviews.find(source => source.id === id)).filter(Boolean)
+  const availableSources = datasetsAndDataviews.filter(
+    (source) => !currentIds.includes(source.id)
+  )
+  const derivedColumns =
+    schema.columns
+      ?.filter((column) => column.expression?.length)
+      ?.map((col) => ({
+        ...col,
+        sourceId: "derived",
+      })) || []
+  const sourceIds = derivedColumns.length
+    ? [...currentIds, "derived"]
+    : currentIds
+
+  const currentSources = sourceIds
+    .map((id) =>
+      id === "derived"
+        ? {
+            description: "Derived Columns",
+            id: "derived",
+            isPublic: true,
+            title: "Derived Columns",
+            columns: derivedColumns,
+          }
+        : datasetsAndDataviews.find((source) => source.id === id)
+    )
+    .filter(Boolean)
+
   const dataQueryLink = apiDataQuery?.id ? getApiUrl(apiDataQuery.id) : null
   // TODO fix circular reference
   // this is React.FC<FormProps> from apps/admin/src/plugins/scaffolds/apiDataQueries/views/components/types.ts
   const FormComponent = getFormComponent(
-    templateName || apiDataQuery?.dataViewTemplate || 'verbose'
+    templateName || apiDataQuery?.dataViewTemplate || "verbose"
   )
 
   return {
@@ -56,6 +82,7 @@ export const useDataView: useDataViewHook = templateName => {
     dataQueryLink,
     datasetsAndDataviews,
     FormComponent,
-    setSchema
+    setSchema,
+    derivedColumns,
   }
 }

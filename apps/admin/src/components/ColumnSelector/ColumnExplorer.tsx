@@ -12,12 +12,11 @@ export const ColumnExplorer: React.FC<{
   backIcon?: React.ReactNode
   currentColumn?: string
   currentSourceId?: string
-}> = ({ sources, onClick, backIcon, frontIcon, currentColumn, currentSourceId }) => {
+  showDerived?: boolean
+}> = ({ sources, onClick, backIcon, currentColumn, currentSourceId, showDerived=false }) => {
   const [currentSource, setCurrentSource] = React.useState<SourceMeta | null>(sources?.[0] || null)
   const currentSourceColumns = currentSource?.columns || []
-
-  !!frontIcon
-
+  const cleanedSources = showDerived ? sources : sources.filter(s => s.id !== "derived")
   return (
     <NoPaddingGrid>
       <Cell span={6}>
@@ -25,7 +24,7 @@ export const ColumnExplorer: React.FC<{
           <ListItem style={{ fontWeight: 'bold', pointerEvents: 'none' }}>
             <ListItemText>Data Sources</ListItemText>
           </ListItem>
-          {sources.map((source, idx) => (
+          {cleanedSources.map((source, idx) => (
             <ListItem
               key={`${source?.id}${idx}`}
               style={{

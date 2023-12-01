@@ -376,7 +376,7 @@ export const FullForm: React.FC<FullFormProps> = ({
                   </Bind>
                 </Cell>
 
-                {apiDataQuery.id ? (
+                {apiDataQuery?.id ? (
                   <Cell span={3}>
                     <ClearCacheButton id={apiDataQuery.id} />
                   </Cell>

@@ -105,6 +105,7 @@ export const WhereDialog: React.FC<{
         <Cell span={8}>
           <ColumnExplorer
             sources={currentSources}
+            showDerived={true}
             onClick={(column, source) => {
               onChange('column', column.name)
               source && onChange('sourceId', source.id)

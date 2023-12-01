@@ -23,7 +23,8 @@ export type FormProps = HookQueryProperties & {
   datasetsAndDataviews: any[]
   dataViewTemplate?: string
   togglePreview?: () => void
-  showPreview?: boolean
+  showPreview?: boolean,
+  derivedColumns?: any[]
 }
 
 export type useDataViewHook = (templateName?: string) => FormProps & {

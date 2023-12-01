@@ -74,6 +74,7 @@ const OrderByRow: React.FC<{
       <Cell span={7}>
         <ColumnExplorer
           sources={sources}
+          showDerived={true}
           onClick={(column, source) => {
             onChange(
               source?.id || orderby.sourceId,

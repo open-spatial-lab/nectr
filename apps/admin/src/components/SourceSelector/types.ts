@@ -7,4 +7,5 @@ export type SourceSelectorProps = {
   label?: string
   showMeta?: boolean
   disabled?: boolean
+  showDerived?: boolean
 }

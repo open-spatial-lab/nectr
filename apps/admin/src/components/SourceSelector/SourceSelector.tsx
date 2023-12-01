@@ -1,45 +1,78 @@
-import React from 'react'
-import { SourceSelectorProps } from './types'
-import { Select, FormControl, InputLabel, MenuItem } from '@mui/material'
-import { SourceMeta } from '../QueryBuilder/types'
-import Stack from '@mui/material/Stack'
-import SourceMetaView from '../SourceMetaView'
+import React from "react"
+import { SourceSelectorProps } from "./types"
+import { FormControl, MenuItem, Autocomplete, TextField } from "@mui/material"
+import { SourceMeta } from "../QueryBuilder/types"
+import Stack from "@mui/material/Stack"
+import SourceMetaView from "../SourceMetaView"
 
 export const SourceSelector = ({
   sources,
   onChange,
   value,
-  label = 'Select a source',
+  label = "Select a source",
   showMeta = true,
-  disabled=false
+  disabled = false,
+  showDerived = false,
 }: SourceSelectorProps) => {
-  const source = value !== undefined ? sources.find(s => s.id === value?.id) : undefined
+  const cleanedSources = showDerived
+    ? sources
+    : sources.filter((s) => s.id !== "derived")
+
+  const cleanedSourceTypes = cleanedSources.map((s) => ({
+    ...s,
+    __typename: s.__typename === "Dataset" ? "Dataset" : "Data View",
+  })) as SourceMeta[]
+
+  const sortedSources = cleanedSourceTypes.sort(
+    (a, b) =>
+      //  sort by title and by __typename
+      a.__typename.localeCompare(b.__typename) || a.title.localeCompare(b.title)
+  )
+  const source =
+    value !== undefined
+      ? sortedSources.find((s) => s.id === value.id)
+      : undefined
+
+  if (!sources.length) {
+    return null
+  }
+  
   return (
     <FormControl fullWidth variant="filled">
-      <InputLabel id="demo-simple-select-label">{label}</InputLabel>
-      <Stack direction={'row'} spacing={0}>
-        <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={value?.id || ''}
-          label={label || 'Select a source'}
-          sx={{ flexGrow: 1, maxWidth: 'calc(100% - 64px)' }}
-          disabled={disabled}
-          onChange={e => {
-            const id = e.target.value as SourceMeta['id']
-            const source = sources.find(source => source.id === id)
-            source && onChange(source)
+      <Stack direction={"row"} spacing={0}>
+        <FormControl
+          fullWidth
+          sx={{
+            marginTop: "1rem",
+            marginBottom: "1rem",
           }}
+          variant="filled"
         >
-          {sources.map(source => (
-            <MenuItem key={source.id} value={source.id}>
-              {source.title}
-            </MenuItem>
-          ))}
-        </Select>
-        {showMeta && value !== undefined && (
-          <SourceMetaView source={source} />
-        )}
+          <Autocomplete
+            multiple={false}
+            disabled={disabled}
+            value={source}
+            onChange={(_e, source) => {
+              source && onChange(source)
+            }}
+            groupBy={(option) => option.__typename}
+            getOptionLabel={(o) => o?.title}
+            options={sortedSources || []}
+            renderOption={(props, option) => (
+              <MenuItem {...props} key={option.id} value={option.id}>
+                {option.title}
+              </MenuItem>
+            )}
+            renderInput={(params) => (
+              <Stack direction="row">
+                <TextField {...params} label={label} size="small" />
+                {showMeta && value !== undefined && (
+                  <SourceMetaView source={source} />
+                )}
+              </Stack>
+            )}
+          />
+        </FormControl>
       </Stack>
     </FormControl>
   )
