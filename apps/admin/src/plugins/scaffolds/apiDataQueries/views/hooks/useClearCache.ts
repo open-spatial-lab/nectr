@@ -28,6 +28,7 @@ export const useClearCache = (id: string) => {
     })
     if (!response.ok) {
       const error = await response.json()
+      console.error(error)
     } else {
       const current = new Date()
       setLastCleared(current.toLocaleString())
