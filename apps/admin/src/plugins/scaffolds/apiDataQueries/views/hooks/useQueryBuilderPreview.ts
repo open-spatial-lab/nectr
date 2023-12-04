@@ -27,19 +27,26 @@ export const useQueryBuilderPreview = ({
     )
   const [page, setPage] = React.useState(0)
   const isQuerying = React.useRef(false)
+  const querySignal = React.useRef<any>(null)
   const isSchema = Boolean(schema)
 
   const query = async () => {
-    const tokenGood = Boolean(currentToken) && !isQuerying.current
+    const tokenGood = Boolean(currentToken) 
     const schemaGood = Boolean(schema?.sources?.length && schema?.title?.length)
     const rawGood = Boolean(raw?.length)
-
     const shouldQuery = tokenGood && (isSchema ? schemaGood : rawGood)
-
+    if (shouldQuery && isQuerying.current) {
+      querySignal?.current?.abort()
+    }
+    
     if (!shouldQuery) {
       setData(INITIAL_DATA)
       return
     }
+    // abort signal controller
+    querySignal.current = new AbortController();
+    const signal = querySignal.current.signal;
+
 
     // if secondary schema.join references right source id from earlier schema.join, reverse the list
     // otherwise leave as is
@@ -64,6 +71,7 @@ export const useQueryBuilderPreview = ({
     isQuerying.current = true
 
     const response = await fetch(apiUrl, {
+      signal,
       method: "POST",
       headers: {
         "X-Authorization": currentToken as string,
