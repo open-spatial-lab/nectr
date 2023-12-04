@@ -426,17 +426,18 @@ export class SqlBuilder {
       const groupbyColumn = groupby.column
         .map((col) => this.getColText(groupby.sourceId, col))
         .join(", ")
-      const relatedWheres = this.schema.wheres?.filter(
-        (where) => where.sourceId === groupby.sourceId
-      )
-      if (relatedWheres && relatedWheres.length) {
-        const mappedGroupbys = relatedWheres.map(
-          (where) => this.getColText(where.sourceId, where.column)
-        )
-        this.query.groupByRaw(`${groupbyColumn}, ${mappedGroupbys.join(", ")}`)
-      } else {
+        // This is messing up group bys with wheres, and I don't think we need this anymore...
+      // const relatedWheres = this.schema.wheres?.filter(
+      //   (where) => where.sourceId === groupby.sourceId
+      // )
+      // if (relatedWheres && relatedWheres.length) {
+      //   const mappedGroupbys = relatedWheres.map(
+      //     (where) => this.getColText(where.sourceId, where.column)
+      //   )
+      //   this.query.groupByRaw(`${groupbyColumn}, ${mappedGroupbys.join(", ")}`)
+      // } else {
         this.query.groupByRaw(groupbyColumn)
-      }
+      // }
     })
   }
   buildOrderByClauses(
