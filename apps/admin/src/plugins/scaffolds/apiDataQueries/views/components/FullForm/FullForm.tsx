@@ -141,6 +141,12 @@ export const FullForm: React.FC<FullFormProps> = ({
           form.setValue("title", `New ${dataViewTemplate} Data View - ${date}`)
         }, [dataViewTemplate])
 
+        useEffect(() => {
+          if (apiDataQuery?.columns?.length && !form.data?.columns?.length) {
+            form.setValue("columns", apiDataQuery.columns)
+          }
+        }, [apiDataQuery?.columns, form.data?.columns])
+
         return (
           <NoPaddingForm>
             <SimpleFormContent>

@@ -30,7 +30,6 @@ const ApiDataQueriesForm: React.FC = () => {
   const { emptyViewIsShown, loading, currentApiDataQuery, apiDataQuery } = hookProps
   const { schema } = useDataViewSchema();
   const previewProps = useQueryBuilderPreview({schema});
-
   useEffect(() => {
     setDataViewTemplate(undefined)
   }, [apiDataQuery])
@@ -38,7 +37,6 @@ const ApiDataQueriesForm: React.FC = () => {
   if (!apiDataQuery && !dataViewTemplate) {
     return <DataViewTemplates setDataViewTemplate={setDataViewTemplate} />
   }
-  // console.log('apiDataQuery',apiDataQuery)
 
   emptyViewIsShown && currentApiDataQuery()
 

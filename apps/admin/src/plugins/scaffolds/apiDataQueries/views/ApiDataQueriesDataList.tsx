@@ -77,6 +77,12 @@ const ApiDataQueriesDataList: React.FC<{ onHide: () => void }> = ({
         ? f.title.toLowerCase().includes(search.toLocaleLowerCase())
         : true
   )
+  React.useEffect(() => {
+    if (currentApiDataQueryId && !apiDataQueries.find((f: any) => f.id === currentApiDataQueryId)) {
+      refresh()
+    }
+  }, [currentApiDataQueryId])
+
   return (
     <>
       <DataList
