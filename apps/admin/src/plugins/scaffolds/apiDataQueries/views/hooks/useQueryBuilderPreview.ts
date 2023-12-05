@@ -31,22 +31,26 @@ export const useQueryBuilderPreview = ({
   const isSchema = Boolean(schema)
 
   const query = async () => {
-    const tokenGood = Boolean(currentToken) 
+    const tokenGood = Boolean(currentToken)
     const schemaGood = Boolean(schema?.sources?.length && schema?.title?.length)
     const rawGood = Boolean(raw?.length)
     const shouldQuery = tokenGood && (isSchema ? schemaGood : rawGood)
-    if (shouldQuery && isQuerying.current) {
-      querySignal?.current?.abort()
+    // Throws error in dev, miserably
+    if (shouldQuery && isQuerying.current && process.env.NODE_ENV !== "development") {
+      try {
+        querySignal?.current?.abort()
+      } catch (e) {
+        console.log(e)
+      }
     }
-    
+
     if (!shouldQuery) {
       setData(INITIAL_DATA)
       return
     }
     // abort signal controller
-    querySignal.current = new AbortController();
-    const signal = querySignal.current.signal;
-
+    querySignal.current = new AbortController()
+    const signal = querySignal.current.signal
 
     // if secondary schema.join references right source id from earlier schema.join, reverse the list
     // otherwise leave as is
@@ -82,7 +86,8 @@ export const useQueryBuilderPreview = ({
       const error = await response.json()
       setData({
         ok: false,
-        error: error?.error?.replace("Binder Error", "Query Error") || error.message,
+        error:
+          error?.error?.replace("Binder Error", "Query Error") || error.message,
       })
       isQuerying.current = false
     } else {
