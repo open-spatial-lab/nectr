@@ -40,13 +40,9 @@ export default class Connection {
   }
 
   async query(query: string): Promise<QueryResponse<TableData, string>> {
-    // logger.info({query})
     return new Promise((resolve, reject) => {
       this.connection!.all(query, (err: DuckDbError | null, res: TableData) => {
         if (err) {
-          console.log('NODE ERR STACK',err.stack)
-          // throw new Error('Error running query:' + err.stack || ' Unknown error')
-          // logger.error({err, query})
           resolve({
             error: err.stack || 'Unknown error',
             ok: false
@@ -81,7 +77,6 @@ export default class Connection {
     })
     try {
       const result = await this.query(query)
-      console.log("RESULT", result) 
       if (result.ok) {
         return {
           ok: true,

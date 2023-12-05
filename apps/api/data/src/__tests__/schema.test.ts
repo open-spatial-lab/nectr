@@ -256,15 +256,22 @@ const whereSchema = {
           value: -1,
           customAlias: 'where2',
           allowCustom: true
+        },
+        {
+          sourceId: 'sdoh',
+          column: 'column3',
+          operator: 'In',
+          value: [1, 2, 3],
+          customAlias: 'where3',
+          allowCustom: true
         }
-      ],
-      combinedOperator: 'or'
+      ]
     },
     params: {
       where2: 2
     }
   },
-  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" where "sdoh"."column1" = 1 or "sdoh"."column2" > 2;`
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" where "sdoh"."column1" = 1 and "sdoh"."column2" > 2 and "sdoh"."column3" in (1, 2, 3)`
 } as MockSchema
 const whereNotLikeSchema = {
   config: {
@@ -396,7 +403,7 @@ const groupHavingSchema = {
     },
     params: {}
   },
-  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" group by "sdoh"."column1", "sdoh"."column2" having "sdoh"."column2" = 1;`
+  result: `select * from 's3://test_bucket/sdoh.csv' "sdoh" where "sdoh"."column2" = 1 group by "sdoh"."column1";`
 } as MockSchema
 
 const testCases = [

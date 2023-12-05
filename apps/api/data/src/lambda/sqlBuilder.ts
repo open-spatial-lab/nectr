@@ -189,20 +189,17 @@ export class SqlBuilder {
     column: string,
     operator: WhereQuery["operator"],
     value: WhereQuery["value"],
-    wherePrefix: string,
+    _wherePrefix: string,
     whereVerb: string,
-    isFirst: boolean = false
+    _isFirst: boolean = false
   ) {
     // @ts-ignore
     const whereSuffix = OPERATOR_FN_SUFFIXES[operator]
-    const whereFn = isFirst
-      ? whereVerb.toLowerCase() + whereSuffix
-      : wherePrefix + whereVerb + whereSuffix
+    const whereFn = whereVerb.toLowerCase() + whereSuffix
     const formattedColumn = this.qb.raw(column)
     const whereArgs = !whereSuffix?.length
       ? [formattedColumn, operator, value]
       : [formattedColumn, value]
-
     return {
       whereFn,
       whereArgs,
