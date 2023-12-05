@@ -73,6 +73,10 @@ export const AGGREGATE_FUNCTIONS = [
   {
     label: 'Kurtosis',
     value: 'kurtosis'
+  },
+  {
+    label: 'Pick First Value',
+    value: 'first'
   }
 ] as const
 
